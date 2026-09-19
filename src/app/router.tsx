@@ -1,0 +1,28 @@
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { AchievementsPage } from "@/pages/AchievementsPage";
+import { CreateReviewPage } from "@/pages/CreateReviewPage";
+import { FeedPage } from "@/pages/FeedPage";
+import { ProfilePage } from "@/pages/ProfilePage";
+import { ReviewPage } from "@/pages/ReviewPage";
+import { SearchPage } from "@/pages/SearchPage";
+import { SettingsPage } from "@/pages/SettingsPage";
+import { AppShell } from "@/widgets/AppShell";
+
+export function AppRouter() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route element={<AppShell />}>
+          <Route index element={<FeedPage />} />
+          <Route path="search" element={<SearchPage />} />
+          <Route path="create" element={<CreateReviewPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="achievements" element={<AchievementsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="reviews/:reviewId" element={<ReviewPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
+}

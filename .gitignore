@@ -1,4 +1,8 @@
 /dist
+/node_modules
 .env
-/node_modules/
+.env.*
+!.env.example
+*.local
+.DS_Store
 sessions.json

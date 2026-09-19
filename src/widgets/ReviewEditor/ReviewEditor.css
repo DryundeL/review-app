@@ -1,0 +1,20 @@
+.review-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.review-editor__hint {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.review-editor__canvas {
+  min-height: 180px;
+  padding: var(--space-4);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-muted);
+  background: var(--color-surface);
+}
