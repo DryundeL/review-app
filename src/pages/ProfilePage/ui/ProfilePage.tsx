@@ -1,27 +1,36 @@
+import type { SessionProfile, User } from "@/entities/user";
 import { useAuthSession } from "@/features/auth";
 import { UserHeader } from "@/widgets/UserHeader";
+import "./ProfilePage.css";
 
 export function ProfilePage() {
-  const { platformUser, platformKind } = useAuthSession();
+  const { profile } = useAuthSession();
+  if (!profile) return null;
 
-  const user = {
-    id: platformUser?.id ?? "local",
-    username: platformUser?.username ?? "guest",
-    displayName:
-      [platformUser?.firstName, platformUser?.lastName].filter(Boolean).join(" ") ||
-      "Гость",
-    avatarUrl: platformUser?.photoUrl,
+  const user: User = {
+    id: profile.id,
+    username: profile.username.trim(),
+    displayName: displayName(profile),
     popularityScore: 0,
     followersCount: 0,
     followingCount: 0,
   };
 
   return (
-    <section>
+    <section className="profile-page">
       <UserHeader user={user} />
-      <p style={{ color: "var(--color-muted)" }}>
-        Платформа: {platformKind}. Геймификация и разбивка по типам — следующий слайс.
-      </p>
+      {profile.isPremium ? <p className="profile-page__note">Telegram Premium</p> : null}
     </section>
   );
+}
+
+function displayName(profile: SessionProfile): string {
+  const fullName = [profile.firstName, profile.lastName]
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0)
+    .join(" ");
+  if (fullName) return fullName;
+  const username = profile.username.trim();
+  if (username) return username;
+  return "Пользователь";
 }

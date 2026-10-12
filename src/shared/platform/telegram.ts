@@ -7,17 +7,24 @@ const defaultTheme: PlatformTheme = {
   buttonTextColor: "#ffffff",
 };
 
+export function readTelegramInitData(): string | null {
+  if (typeof window === "undefined") return null;
+  const initData = window.Telegram?.WebApp?.initData;
+  if (typeof initData !== "string" || initData.length === 0) return null;
+  return initData;
+}
+
 export function createTelegramAdapter(): PlatformAdapter | null {
   const webApp = window.Telegram?.WebApp;
 
-  if (!webApp) {
+  if (!webApp || !readTelegramInitData()) {
     return null;
   }
 
   return {
     kind: "telegram",
     ready: () => webApp.ready(),
-    getInitData: () => webApp.initData || null,
+    getInitData: () => readTelegramInitData(),
     getUser: () => {
       const user = webApp.initDataUnsafe?.user;
       if (!user) {

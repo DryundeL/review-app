@@ -1,5 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { type ReactNode, useState } from "react";
+import { AuthGate } from "@/features/auth";
+import { ApiError } from "@/shared/api";
 import { PlatformProvider } from "@/shared/platform";
 
 type AppProvidersProps = {
@@ -13,7 +15,12 @@ export function AppProviders({ children }: AppProvidersProps) {
         defaultOptions: {
           queries: {
             staleTime: 30_000,
-            retry: 1,
+            retry: (failureCount, error) => {
+              if (error instanceof ApiError && [400, 401, 404, 429].includes(error.status)) {
+                return false;
+              }
+              return failureCount < 1;
+            },
             refetchOnWindowFocus: false,
           },
         },
@@ -22,7 +29,9 @@ export function AppProviders({ children }: AppProvidersProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <PlatformProvider>{children}</PlatformProvider>
+      <PlatformProvider>
+        <AuthGate>{children}</AuthGate>
+      </PlatformProvider>
     </QueryClientProvider>
   );
 }

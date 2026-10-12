@@ -13,10 +13,12 @@ export function UserHeader({ user }: UserHeaderProps) {
       </div>
       <div className="user-header__info">
         <h1 className="user-header__name">{user.displayName}</h1>
-        <p className="user-header__meta">@{user.username}</p>
-        <p className="user-header__stats">
-          Популярность {user.popularityScore} · {user.followersCount} подписчиков
-        </p>
+        {user.username ? <p className="user-header__meta">@{user.username}</p> : null}
+        {user.popularityScore > 0 || user.followersCount > 0 ? (
+          <p className="user-header__stats">
+            Популярность {user.popularityScore} · {user.followersCount} подписчиков
+          </p>
+        ) : null}
       </div>
     </header>
   );

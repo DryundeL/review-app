@@ -1,16 +1,19 @@
-import { usePlatform } from "@/shared/platform";
+import { useSyncExternalStore } from "react";
+import { readTelegramInitData } from "@/shared/platform";
+import {
+  getAuthSnapshot,
+  retryMiniAppLogin,
+  startBrowserLogin,
+  subscribeAuth,
+} from "./authController";
 
-/**
- * Auth feature stub: exchanges platform credentials for an API session.
- * Telegram path uses initData; web portal will plug in later.
- */
 export function useAuthSession() {
-  const platform = usePlatform();
+  const snapshot = useSyncExternalStore(subscribeAuth, getAuthSnapshot, getAuthSnapshot);
 
   return {
-    platformKind: platform.kind,
-    initData: platform.getInitData(),
-    platformUser: platform.getUser(),
-    isAuthenticated: Boolean(platform.getInitData() || platform.getUser()),
+    ...snapshot,
+    isMiniApp: readTelegramInitData() !== null,
+    startBrowserLogin,
+    retryMiniAppLogin,
   };
 }

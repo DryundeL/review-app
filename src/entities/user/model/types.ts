@@ -1,3 +1,13 @@
+export type SessionProfile = {
+  id: string;
+  telegramId: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  languageCode: string;
+  isPremium: boolean;
+};
+
 export type User = {
   id: string;
   username: string;

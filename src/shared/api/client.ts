@@ -1,54 +1,136 @@
-import { appConfig } from "@/shared/config";
+import { appConfig } from "../config/index.ts";
+import { wait } from "../lib/wait.ts";
+import { errorFromPayload } from "./authPayload.ts";
+import { ApiError, isAbortError, toPublicMessage } from "./errors.ts";
+import { clearAccessToken, getAccessToken } from "./session.ts";
+import { buildApiUrl } from "./url.ts";
 
-export class ApiError extends Error {
-  readonly status: number;
-  readonly body: unknown;
+const MAX_RATE_LIMIT_RETRIES = 2;
+const MAX_RETRY_AFTER_MS = 60_000;
 
-  constructor(status: number, message: string, body: unknown) {
-    super(message);
-    this.name = "ApiError";
-    this.status = status;
-    this.body = body;
+type RequestOptions<T> = {
+  method?: string;
+  body?: unknown;
+  headers?: HeadersInit;
+  signal?: AbortSignal;
+  auth?: boolean;
+  parse?: (text: string) => T;
+};
+
+export async function apiClient<T>(path: string, options: RequestOptions<T> = {}): Promise<T> {
+  const url = buildApiUrl(appConfig.apiBaseUrl, path);
+  const headers = new Headers(options.headers);
+  headers.set("Accept", "application/json");
+
+  if (options.body !== undefined) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  let attachedToken: string | null = null;
+  if (options.auth !== false && !headers.has("Authorization")) {
+    attachedToken = getAccessToken();
+    if (attachedToken) {
+      headers.set("Authorization", `Bearer ${attachedToken}`);
+    }
+  }
+
+  const requestInit: RequestInit = {
+    method: options.method ?? (options.body !== undefined ? "POST" : "GET"),
+    credentials: "omit",
+    cache: "no-store",
+    redirect: "error",
+    referrerPolicy: "no-referrer",
+    headers,
+    signal: options.signal,
+  };
+
+  if (options.body !== undefined) {
+    requestInit.body = JSON.stringify(options.body);
+  }
+
+  const response = await fetchWithRateLimit(url, requestInit, options.signal);
+  return readBody(response, attachedToken, options.parse);
+}
+
+async function fetchWithRateLimit(
+  url: string,
+  requestInit: RequestInit,
+  signal?: AbortSignal,
+): Promise<Response> {
+  for (let attempt = 0; ; attempt += 1) {
+    let response: Response;
+    try {
+      response = await fetch(url, requestInit);
+    } catch (error) {
+      if (isAbortError(error)) throw error;
+      throw new ApiError(0, "UNKNOWN", toPublicMessage(0, "UNKNOWN", undefined));
+    }
+
+    if (response.status !== 429 || attempt >= MAX_RATE_LIMIT_RETRIES) {
+      return response;
+    }
+
+    const delayMs = retryAfterMs(response, attempt);
+    await discardBody(response);
+    await wait(delayMs, signal);
   }
 }
 
-type RequestOptions = Omit<RequestInit, "body"> & {
-  body?: unknown;
-  token?: string | null;
-};
+function retryAfterMs(response: Response, attempt: number): number {
+  const header = response.headers.get("Retry-After");
+  if (header) {
+    const seconds = Number(header);
+    if (Number.isFinite(seconds) && seconds >= 0) {
+      return Math.min(seconds * 1000, MAX_RETRY_AFTER_MS);
+    }
+    const date = Date.parse(header);
+    if (Number.isFinite(date)) {
+      return Math.min(Math.max(date - Date.now(), 0), MAX_RETRY_AFTER_MS);
+    }
+  }
+  return Math.min(2_000 * 2 ** attempt, MAX_RETRY_AFTER_MS);
+}
 
-export async function apiClient<T>(
-  path: string,
-  { body, token, headers, ...init }: RequestOptions = {},
+async function discardBody(response: Response): Promise<void> {
+  try {
+    await response.body?.cancel();
+  } catch {
+    // The body may already be closed.
+  }
+}
+
+async function readBody<T>(
+  response: Response,
+  attachedToken: string | null,
+  parse?: (text: string) => T,
 ): Promise<T> {
-  const response = await fetch(`${appConfig.apiBaseUrl}${path}`, {
-    ...init,
-    headers: {
-      Accept: "application/json",
-      ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...headers,
-    },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
-
-  const contentType = response.headers.get("content-type") ?? "";
-  const payload = contentType.includes("application/json")
-    ? await response.json()
-    : await response.text();
+  const text = await response.text();
 
   if (!response.ok) {
-    throw new ApiError(
-      response.status,
-      typeof payload === "object" &&
-        payload !== null &&
-        "message" in payload &&
-        typeof payload.message === "string"
-        ? payload.message
-        : `Request failed with status ${response.status}`,
-      payload,
-    );
+    if (
+      response.status === 401 &&
+      attachedToken !== null &&
+      getAccessToken() === attachedToken
+    ) {
+      clearAccessToken();
+    }
+
+    let payload: unknown;
+    if (text) {
+      try {
+        payload = JSON.parse(text) as unknown;
+      } catch {
+        payload = undefined;
+      }
+    }
+    throw errorFromPayload(response.status, payload);
   }
 
-  return payload as T;
+  try {
+    if (parse) return parse(text);
+    return JSON.parse(text) as T;
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(0, "UNKNOWN", toPublicMessage(0, "UNKNOWN", undefined));
+  }
 }

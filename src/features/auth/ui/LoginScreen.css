@@ -1,0 +1,42 @@
+.login-screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: var(--space-5);
+  padding-bottom: calc(var(--space-5) + var(--safe-bottom));
+}
+
+.login-screen__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: min(100%, 24rem);
+  margin: 0 auto;
+}
+
+.login-screen__title {
+  margin: 0;
+}
+
+.login-screen__logo {
+  display: block;
+  width: min(100%, 16rem);
+  height: auto;
+}
+
+.login-screen__text {
+  margin: 0;
+  color: var(--color-muted);
+  line-height: 1.45;
+}
+
+.login-screen__link {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.login-screen__action {
+  width: 100%;
+}
