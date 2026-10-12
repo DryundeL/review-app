@@ -23,3 +23,7 @@ npm run dev
 ```
 
 `VITE_API_BASE_URL` указывает на Go API.
+
+## Production
+
+Настройка `review-hub.ru` и автодеплоя описана в [deploy/README.md](deploy/README.md).

@@ -1,0 +1,57 @@
+name: Test and deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: review-app-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify-and-deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Build and verify image
+        run: docker build --tag "review-app:$GITHUB_SHA" .
+      - name: Smoke test container
+        run: sh deploy/smoke-test.sh "review-app:$GITHUB_SHA"
+      - name: Package release
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: |
+          mkdir -p "$RUNNER_TEMP/release"
+          docker save "review-app:$GITHUB_SHA" | gzip > "$RUNNER_TEMP/release/image.tar.gz"
+          cp compose.yaml "$RUNNER_TEMP/release/"
+          cp deploy/pull.sh "$RUNNER_TEMP/release/"
+          printf '%s\n' "$GITHUB_SHA" > "$RUNNER_TEMP/release/.release-version"
+          tar -czf "$RUNNER_TEMP/release.tar.gz" -C "$RUNNER_TEMP/release" .
+      - name: Deploy to server
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$DEPLOY_SSH_KEY"
+          umask 077
+          ssh_dir=$(mktemp -d "$RUNNER_TEMP/deploy-ssh.XXXXXX")
+          trap 'rm -rf "$ssh_dir"' EXIT
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$ssh_dir/key"
+          cp deploy/known_hosts "$ssh_dir/known_hosts"
+          options=(-i "$ssh_dir/key" -o "UserKnownHostsFile=$ssh_dir/known_hosts"
+            -o StrictHostKeyChecking=yes -o IdentitiesOnly=yes -o BatchMode=yes
+            -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=4)
+          target=wapp@194.146.223.221
+          ssh "${options[@]}" "$target" "mkdir -p /home/wapp/.local/share/review-app/incoming/$GITHUB_SHA"
+          scp "${options[@]}" "$RUNNER_TEMP/release.tar.gz" \
+            "$target:/home/wapp/.local/share/review-app/incoming/$GITHUB_SHA/release.tar.gz"
+          ssh "${options[@]}" "$target" "sh -s -- $GITHUB_SHA" < deploy/activate.sh
