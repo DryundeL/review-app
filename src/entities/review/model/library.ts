@@ -22,7 +22,13 @@ const STATUSES = new Set(["released", "ongoing", "announced"]);
 
 function clean(value: unknown, max: number): string | null {
   if (typeof value !== "string") return null;
-  const text = value.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "").trim();
+  let text = "";
+  for (const char of value) {
+    const code = char.charCodeAt(0);
+    if (code <= 31 && code !== 9 && code !== 10 && code !== 13) continue;
+    text += char;
+  }
+  text = text.trim();
   if (text.length === 0 || text.length > max) return null;
   return text;
 }
