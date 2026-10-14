@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AchievementsPage } from "@/pages/AchievementsPage";
 import { CreateReviewPage } from "@/pages/CreateReviewPage";
 import { FeedPage } from "@/pages/FeedPage";
+import { NotificationsPage } from "@/pages/NotificationsPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { ReviewPage } from "@/pages/ReviewPage";
 import { SearchPage } from "@/pages/SearchPage";
@@ -16,6 +17,7 @@ export function AppRouter() {
           <Route index element={<FeedPage />} />
           <Route path="search" element={<SearchPage />} />
           <Route path="create" element={<CreateReviewPage />} />
+          <Route path="notifications" element={<NotificationsPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="achievements" element={<AchievementsPage />} />
           <Route path="settings" element={<SettingsPage />} />

@@ -1,40 +1,9 @@
 import { Link } from "react-router-dom";
-import type { Review } from "@/entities/review";
+import { REVIEWS } from "@/entities/review";
 import { useFilterFeedStore } from "@/features/filter-feed";
 import { MEDIA_TYPE_LABELS, type MediaType } from "@/shared/types";
 import { ReviewCard } from "@/widgets/ReviewCard";
 import "./Feed.css";
-
-const MOCK_FEED: Review[] = [
-  {
-    id: "1",
-    authorId: "u1",
-    title: "Attack on Titan",
-    primaryType: "anime_series",
-    types: ["anime_series", "manga"],
-    rating: 9,
-    excerpt: "Сравнение финала аниме и манги: где адаптация усиливает, а где теряет темп.",
-    viewsCount: 1280,
-    likesCount: 214,
-    dislikesCount: 11,
-    isReleased: true,
-    createdAt: "2026-09-18T12:00:00.000Z",
-  },
-  {
-    id: "2",
-    authorId: "u2",
-    title: "Solo Leveling",
-    primaryType: "manhwa",
-    types: ["manhwa"],
-    rating: 8,
-    excerpt: "Быстрый пауэр-прогресс и сильный визуальный ритм — идеальный casual-обзор.",
-    viewsCount: 860,
-    likesCount: 140,
-    dislikesCount: 7,
-    isReleased: true,
-    createdAt: "2026-09-17T09:30:00.000Z",
-  },
-];
 
 const FILTER_TYPES = Object.keys(MEDIA_TYPE_LABELS) as MediaType[];
 
@@ -43,8 +12,8 @@ export function Feed() {
 
   const visibleReviews =
     types.length === 0
-      ? MOCK_FEED
-      : MOCK_FEED.filter((review) =>
+      ? REVIEWS
+      : REVIEWS.filter((review) =>
           review.types.some((type) => types.includes(type)),
         );
 

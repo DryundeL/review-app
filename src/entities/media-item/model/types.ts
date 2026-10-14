@@ -1,10 +1,14 @@
-import type { MediaType } from "@/shared/types";
+import type { MediaType, ReleaseStatus, StatusSource } from "@/shared/types";
 
 export type MediaItem = {
   id: string;
   title: string;
-  coverUrl?: string;
+  altTitles: string[];
   primaryType: MediaType;
   types: MediaType[];
-  isReleased: boolean;
+  year: number;
+  status: ReleaseStatus;
+  statusSource: StatusSource;
+  synopsis: string;
+  relatedIds: string[];
 };

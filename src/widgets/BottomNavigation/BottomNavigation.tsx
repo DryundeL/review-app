@@ -2,10 +2,11 @@ import { NavLink } from "react-router-dom";
 import "./BottomNavigation.css";
 
 const links = [
-  { to: "/", label: "Лента", end: true },
-  { to: "/search", label: "Поиск" },
-  { to: "/create", label: "Обзор" },
-  { to: "/profile", label: "Профиль" },
+  { to: "/", label: "Главная", end: true, icon: "home" },
+  { to: "/search", label: "Поиск", icon: "search" },
+  { to: "/create", label: "Создать", icon: "plus", create: true },
+  { to: "/notifications", label: "Уведомления", icon: "bell" },
+  { to: "/profile", label: "Профиль", icon: "user" },
 ] as const;
 
 export function BottomNavigation() {
@@ -16,13 +17,50 @@ export function BottomNavigation() {
           key={link.to}
           to={link.to}
           end={"end" in link ? link.end : false}
+          aria-label={"create" in link ? link.label : undefined}
           className={({ isActive }) =>
-            isActive ? "bottom-nav__link bottom-nav__link--active" : "bottom-nav__link"
+            [
+              "bottom-nav__link",
+              "create" in link ? "bottom-nav__create" : "",
+              isActive ? "bottom-nav__link--active" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")
           }
         >
-          {link.label}
+          <NavIcon name={link.icon} />
+          {"create" in link ? null : <span>{link.label}</span>}
         </NavLink>
       ))}
     </nav>
+  );
+}
+
+function NavIcon({ name }: { name: (typeof links)[number]["icon"] }) {
+  return (
+    <svg className="bottom-nav__icon" viewBox="0 0 24 24" aria-hidden="true">
+      {name === "home" ? (
+        <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z" />
+      ) : null}
+      {name === "search" ? (
+        <>
+          <circle cx="11" cy="11" r="6.5" />
+          <path d="m16 16 4 4" />
+        </>
+      ) : null}
+      {name === "plus" ? (
+        <>
+          <path d="M12 5v14" />
+          <path d="M5 12h14" />
+        </>
+      ) : null}
+      {name === "bell" ? <path d="M6 9a6 6 0 1 1 12 0c0 7 2 7 2 7H4s2 0 2-7ZM10 19a2 2 0 0 0 4 0" /> : null}
+      {name === "user" ? (
+        <>
+          <circle cx="12" cy="8" r="3.5" />
+          <path d="M5 19.5a7 7 0 0 1 14 0" />
+        </>
+      ) : null}
+    </svg>
   );
 }

@@ -1,20 +1,29 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import logoUrl from "@/assets/review-hub-logo.png";
 import { BottomNavigation } from "@/widgets/BottomNavigation";
 import "./AppShell.css";
 
 export function AppShell() {
+  const { pathname } = useLocation();
+  const hideNav = pathname.startsWith("/reviews/") || pathname === "/create";
+
   return (
     <div className="app-shell">
       <header className="app-shell__header">
-        <NavLink to="/" className="app-shell__brand">
-          <img className="app-shell__logo" src={logoUrl} alt="Review Hub" width={2172} height={724} />
-        </NavLink>
+        {hideNav ? (
+          <Link className="app-shell__back" to="/">
+            Назад
+          </Link>
+        ) : (
+          <NavLink to="/" className="app-shell__brand" end>
+            <img className="app-shell__logo" src={logoUrl} alt="Review Hub" width={2172} height={724} />
+          </NavLink>
+        )}
       </header>
-      <main className="app-shell__main">
+      <main className={hideNav ? "app-shell__main app-shell__main--solo" : "app-shell__main"}>
         <Outlet />
       </main>
-      <BottomNavigation />
+      {hideNav ? null : <BottomNavigation />}
     </div>
   );
 }

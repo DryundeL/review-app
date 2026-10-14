@@ -5,6 +5,7 @@
   min-height: 100dvh;
   padding: var(--space-5);
   padding-bottom: calc(var(--space-5) + var(--safe-bottom));
+  background: var(--color-bg);
 }
 
 .login-screen__panel {
