@@ -36,11 +36,7 @@ export function RemoteReviewCard({
 
         <div className="remote-review__body">
           <div className="remote-review__meta">
-            {review.status === "draft" ? (
-              <span className="remote-review__badge">Черновик</span>
-            ) : (
-              <span className="remote-review__badge remote-review__badge--live">Опубликован</span>
-            )}
+            <span className="remote-review__badge remote-review__badge--live">{typeLabel}</span>
             {review.hasSpoilers ? (
               <span className="remote-review__spoiler-flag">есть спойлеры</span>
             ) : null}
@@ -50,11 +46,11 @@ export function RemoteReviewCard({
             <Link to={`/reviews/${review.id}`}>{review.title}</Link>
           </h2>
 
-          <p className="remote-review__media">
-            <span className="remote-review__type">{typeLabel}</span>
-            <span aria-hidden>·</span>
-            <span>{mediaTitle}</span>
+          <p className="remote-review__status">
+            {review.status === "draft" ? "Черновик" : "Опубликован"}
           </p>
+
+          <p className="remote-review__media">{mediaTitle}</p>
 
           <footer className="remote-review__stats">
             <span className="remote-review__stats-left">
