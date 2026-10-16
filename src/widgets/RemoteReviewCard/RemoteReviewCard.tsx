@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import type { MediaObjectSummary, RemoteReviewSummary } from "@/entities/review";
+import type { RemoteReviewSummary } from "@/entities/review";
+import { MEDIA_TYPE_LABELS } from "@/shared/types";
 import { Button, MediaPoster, Modal } from "@/shared/ui";
 import "./RemoteReviewCard.css";
 
 type RemoteReviewCardProps = {
   review: RemoteReviewSummary;
-  media?: MediaObjectSummary;
   canEdit?: boolean;
   onDelete?: (reviewId: string) => Promise<void> | void;
   deleting?: boolean;
@@ -14,13 +14,14 @@ type RemoteReviewCardProps = {
 
 export function RemoteReviewCard({
   review,
-  media,
   canEdit = false,
   onDelete,
   deleting = false,
 }: RemoteReviewCardProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const mediaTitle = media?.title?.trim() || "Произведение";
+  const media = review.mediaObject;
+  const mediaTitle = media.title.trim() || "Произведение";
+  const typeLabel = MEDIA_TYPE_LABELS[media.type];
 
   return (
     <article className="remote-review">
@@ -30,7 +31,7 @@ export function RemoteReviewCard({
           to={`/reviews/${review.id}`}
           aria-label={`Обзор: ${review.title}`}
         >
-          <MediaPoster title={mediaTitle} posterUrl={media?.posterUrl} />
+          <MediaPoster title={mediaTitle} posterUrl={media.posterUrl} />
         </Link>
 
         <div className="remote-review__body">
@@ -49,7 +50,11 @@ export function RemoteReviewCard({
             <Link to={`/reviews/${review.id}`}>{review.title}</Link>
           </h2>
 
-          <p className="remote-review__media">{mediaTitle}</p>
+          <p className="remote-review__media">
+            <span className="remote-review__type">{typeLabel}</span>
+            <span aria-hidden>·</span>
+            <span>{mediaTitle}</span>
+          </p>
 
           <footer className="remote-review__stats">
             <span className="remote-review__stats-left">

@@ -1,12 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  deleteReview,
-  listMediaObjects,
-  listMyReviews,
-  type MediaObjectSummary,
-} from "@/entities/review";
+import { deleteReview, listMyReviews } from "@/entities/review";
 import type { SessionProfile, User } from "@/entities/user";
 import { useAuthSession } from "@/features/auth";
 import { ApiError } from "@/shared/api";
@@ -24,21 +19,6 @@ export function ProfilePage() {
     queryFn: ({ signal }) => listMyReviews(50, signal),
     enabled: Boolean(profile),
   });
-
-  const mediaQuery = useQuery({
-    queryKey: ["media-objects"],
-    queryFn: ({ signal }) => listMediaObjects(50, signal),
-    enabled: Boolean(profile),
-    retry: false,
-  });
-
-  const mediaById = useMemo(() => {
-    const map = new Map<string, MediaObjectSummary>();
-    for (const item of mediaQuery.data ?? []) {
-      map.set(item.id, item);
-    }
-    return map;
-  }, [mediaQuery.data]);
 
   const deleteMutation = useMutation({
     mutationFn: (reviewId: string) => deleteReview(reviewId),
@@ -121,7 +101,6 @@ export function ProfilePage() {
             <li key={review.id}>
               <RemoteReviewCard
                 review={review}
-                media={mediaById.get(review.mediaObjectId)}
                 canEdit
                 deleting={deleteMutation.isPending && deleteMutation.variables === review.id}
                 onDelete={(id) => deleteMutation.mutateAsync(id)}

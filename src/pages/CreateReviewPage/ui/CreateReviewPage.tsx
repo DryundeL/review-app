@@ -24,6 +24,7 @@ export function CreateReviewPage() {
   const queryClient = useQueryClient();
 
   const [mediaObjectId, setMediaObjectId] = useState("");
+  const [lockedMediaTitle, setLockedMediaTitle] = useState<string | null>(null);
   const [mediaQuery, setMediaQuery] = useState("");
   const [title, setTitle] = useState("");
   const [rating, setRating] = useState(8);
@@ -43,7 +44,8 @@ export function CreateReviewPage() {
     if (!existingQuery.data || hydrated) return;
     const review = existingQuery.data;
     setReviewId(review.id);
-    setMediaObjectId(review.mediaObjectId);
+    setMediaObjectId(review.mediaObject.id);
+    setLockedMediaTitle(review.mediaObject.title);
     setTitle(review.title);
     setRating(review.rating);
     setBlocks(
@@ -61,6 +63,7 @@ export function CreateReviewPage() {
   const mediaQueryResult = useQuery({
     queryKey: ["media-objects"],
     queryFn: ({ signal }) => listMediaObjects(50, signal),
+    enabled: !isEdit,
     retry: false,
   });
 
@@ -145,7 +148,7 @@ export function CreateReviewPage() {
 
       {isEdit ? (
         <p className="create-review__picked">
-          Произведение: <strong>{selectedMedia?.title ?? mediaObjectId}</strong>
+          Произведение: <strong>{lockedMediaTitle ?? "…"}</strong>
           <span className="muted"> (не меняется)</span>
         </p>
       ) : (

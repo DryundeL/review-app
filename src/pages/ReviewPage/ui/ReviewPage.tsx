@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getMediaObject, getReview, viewReview, voteReview } from "@/entities/review";
+import { getReview, viewReview, voteReview } from "@/entities/review";
 import { useAuthSession } from "@/features/auth";
 import { ApiError } from "@/shared/api";
+import { MEDIA_TYPE_LABELS } from "@/shared/types";
 import { Button, MediaPoster, SpoilerText } from "@/shared/ui";
 import "./ReviewPage.css";
 
@@ -16,13 +17,6 @@ export function ReviewPage() {
     queryKey: ["review", reviewId],
     queryFn: ({ signal }) => getReview(reviewId!, signal),
     enabled: Boolean(reviewId),
-    retry: false,
-  });
-
-  const mediaQuery = useQuery({
-    queryKey: ["media-object", reviewQuery.data?.mediaObjectId],
-    queryFn: ({ signal }) => getMediaObject(reviewQuery.data!.mediaObjectId, signal),
-    enabled: Boolean(reviewQuery.data?.mediaObjectId),
     retry: false,
   });
 
@@ -73,13 +67,15 @@ export function ReviewPage() {
 
   const review = reviewQuery.data;
   const isOwn = Boolean(profile && review.authorId === profile.id);
-  const mediaTitle = mediaQuery.data?.title?.trim() || "Произведение";
+  const media = review.mediaObject;
+  const mediaTitle = media.title.trim() || "Произведение";
+  const typeLabel = MEDIA_TYPE_LABELS[media.type];
 
   return (
     <article className="review-page screen">
       <header className="review-page__head">
         <div className="review-page__poster" aria-hidden>
-          <MediaPoster title={mediaTitle} posterUrl={mediaQuery.data?.posterUrl} />
+          <MediaPoster title={mediaTitle} posterUrl={media.posterUrl} />
         </div>
         <div className="review-page__titles">
           <div className="review-page__meta">
@@ -92,7 +88,11 @@ export function ReviewPage() {
               <span className="review-page__spoiler-flag">есть спойлеры</span>
             ) : null}
           </div>
-          <p className="review-page__media">{mediaTitle}</p>
+          <p className="review-page__media">
+            <span className="review-page__type">{typeLabel}</span>
+            <span aria-hidden>·</span>
+            <span>{mediaTitle}</span>
+          </p>
           <h1>{review.title}</h1>
           <p className="review-page__stats">
             +{review.likesCount} · −{review.dislikesCount} · {review.viewsCount} просм.

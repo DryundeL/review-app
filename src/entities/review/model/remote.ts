@@ -1,3 +1,5 @@
+import type { MediaType } from "@/shared/types";
+
 export type ReviewStatus = "draft" | "published";
 
 export type RemoteReviewBlock = {
@@ -7,11 +9,18 @@ export type RemoteReviewBlock = {
   body: string;
 };
 
-/** Элемент списка: без blocks, с флагом спойлеров. */
+export type MediaObjectSummary = {
+  id: string;
+  title: string;
+  type: MediaType;
+  posterUrl?: string;
+};
+
+/** Элемент списка: без blocks, с флагом спойлеров и вложенным mediaObject. */
 export type RemoteReviewSummary = {
   id: string;
   authorId: string;
-  mediaObjectId: string;
+  mediaObject: MediaObjectSummary;
   title: string;
   rating: number;
   status: ReviewStatus;
@@ -28,6 +37,7 @@ export type RemoteReview = RemoteReviewSummary & {
 
 export type RemoteReviewList = { items: RemoteReviewSummary[] };
 
+/** В теле create/update по-прежнему id произведения. */
 export type CreateReviewInput = {
   mediaObjectId: string;
   title: string;
@@ -41,10 +51,4 @@ export type UpdateReviewInput = {
   rating?: number;
   status?: ReviewStatus;
   blocks?: { title: string; body: string }[];
-};
-
-export type MediaObjectSummary = {
-  id: string;
-  title: string;
-  posterUrl?: string;
 };

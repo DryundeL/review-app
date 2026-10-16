@@ -28,12 +28,20 @@
 }
 
 .review-page__media {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem;
   margin: 0;
   color: var(--color-muted);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+.review-page__type {
+  color: var(--color-accent);
 }
 
 .review-page__titles h1 {

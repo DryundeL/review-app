@@ -1,14 +1,18 @@
 import { z } from "zod";
 import { unexpectedResponseError } from "@/shared/api/errors";
 import { safeHttpsUrl } from "@/shared/lib/safeHttpsUrl";
+import { MEDIA_TYPE_LABELS, type MediaType } from "@/shared/types";
 import type {
   MediaObjectSummary,
   RemoteReview,
   RemoteReviewList,
-  RemoteReviewSummary,
 } from "../model/remote";
 
 const uuid = z.string().uuid();
+
+const mediaTypeSchema = z.custom<MediaType>(
+  (value) => typeof value === "string" && value in MEDIA_TYPE_LABELS,
+);
 
 const blockSchema = z.object({
   id: uuid,
@@ -17,10 +21,17 @@ const blockSchema = z.object({
   body: z.string().min(1).max(256),
 });
 
+const mediaObjectSchema = z.object({
+  id: uuid,
+  title: z.string().min(1).max(256),
+  type: mediaTypeSchema,
+  posterUrl: z.string().optional().nullable(),
+});
+
 const reviewSummarySchema = z.object({
   id: uuid,
   authorId: uuid,
-  mediaObjectId: uuid,
+  mediaObject: mediaObjectSchema,
   title: z.string().min(1).max(256),
   rating: z.number().int().min(1).max(10),
   status: z.enum(["draft", "published"]),
@@ -38,37 +49,51 @@ const listSchema = z.object({
   items: z.array(reviewSummarySchema),
 });
 
-const mediaItemSchema = z
+const catalogMediaSchema = z
   .object({
     id: uuid,
     title: z.string().min(1).max(256),
+    type: mediaTypeSchema.optional(),
+    primaryType: mediaTypeSchema.optional(),
+    posterUrl: z.string().optional().nullable(),
   })
   .passthrough();
 
 const mediaListSchema = z.union([
-  z.object({ items: z.array(mediaItemSchema) }),
-  z.array(mediaItemSchema),
+  z.object({ items: z.array(catalogMediaSchema) }),
+  z.array(catalogMediaSchema),
 ]);
 
-function readPosterUrl(raw: Record<string, unknown>): string | undefined {
-  for (const key of ["posterUrl", "poster", "imageUrl", "coverUrl", "cover"]) {
-    const url = safeHttpsUrl(raw[key]);
-    if (url) return url;
-  }
-  return undefined;
+function toMediaSummary(raw: z.infer<typeof mediaObjectSchema>): MediaObjectSummary {
+  const posterUrl = safeHttpsUrl(raw.posterUrl ?? undefined);
+  return posterUrl
+    ? { id: raw.id, title: raw.title, type: raw.type, posterUrl }
+    : { id: raw.id, title: raw.title, type: raw.type };
 }
 
-function toMediaSummary(item: z.infer<typeof mediaItemSchema>): MediaObjectSummary {
-  const posterUrl = readPosterUrl(item as Record<string, unknown>);
+function toCatalogMediaSummary(raw: z.infer<typeof catalogMediaSchema>): MediaObjectSummary | null {
+  const type = raw.type ?? raw.primaryType;
+  if (!type) return null;
+  const posterUrl = safeHttpsUrl(raw.posterUrl ?? undefined);
   return posterUrl
-    ? { id: item.id, title: item.title, posterUrl }
-    : { id: item.id, title: item.title };
+    ? { id: raw.id, title: raw.title, type, posterUrl }
+    : { id: raw.id, title: raw.title, type };
+}
+
+function mapSummary(item: z.infer<typeof reviewSummarySchema>) {
+  return {
+    ...item,
+    mediaObject: toMediaSummary(item.mediaObject),
+  };
 }
 
 export function parseRemoteReview(payload: unknown): RemoteReview {
   const parsed = reviewDetailSchema.safeParse(payload);
   if (!parsed.success) throw unexpectedResponseError();
-  return parsed.data;
+  return {
+    ...mapSummary(parsed.data),
+    blocks: parsed.data.blocks,
+  };
 }
 
 export function parseRemoteReviewText(text: string): RemoteReview {
@@ -90,7 +115,7 @@ export function parseRemoteReviewListText(text: string): RemoteReviewList {
   }
   const parsed = listSchema.safeParse(payload);
   if (!parsed.success) throw unexpectedResponseError();
-  return parsed.data satisfies { items: RemoteReviewSummary[] };
+  return { items: parsed.data.items.map(mapSummary) };
 }
 
 export function parseMediaObjectText(text: string): MediaObjectSummary {
@@ -100,9 +125,11 @@ export function parseMediaObjectText(text: string): MediaObjectSummary {
   } catch {
     throw unexpectedResponseError();
   }
-  const parsed = mediaItemSchema.safeParse(payload);
+  const parsed = catalogMediaSchema.safeParse(payload);
   if (!parsed.success) throw unexpectedResponseError();
-  return toMediaSummary(parsed.data);
+  const media = toCatalogMediaSummary(parsed.data);
+  if (!media) throw unexpectedResponseError();
+  return media;
 }
 
 export function parseMediaObjectsText(text: string): MediaObjectSummary[] {
@@ -115,5 +142,7 @@ export function parseMediaObjectsText(text: string): MediaObjectSummary[] {
   const parsed = mediaListSchema.safeParse(payload);
   if (!parsed.success) throw unexpectedResponseError();
   const items = Array.isArray(parsed.data) ? parsed.data : parsed.data.items;
-  return items.map(toMediaSummary);
+  return items
+    .map(toCatalogMediaSummary)
+    .filter((item): item is MediaObjectSummary => item !== null);
 }

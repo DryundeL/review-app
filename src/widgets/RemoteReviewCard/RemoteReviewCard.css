@@ -76,12 +76,20 @@
 }
 
 .remote-review__media {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem;
   margin: 0;
   color: var(--color-muted);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+.remote-review__type {
+  color: var(--color-accent);
 }
 
 .remote-review__stats {
