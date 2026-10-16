@@ -40,15 +40,14 @@ export function RemoteReviewCard({
             {review.hasSpoilers ? (
               <span className="remote-review__spoiler-flag">есть спойлеры</span>
             ) : null}
+            <span className="remote-review__status">
+              {review.status === "draft" ? "Черновик" : "Опубликован"}
+            </span>
           </div>
 
           <h2 className="remote-review__title">
             <Link to={`/reviews/${review.id}`}>{review.title}</Link>
           </h2>
-
-          <p className="remote-review__status">
-            {review.status === "draft" ? "Черновик" : "Опубликован"}
-          </p>
 
           <p className="remote-review__media">{mediaTitle}</p>
 
