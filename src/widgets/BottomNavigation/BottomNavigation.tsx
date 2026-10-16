@@ -17,7 +17,7 @@ export function BottomNavigation() {
           key={link.to}
           to={link.to}
           end={"end" in link ? link.end : false}
-          aria-label={"create" in link ? link.label : undefined}
+          aria-label={link.label}
           className={({ isActive }) =>
             [
               "bottom-nav__link",
@@ -29,7 +29,6 @@ export function BottomNavigation() {
           }
         >
           <NavIcon name={link.icon} />
-          {"create" in link ? null : <span>{link.label}</span>}
         </NavLink>
       ))}
     </nav>
