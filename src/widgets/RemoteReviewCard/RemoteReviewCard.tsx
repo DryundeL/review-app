@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import type { MediaObjectSummary, RemoteReview } from "@/entities/review";
+import type { MediaObjectSummary, RemoteReviewSummary } from "@/entities/review";
 import { Button, MediaPoster, Modal } from "@/shared/ui";
 import "./RemoteReviewCard.css";
 
 type RemoteReviewCardProps = {
-  review: RemoteReview;
+  review: RemoteReviewSummary;
   media?: MediaObjectSummary;
   canEdit?: boolean;
   onDelete?: (reviewId: string) => Promise<void> | void;
@@ -34,9 +34,16 @@ export function RemoteReviewCard({
         </Link>
 
         <div className="remote-review__body">
-          {review.status === "draft" ? (
-            <span className="remote-review__badge">Черновик</span>
-          ) : null}
+          <div className="remote-review__meta">
+            {review.status === "draft" ? (
+              <span className="remote-review__badge">Черновик</span>
+            ) : (
+              <span className="remote-review__badge remote-review__badge--live">Опубликован</span>
+            )}
+            {review.hasSpoilers ? (
+              <span className="remote-review__spoiler-flag">есть спойлеры</span>
+            ) : null}
+          </div>
 
           <h2 className="remote-review__title">
             <Link to={`/reviews/${review.id}`}>{review.title}</Link>
@@ -44,10 +51,17 @@ export function RemoteReviewCard({
 
           <p className="remote-review__media">{mediaTitle}</p>
 
-          <p className="remote-review__rating" aria-label={`Оценка ${review.rating} из 10`}>
-            {review.rating}
-            <small>/10</small>
-          </p>
+          <footer className="remote-review__stats">
+            <span className="remote-review__stats-left">
+              <span>+{review.likesCount}</span>
+              <span>−{review.dislikesCount}</span>
+              <span>{review.viewsCount} просм.</span>
+            </span>
+            <span className="remote-review__rating" aria-label={`Оценка ${review.rating} из 10`}>
+              {review.rating}
+              <small>/10</small>
+            </span>
+          </footer>
         </div>
       </div>
 
@@ -71,11 +85,7 @@ export function RemoteReviewCard({
       ) : null}
 
       {onDelete ? (
-        <Modal
-          open={confirmOpen}
-          onOpenChange={setConfirmOpen}
-          title="Удалить обзор?"
-        >
+        <Modal open={confirmOpen} onOpenChange={setConfirmOpen} title="Удалить обзор?">
           <p className="remote-review__confirm-text">
             «{review.title}» будет удалён без возможности восстановить.
           </p>

@@ -22,6 +22,7 @@ export type {
   RemoteReview,
   RemoteReviewBlock,
   RemoteReviewList,
+  RemoteReviewSummary,
   ReviewStatus,
   UpdateReviewInput,
 } from "./model/remote";

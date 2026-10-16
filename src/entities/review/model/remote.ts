@@ -7,20 +7,26 @@ export type RemoteReviewBlock = {
   body: string;
 };
 
-export type RemoteReview = {
+/** Элемент списка: без blocks, с флагом спойлеров. */
+export type RemoteReviewSummary = {
   id: string;
   authorId: string;
   mediaObjectId: string;
   title: string;
   rating: number;
   status: ReviewStatus;
-  blocks: RemoteReviewBlock[];
+  hasSpoilers: boolean;
   likesCount: number;
   dislikesCount: number;
   viewsCount: number;
 };
 
-export type RemoteReviewList = { items: RemoteReview[] };
+/** GET /reviews/:id и ответы create/update — полные блоки. */
+export type RemoteReview = RemoteReviewSummary & {
+  blocks: RemoteReviewBlock[];
+};
+
+export type RemoteReviewList = { items: RemoteReviewSummary[] };
 
 export type CreateReviewInput = {
   mediaObjectId: string;

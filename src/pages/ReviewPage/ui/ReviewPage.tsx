@@ -82,16 +82,20 @@ export function ReviewPage() {
           <MediaPoster title={mediaTitle} posterUrl={mediaQuery.data?.posterUrl} />
         </div>
         <div className="review-page__titles">
-          {review.status === "draft" ? <span className="review-page__draft">Черновик</span> : null}
+          <div className="review-page__meta">
+            {review.status === "draft" ? (
+              <span className="review-page__draft">Черновик</span>
+            ) : (
+              <span className="review-page__draft review-page__draft--live">Опубликован</span>
+            )}
+            {review.hasSpoilers ? (
+              <span className="review-page__spoiler-flag">есть спойлеры</span>
+            ) : null}
+          </div>
           <p className="review-page__media">{mediaTitle}</p>
           <h1>{review.title}</h1>
           <p className="review-page__stats">
-            {isOwn ? null : (
-              <>
-                +{review.likesCount} · −{review.dislikesCount} ·{" "}
-              </>
-            )}
-            {review.viewsCount} просм.
+            +{review.likesCount} · −{review.dislikesCount} · {review.viewsCount} просм.
             <span className="review-page__rating" aria-label={`Оценка ${review.rating} из 10`}>
               {review.rating}
               <small>/10</small>

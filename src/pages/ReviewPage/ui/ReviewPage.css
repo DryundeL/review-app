@@ -43,6 +43,13 @@
   line-height: 1.15;
 }
 
+.review-page__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 .review-page__draft {
   width: fit-content;
   color: var(--color-muted);
@@ -50,6 +57,17 @@
   font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+
+.review-page__draft--live {
+  color: var(--color-accent);
+}
+
+.review-page__spoiler-flag {
+  color: var(--color-gold);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
 }
 
 .review-page__stats {

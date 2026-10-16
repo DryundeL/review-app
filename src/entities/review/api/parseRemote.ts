@@ -1,7 +1,12 @@
 import { z } from "zod";
 import { unexpectedResponseError } from "@/shared/api/errors";
 import { safeHttpsUrl } from "@/shared/lib/safeHttpsUrl";
-import type { MediaObjectSummary, RemoteReview, RemoteReviewList } from "../model/remote";
+import type {
+  MediaObjectSummary,
+  RemoteReview,
+  RemoteReviewList,
+  RemoteReviewSummary,
+} from "../model/remote";
 
 const uuid = z.string().uuid();
 
@@ -12,21 +17,25 @@ const blockSchema = z.object({
   body: z.string().min(1).max(256),
 });
 
-const reviewSchema = z.object({
+const reviewSummarySchema = z.object({
   id: uuid,
   authorId: uuid,
   mediaObjectId: uuid,
   title: z.string().min(1).max(256),
   rating: z.number().int().min(1).max(10),
   status: z.enum(["draft", "published"]),
-  blocks: z.array(blockSchema).max(10),
+  hasSpoilers: z.boolean(),
   likesCount: z.number().int().nonnegative(),
   dislikesCount: z.number().int().nonnegative(),
   viewsCount: z.number().int().nonnegative(),
 });
 
+const reviewDetailSchema = reviewSummarySchema.extend({
+  blocks: z.array(blockSchema).max(10),
+});
+
 const listSchema = z.object({
-  items: z.array(reviewSchema),
+  items: z.array(reviewSummarySchema),
 });
 
 const mediaItemSchema = z
@@ -57,7 +66,7 @@ function toMediaSummary(item: z.infer<typeof mediaItemSchema>): MediaObjectSumma
 }
 
 export function parseRemoteReview(payload: unknown): RemoteReview {
-  const parsed = reviewSchema.safeParse(payload);
+  const parsed = reviewDetailSchema.safeParse(payload);
   if (!parsed.success) throw unexpectedResponseError();
   return parsed.data;
 }
@@ -81,7 +90,7 @@ export function parseRemoteReviewListText(text: string): RemoteReviewList {
   }
   const parsed = listSchema.safeParse(payload);
   if (!parsed.success) throw unexpectedResponseError();
-  return parsed.data;
+  return parsed.data satisfies { items: RemoteReviewSummary[] };
 }
 
 export function parseMediaObjectText(text: string): MediaObjectSummary {
