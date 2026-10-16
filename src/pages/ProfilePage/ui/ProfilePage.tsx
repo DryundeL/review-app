@@ -1,15 +1,24 @@
-import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { listMediaObjects, listMyReviews, type MediaObjectSummary } from "@/entities/review";
+import {
+  deleteReview,
+  listMediaObjects,
+  listMyReviews,
+  type MediaObjectSummary,
+} from "@/entities/review";
 import type { SessionProfile, User } from "@/entities/user";
 import { useAuthSession } from "@/features/auth";
+import { ApiError } from "@/shared/api";
 import { RemoteReviewCard } from "@/widgets/RemoteReviewCard";
 import { UserHeader } from "@/widgets/UserHeader";
 import "./ProfilePage.css";
 
 export function ProfilePage() {
   const { profile } = useAuthSession();
+  const queryClient = useQueryClient();
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
   const reviewsQuery = useQuery({
     queryKey: ["my-reviews"],
     queryFn: ({ signal }) => listMyReviews(50, signal),
@@ -30,6 +39,17 @@ export function ProfilePage() {
     }
     return map;
   }, [mediaQuery.data]);
+
+  const deleteMutation = useMutation({
+    mutationFn: (reviewId: string) => deleteReview(reviewId),
+    onSuccess: async () => {
+      setDeleteError(null);
+      await queryClient.invalidateQueries({ queryKey: ["my-reviews"] });
+    },
+    onError: (error) => {
+      setDeleteError(messageFromError(error));
+    },
+  });
 
   if (!profile) return null;
 
@@ -82,6 +102,12 @@ export function ProfilePage() {
         </p>
       ) : null}
 
+      {deleteError ? (
+        <p className="profile-page__error" role="alert">
+          {deleteError}
+        </p>
+      ) : null}
+
       {!reviewsQuery.isLoading && !reviewsQuery.isError && reviews.length === 0 ? (
         <div className="profile-page__empty" role="status">
           <p>Пока пусто — ни одного обзора.</p>
@@ -97,7 +123,8 @@ export function ProfilePage() {
                 review={review}
                 media={mediaById.get(review.mediaObjectId)}
                 canEdit
-                hideVotes
+                deleting={deleteMutation.isPending && deleteMutation.variables === review.id}
+                onDelete={(id) => deleteMutation.mutateAsync(id)}
               />
             </li>
           ))}
@@ -116,4 +143,10 @@ function displayName(profile: SessionProfile): string {
   const username = profile.username.trim();
   if (username) return username;
   return "Пользователь";
+}
+
+function messageFromError(error: unknown): string {
+  if (error instanceof ApiError) return error.message;
+  if (error instanceof Error && error.message) return error.message;
+  return "Не удалось удалить обзор.";
 }

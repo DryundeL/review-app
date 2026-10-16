@@ -61,6 +61,14 @@ export function getReview(id: string, signal?: AbortSignal): Promise<RemoteRevie
   });
 }
 
+export function deleteReview(id: string, signal?: AbortSignal): Promise<void> {
+  const reviewId = assertUuid(id);
+  return apiClient(`/v1/reviews/${reviewId}`, {
+    method: "DELETE",
+    signal,
+  });
+}
+
 export function listMyReviews(limit?: number, signal?: AbortSignal): Promise<RemoteReviewList> {
   return apiClient("/v1/profile/reviews", {
     method: "GET",
