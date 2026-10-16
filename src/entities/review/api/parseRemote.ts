@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { unexpectedResponseError } from "@/shared/api/errors";
+import { safeHttpsUrl } from "@/shared/lib/safeHttpsUrl";
 import type { MediaObjectSummary, RemoteReview, RemoteReviewList } from "../model/remote";
 
 const uuid = z.string().uuid();
@@ -40,6 +41,21 @@ const mediaListSchema = z.union([
   z.array(mediaItemSchema),
 ]);
 
+function readPosterUrl(raw: Record<string, unknown>): string | undefined {
+  for (const key of ["posterUrl", "poster", "imageUrl", "coverUrl", "cover"]) {
+    const url = safeHttpsUrl(raw[key]);
+    if (url) return url;
+  }
+  return undefined;
+}
+
+function toMediaSummary(item: z.infer<typeof mediaItemSchema>): MediaObjectSummary {
+  const posterUrl = readPosterUrl(item as Record<string, unknown>);
+  return posterUrl
+    ? { id: item.id, title: item.title, posterUrl }
+    : { id: item.id, title: item.title };
+}
+
 export function parseRemoteReview(payload: unknown): RemoteReview {
   const parsed = reviewSchema.safeParse(payload);
   if (!parsed.success) throw unexpectedResponseError();
@@ -68,6 +84,18 @@ export function parseRemoteReviewListText(text: string): RemoteReviewList {
   return parsed.data;
 }
 
+export function parseMediaObjectText(text: string): MediaObjectSummary {
+  let payload: unknown;
+  try {
+    payload = JSON.parse(text) as unknown;
+  } catch {
+    throw unexpectedResponseError();
+  }
+  const parsed = mediaItemSchema.safeParse(payload);
+  if (!parsed.success) throw unexpectedResponseError();
+  return toMediaSummary(parsed.data);
+}
+
 export function parseMediaObjectsText(text: string): MediaObjectSummary[] {
   let payload: unknown;
   try {
@@ -78,5 +106,5 @@ export function parseMediaObjectsText(text: string): MediaObjectSummary[] {
   const parsed = mediaListSchema.safeParse(payload);
   if (!parsed.success) throw unexpectedResponseError();
   const items = Array.isArray(parsed.data) ? parsed.data : parsed.data.items;
-  return items.map((item) => ({ id: item.id, title: item.title }));
+  return items.map(toMediaSummary);
 }

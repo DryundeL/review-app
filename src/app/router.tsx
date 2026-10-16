@@ -21,6 +21,7 @@ export function AppRouter() {
           <Route path="profile" element={<ProfilePage />} />
           <Route path="achievements" element={<AchievementsPage />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="reviews/:reviewId/edit" element={<CreateReviewPage />} />
           <Route path="reviews/:reviewId" element={<ReviewPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

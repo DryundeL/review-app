@@ -1,14 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getReview, viewReview, voteReview } from "@/entities/review";
+import { getMediaObject, getReview, viewReview, voteReview } from "@/entities/review";
+import { useAuthSession } from "@/features/auth";
 import { ApiError } from "@/shared/api";
-import { Button } from "@/shared/ui";
-import { SpoilerText } from "@/shared/ui/SpoilerText";
+import { Button, MediaPoster, SpoilerText } from "@/shared/ui";
 import "./ReviewPage.css";
 
 export function ReviewPage() {
   const { reviewId } = useParams();
+  const { profile } = useAuthSession();
   const queryClient = useQueryClient();
 
   const reviewQuery = useQuery({
@@ -18,12 +19,20 @@ export function ReviewPage() {
     retry: false,
   });
 
+  const mediaQuery = useQuery({
+    queryKey: ["media-object", reviewQuery.data?.mediaObjectId],
+    queryFn: ({ signal }) => getMediaObject(reviewQuery.data!.mediaObjectId, signal),
+    enabled: Boolean(reviewQuery.data?.mediaObjectId),
+    retry: false,
+  });
+
   useEffect(() => {
     if (!reviewId || reviewQuery.data?.status !== "published") return;
+    if (profile && reviewQuery.data.authorId === profile.id) return;
     void viewReview(reviewId).catch(() => {
       // просмотр не критичен для чтения
     });
-  }, [reviewId, reviewQuery.data?.status]);
+  }, [profile, reviewId, reviewQuery.data?.authorId, reviewQuery.data?.status]);
 
   const voteMutation = useMutation({
     mutationFn: (isLike: boolean) => voteReview(reviewId!, isLike),
@@ -63,20 +72,36 @@ export function ReviewPage() {
   }
 
   const review = reviewQuery.data;
+  const isOwn = Boolean(profile && review.authorId === profile.id);
+  const mediaTitle = mediaQuery.data?.title?.trim() || "Произведение";
 
   return (
     <article className="review-page screen">
       <header className="review-page__head">
-        <div className="review-page__score" aria-label={`Оценка ${review.rating} из 10`}>
-          <span>{review.rating}</span>
-          <small>/10</small>
+        <div className="review-page__poster" aria-hidden>
+          <MediaPoster title={mediaTitle} posterUrl={mediaQuery.data?.posterUrl} />
         </div>
         <div className="review-page__titles">
           {review.status === "draft" ? <span className="review-page__draft">Черновик</span> : null}
+          <p className="review-page__media">{mediaTitle}</p>
           <h1>{review.title}</h1>
           <p className="review-page__stats">
-            +{review.likesCount} · −{review.dislikesCount} · {review.viewsCount} просм.
+            {isOwn ? null : (
+              <>
+                +{review.likesCount} · −{review.dislikesCount} ·{" "}
+              </>
+            )}
+            {review.viewsCount} просм.
+            <span className="review-page__rating" aria-label={`Оценка ${review.rating} из 10`}>
+              {review.rating}
+              <small>/10</small>
+            </span>
           </p>
+          {isOwn ? (
+            <Link className="review-page__edit" to={`/reviews/${review.id}/edit`}>
+              Изменить
+            </Link>
+          ) : null}
         </div>
       </header>
 
@@ -93,7 +118,7 @@ export function ReviewPage() {
         )}
       </div>
 
-      {review.status === "published" ? (
+      {review.status === "published" && !isOwn ? (
         <div className="review-page__vote">
           <Button
             type="button"

@@ -40,4 +40,5 @@ export type UpdateReviewInput = {
 export type MediaObjectSummary = {
   id: string;
   title: string;
+  posterUrl?: string;
 };

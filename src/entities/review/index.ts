@@ -27,6 +27,7 @@ export type {
 } from "./model/remote";
 export {
   createReview,
+  getMediaObject,
   getReview,
   listMediaObjects,
   listMyReviews,

@@ -7,6 +7,7 @@ import type {
   UpdateReviewInput,
 } from "../model/remote";
 import {
+  parseMediaObjectText,
   parseMediaObjectsText,
   parseRemoteReviewListText,
   parseRemoteReviewText,
@@ -16,7 +17,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-
 
 function assertUuid(value: string): string {
   if (!UUID.test(value)) {
-    throw new ApiError(404, "NOT_FOUND", "Обзор не найден.");
+    throw new ApiError(404, "NOT_FOUND", "Не найдено.");
   }
   return value;
 }
@@ -108,5 +109,15 @@ export function listMediaObjects(limit?: number, signal?: AbortSignal): Promise<
     query: { limit: clampLimit(limit) },
     signal,
     parse: parseMediaObjectsText,
+  });
+}
+
+export function getMediaObject(id: string, signal?: AbortSignal): Promise<MediaObjectSummary> {
+  const mediaId = assertUuid(id);
+  return apiClient(`/v1/media-objects/${mediaId}`, {
+    method: "GET",
+    auth: false,
+    signal,
+    parse: parseMediaObjectText,
   });
 }

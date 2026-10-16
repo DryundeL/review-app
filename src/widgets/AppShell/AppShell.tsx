@@ -5,7 +5,9 @@ import "./AppShell.css";
 
 export function AppShell() {
   const { pathname } = useLocation();
-  const hideNav = pathname.startsWith("/reviews/") || pathname === "/create";
+  const hideNav =
+    pathname === "/create" ||
+    pathname.startsWith("/reviews/");
 
   return (
     <div className="app-shell">

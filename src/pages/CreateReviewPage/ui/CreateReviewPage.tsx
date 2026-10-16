@@ -1,7 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { createReview, listMediaObjects, updateReview } from "@/entities/review";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+  createReview,
+  getReview,
+  listMediaObjects,
+  updateReview,
+} from "@/entities/review";
 import { toCreatePayload, type DraftBlock } from "@/features/create-review";
 import { ApiError } from "@/shared/api";
 import { Button, Input } from "@/shared/ui";
@@ -13,15 +18,45 @@ function newBlock(): DraftBlock {
 }
 
 export function CreateReviewPage() {
+  const { reviewId: routeReviewId } = useParams<{ reviewId?: string }>();
+  const isEdit = Boolean(routeReviewId);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
   const [mediaObjectId, setMediaObjectId] = useState("");
   const [mediaQuery, setMediaQuery] = useState("");
   const [title, setTitle] = useState("");
   const [rating, setRating] = useState(8);
   const [blocks, setBlocks] = useState<DraftBlock[]>([newBlock()]);
   const [formError, setFormError] = useState<string | null>(null);
-  const [reviewId, setReviewId] = useState<string | null>(null);
+  const [reviewId, setReviewId] = useState<string | null>(routeReviewId ?? null);
+  const [hydrated, setHydrated] = useState(!isEdit);
+
+  const existingQuery = useQuery({
+    queryKey: ["review", routeReviewId],
+    queryFn: ({ signal }) => getReview(routeReviewId!, signal),
+    enabled: isEdit,
+    retry: false,
+  });
+
+  useEffect(() => {
+    if (!existingQuery.data || hydrated) return;
+    const review = existingQuery.data;
+    setReviewId(review.id);
+    setMediaObjectId(review.mediaObjectId);
+    setTitle(review.title);
+    setRating(review.rating);
+    setBlocks(
+      review.blocks.length > 0
+        ? review.blocks.map((block) => ({
+            key: block.id,
+            title: block.title,
+            body: block.body,
+          }))
+        : [newBlock()],
+    );
+    setHydrated(true);
+  }, [existingQuery.data, hydrated]);
 
   const mediaQueryResult = useQuery({
     queryKey: ["media-objects"],
@@ -59,9 +94,14 @@ export function CreateReviewPage() {
     onSuccess: async (review, status) => {
       setReviewId(review.id);
       setFormError(null);
-      await queryClient.invalidateQueries({ queryKey: ["my-reviews"] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["my-reviews"] }),
+        queryClient.invalidateQueries({ queryKey: ["review", review.id] }),
+      ]);
       if (status === "published") {
         navigate(`/reviews/${review.id}`);
+      } else if (isEdit) {
+        navigate("/profile");
       }
     },
     onError: (error) => {
@@ -75,67 +115,96 @@ export function CreateReviewPage() {
     );
   }
 
+  if (isEdit && existingQuery.isLoading) {
+    return (
+      <section className="create-review screen" aria-busy="true">
+        <p className="muted">Загрузка обзора…</p>
+      </section>
+    );
+  }
+
+  if (isEdit && (existingQuery.isError || !existingQuery.data)) {
+    return (
+      <section className="create-review screen">
+        <h1>Не удалось открыть обзор</h1>
+        <p className="muted">Возможно, это чужой черновик или обзор удалён.</p>
+        <Link to="/profile">В профиль</Link>
+      </section>
+    );
+  }
+
   return (
     <section className="create-review screen">
       <header className="create-review__head">
-        <p className="create-review__eyebrow">Новый разбор</p>
-        <h1>Собери обзор</h1>
+        <p className="create-review__eyebrow">{isEdit ? "Правка" : "Новый разбор"}</p>
+        <h1>{isEdit ? "Редактировать обзор" : "Собери обзор"}</h1>
         <p className="muted">
           Текст режется на блоки. Спойлеры прячутся за плашкой при чтении.
         </p>
       </header>
 
-      <label className="create-review__field">
-        <span>Произведение</span>
-        <Input
-          type="search"
-          value={mediaQuery}
-          onChange={(event) => setMediaQuery(event.target.value)}
-          placeholder="Поиск в каталоге"
-          autoComplete="off"
-        />
-      </label>
-
-      {mediaQueryResult.isError ? (
-        <p className="create-review__warn" role="status">
-          Каталог недоступен. Можно вставить UUID произведения вручную ниже.
-        </p>
-      ) : null}
-
-      <ul className="create-review__media" role="listbox" aria-label="Произведения">
-        {mediaOptions.map((item) => {
-          const active = item.id === mediaObjectId;
-          return (
-            <li key={item.id}>
-              <button
-                type="button"
-                role="option"
-                aria-selected={active}
-                className={active ? "create-review__media-item is-active" : "create-review__media-item"}
-                onClick={() => setMediaObjectId(item.id)}
-              >
-                {item.title}
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-
-      {!selectedMedia ? (
-        <label className="create-review__field">
-          <span>UUID произведения</span>
-          <Input
-            value={mediaObjectId}
-            onChange={(event) => setMediaObjectId(event.target.value.trim())}
-            placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-            autoComplete="off"
-            spellCheck={false}
-          />
-        </label>
-      ) : (
+      {isEdit ? (
         <p className="create-review__picked">
-          Выбрано: <strong>{selectedMedia.title}</strong>
+          Произведение: <strong>{selectedMedia?.title ?? mediaObjectId}</strong>
+          <span className="muted"> (не меняется)</span>
         </p>
+      ) : (
+        <>
+          <label className="create-review__field">
+            <span>Произведение</span>
+            <Input
+              type="search"
+              value={mediaQuery}
+              onChange={(event) => setMediaQuery(event.target.value)}
+              placeholder="Поиск в каталоге"
+              autoComplete="off"
+            />
+          </label>
+
+          {mediaQueryResult.isError ? (
+            <p className="create-review__warn" role="status">
+              Каталог недоступен. Можно вставить UUID произведения вручную ниже.
+            </p>
+          ) : null}
+
+          <ul className="create-review__media" role="listbox" aria-label="Произведения">
+            {mediaOptions.map((item) => {
+              const active = item.id === mediaObjectId;
+              return (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={active}
+                    className={
+                      active ? "create-review__media-item is-active" : "create-review__media-item"
+                    }
+                    onClick={() => setMediaObjectId(item.id)}
+                  >
+                    {item.title}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+
+          {!selectedMedia ? (
+            <label className="create-review__field">
+              <span>UUID произведения</span>
+              <Input
+                value={mediaObjectId}
+                onChange={(event) => setMediaObjectId(event.target.value.trim())}
+                placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                autoComplete="off"
+                spellCheck={false}
+              />
+            </label>
+          ) : (
+            <p className="create-review__picked">
+              Выбрано: <strong>{selectedMedia.title}</strong>
+            </p>
+          )}
+        </>
       )}
 
       <label className="create-review__field">
@@ -177,7 +246,9 @@ export function CreateReviewPage() {
                 <button
                   type="button"
                   className="create-review__remove"
-                  onClick={() => setBlocks((current) => current.filter((item) => item.key !== block.key))}
+                  onClick={() =>
+                    setBlocks((current) => current.filter((item) => item.key !== block.key))
+                  }
                 >
                   Удалить
                 </button>
@@ -217,10 +288,9 @@ export function CreateReviewPage() {
         </p>
       ) : null}
 
-      {saveMutation.isSuccess && saveMutation.variables === "draft" ? (
+      {saveMutation.isSuccess && saveMutation.variables === "draft" && !isEdit ? (
         <p className="create-review__ok" role="status">
-          Черновик сохранён.{" "}
-          <Link to="/profile">К профилю</Link>
+          Черновик сохранён. <Link to="/profile">К профилю</Link>
         </p>
       ) : null}
 
@@ -228,17 +298,17 @@ export function CreateReviewPage() {
         <Button
           type="button"
           variant="secondary"
-          disabled={saveMutation.isPending}
+          disabled={saveMutation.isPending || (isEdit && !hydrated)}
           onClick={() => saveMutation.mutate("draft")}
         >
-          Черновик
+          {isEdit ? "Сохранить черновик" : "Черновик"}
         </Button>
         <Button
           type="button"
-          disabled={saveMutation.isPending}
+          disabled={saveMutation.isPending || (isEdit && !hydrated)}
           onClick={() => saveMutation.mutate("published")}
         >
-          Опубликовать
+          {isEdit ? "Сохранить и опубликовать" : "Опубликовать"}
         </Button>
       </div>
     </section>
