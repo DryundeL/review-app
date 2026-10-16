@@ -37,5 +37,9 @@
 .spoiler-plaque--open {
   background: color-mix(in srgb, var(--color-gold) 28%, transparent);
   color: var(--color-text);
-  cursor: default;
+}
+
+.spoiler-plaque--open:hover,
+.spoiler-plaque--open:focus-visible {
+  background: color-mix(in srgb, var(--color-gold) 40%, transparent);
 }

@@ -6,7 +6,7 @@ import "./SpoilerText.css";
 type SpoilerTextProps = {
   text: string;
   className?: string;
-  /** В редакторе спойлер виден, на чтении — плашка. */
+  /** В редакторе спойлер виден и не кликается. */
   preview?: boolean;
 };
 
@@ -19,19 +19,19 @@ export function SpoilerText({ text, className, preview = false }: SpoilerTextPro
         segment.kind === "text" ? (
           <span key={index}>{segment.text}</span>
         ) : (
-          <SpoilerPlaque key={index} text={segment.text} open={preview} />
+          <SpoilerPlaque key={index} text={segment.text} lockedOpen={preview} />
         ),
       )}
     </span>
   );
 }
 
-function SpoilerPlaque({ text, open }: { text: string; open: boolean }) {
-  const [revealed, setRevealed] = useState(open);
+function SpoilerPlaque({ text, lockedOpen }: { text: string; lockedOpen: boolean }) {
+  const [revealed, setRevealed] = useState(false);
   const labelId = useId();
-  const isOpen = open || revealed;
+  const isOpen = lockedOpen || revealed;
 
-  if (isOpen) {
+  if (lockedOpen) {
     return (
       <span className="spoiler-plaque spoiler-plaque--open" data-spoiler="open">
         {text}
@@ -42,16 +42,23 @@ function SpoilerPlaque({ text, open }: { text: string; open: boolean }) {
   return (
     <button
       type="button"
-      className="spoiler-plaque"
+      className={isOpen ? "spoiler-plaque spoiler-plaque--open" : "spoiler-plaque"}
+      aria-expanded={isOpen}
       aria-describedby={labelId}
-      onClick={() => setRevealed(true)}
+      onClick={() => setRevealed((current) => !current)}
     >
       <span id={labelId} className="sr-only">
-        Скрытый спойлер. Нажмите, чтобы показать.
+        {isOpen
+          ? "Спойлер открыт. Нажмите, чтобы скрыть."
+          : "Скрытый спойлер. Нажмите, чтобы показать."}
       </span>
-      <span aria-hidden className="spoiler-plaque__label">
-        Спойлер
-      </span>
+      {isOpen ? (
+        <span>{text}</span>
+      ) : (
+        <span aria-hidden className="spoiler-plaque__label">
+          Спойлер
+        </span>
+      )}
     </button>
   );
 }
