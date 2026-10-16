@@ -3,7 +3,7 @@ import { wait } from "../lib/wait.ts";
 import { errorFromPayload } from "./authPayload.ts";
 import { ApiError, isAbortError, toPublicMessage } from "./errors.ts";
 import { clearAccessToken, getAccessToken } from "./session.ts";
-import { buildApiUrl } from "./url.ts";
+import { buildApiUrl, type ApiQuery } from "./url.ts";
 
 const MAX_RATE_LIMIT_RETRIES = 2;
 const MAX_RETRY_AFTER_MS = 60_000;
@@ -14,11 +14,12 @@ type RequestOptions<T> = {
   headers?: HeadersInit;
   signal?: AbortSignal;
   auth?: boolean;
+  query?: ApiQuery;
   parse?: (text: string) => T;
 };
 
 export async function apiClient<T>(path: string, options: RequestOptions<T> = {}): Promise<T> {
-  const url = buildApiUrl(appConfig.apiBaseUrl, path);
+  const url = buildApiUrl(appConfig.apiBaseUrl, path, options.query);
   const headers = new Headers(options.headers);
   headers.set("Accept", "application/json");
 
@@ -124,6 +125,11 @@ async function readBody<T>(
       }
     }
     throw errorFromPayload(response.status, payload);
+  }
+
+  if (!text) {
+    if (parse) return parse("");
+    return undefined as T;
   }
 
   try {

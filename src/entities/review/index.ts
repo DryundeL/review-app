@@ -16,3 +16,22 @@ export { addPublication, publishLocal, readLibrary, useLibrary } from "./model/l
 export type { Library } from "./model/library";
 export { matchesQuery } from "./model/search";
 export type { Review, ReviewBlock, ReviewComment } from "./model/types";
+export type {
+  CreateReviewInput,
+  MediaObjectSummary,
+  RemoteReview,
+  RemoteReviewBlock,
+  RemoteReviewList,
+  ReviewStatus,
+  UpdateReviewInput,
+} from "./model/remote";
+export {
+  createReview,
+  getReview,
+  listMediaObjects,
+  listMyReviews,
+  listUserReviews,
+  updateReview,
+  viewReview,
+  voteReview,
+} from "./api/reviewsApi";

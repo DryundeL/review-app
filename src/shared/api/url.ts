@@ -1,4 +1,9 @@
-export function buildApiUrl(baseUrl: string, path: string): string {
+const QUERY_KEY = /^[a-zA-Z][a-zA-Z0-9_]{0,31}$/;
+const QUERY_VALUE = /^[\w\-.:@+]{0,200}$/;
+
+export type ApiQuery = Record<string, string | number | undefined>;
+
+export function buildApiUrl(baseUrl: string, path: string, query?: ApiQuery): string {
   if (
     !path.startsWith("/v1/") ||
     path.includes("?") ||
@@ -21,7 +26,7 @@ export function buildApiUrl(baseUrl: string, path: string): string {
   }
 
   if (base.startsWith("/")) {
-    return `${base}${path}`;
+    return appendQuery(`${base}${path}`, query);
   }
 
   let url: URL;
@@ -35,5 +40,21 @@ export function buildApiUrl(baseUrl: string, path: string): string {
     throw new Error("Invalid API URL");
   }
 
-  return url.toString();
+  return appendQuery(url.toString(), query);
+}
+
+export function appendQuery(url: string, query?: ApiQuery): string {
+  if (!query) return url;
+
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value === undefined) continue;
+    if (!QUERY_KEY.test(key)) throw new Error("Invalid query key");
+    const text = String(value);
+    if (!QUERY_VALUE.test(text)) throw new Error("Invalid query value");
+    params.set(key, text);
+  }
+
+  const qs = params.toString();
+  return qs ? `${url}?${qs}` : url;
 }

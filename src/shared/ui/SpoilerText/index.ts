@@ -1,0 +1,1 @@
+export { SpoilerText } from "./SpoilerText";

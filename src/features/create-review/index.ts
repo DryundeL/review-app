@@ -1,2 +1,2 @@
-/** Placeholder public API for create-review feature. */
-export {};
+export { toCreatePayload, sanitizeText } from "./model/validate";
+export type { DraftBlock, ReviewDraft } from "./model/validate";

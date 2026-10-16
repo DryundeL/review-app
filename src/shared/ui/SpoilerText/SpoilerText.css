@@ -1,0 +1,41 @@
+.spoiler-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.spoiler-plaque {
+  display: inline;
+  margin: 0 0.1em;
+  padding: 0.12em 0.45em;
+  border: 0;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--color-text) 88%, var(--color-gold));
+  color: transparent;
+  font: inherit;
+  line-height: inherit;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  vertical-align: baseline;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.spoiler-plaque:hover,
+.spoiler-plaque:focus-visible {
+  background: color-mix(in srgb, var(--color-text) 72%, var(--color-gold));
+}
+
+.spoiler-plaque__label {
+  color: var(--color-bg);
+  font-size: 0.72em;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.spoiler-plaque--open {
+  background: color-mix(in srgb, var(--color-gold) 28%, transparent);
+  color: var(--color-text);
+  cursor: default;
+}
