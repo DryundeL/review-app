@@ -40,8 +40,16 @@ export function RemoteReviewCard({
             {review.hasSpoilers ? (
               <span className="remote-review__spoiler-flag">есть спойлеры</span>
             ) : null}
-            <span className="remote-review__status">
-              {review.status === "draft" ? "Черновик" : "Опубликован"}
+            <span
+              className={
+                review.status === "draft"
+                  ? "remote-review__status remote-review__status--draft"
+                  : "remote-review__status remote-review__status--live"
+              }
+              title={review.status === "draft" ? "Черновик" : "Опубликован"}
+              aria-label={review.status === "draft" ? "Черновик" : "Опубликован"}
+            >
+              {review.status === "draft" ? <DraftIcon /> : <PublishedIcon />}
             </span>
           </div>
 
@@ -113,5 +121,42 @@ export function RemoteReviewCard({
         </Modal>
       ) : null}
     </article>
+  );
+}
+
+function PublishedIcon() {
+  return (
+    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden focusable="false">
+      <circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M4.75 8.2 6.9 10.3 11.25 5.7"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function DraftIcon() {
+  return (
+    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden focusable="false">
+      <path
+        d="M3.5 12.5h3.2L12.8 6.4a1.2 1.2 0 0 0 0-1.7L11.3 3.2a1.2 1.2 0 0 0-1.7 0L4.2 8.6v3.9Z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9.2 4.1 11.9 6.8"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
