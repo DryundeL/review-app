@@ -5,6 +5,7 @@ import {
   createReview,
   getReview,
   listMediaObjects,
+  mediaMetaLine,
   updateReview,
   type MediaObjectSummary,
 } from "@/entities/review";
@@ -213,7 +214,8 @@ export function CreateReviewPage() {
                         setSelectedMedia(item);
                       }}
                     >
-                      {item.title}
+                      <span className="create-review__media-title">{item.title}</span>
+                      <span className="create-review__media-meta">{mediaMetaLine(item)}</span>
                     </button>
                   </li>
                 );
@@ -238,6 +240,7 @@ export function CreateReviewPage() {
           ) : (
             <p className="create-review__picked">
               Выбрано: <strong>{selectedMedia.title}</strong>
+              <span className="create-review__picked-meta"> · {mediaMetaLine(selectedMedia)}</span>
             </p>
           )}
         </>

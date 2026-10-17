@@ -14,6 +14,7 @@ export {
 } from "./model/catalog";
 export { addPublication, publishLocal, readLibrary, useLibrary } from "./model/library";
 export type { Library } from "./model/library";
+export { mediaMetaLine } from "./model/mediaLabel";
 export { matchesQuery } from "./model/search";
 export type { Review, ReviewBlock, ReviewComment } from "./model/types";
 export type {

@@ -13,6 +13,10 @@ export type MediaObjectSummary = {
   id: string;
   title: string;
   type: MediaType;
+  /** Оригинальное название; может отсутствовать. */
+  originalTitle?: string;
+  /** Год релиза; omitempty на бэке — поля может не быть. */
+  releaseYear?: number;
   posterUrl?: string;
 };
 

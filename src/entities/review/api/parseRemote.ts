@@ -25,6 +25,8 @@ const mediaObjectSchema = z.object({
   id: uuid,
   title: z.string().min(1).max(256),
   type: mediaTypeSchema,
+  originalTitle: z.string().min(1).max(256).optional().nullable(),
+  releaseYear: z.number().int().min(1800).max(2200).optional().nullable(),
   posterUrl: z.string().optional().nullable(),
 });
 
@@ -84,6 +86,8 @@ const catalogMediaSchema = z
     title: z.string().min(1).max(256),
     type: mediaTypeSchema.optional(),
     primaryType: mediaTypeSchema.optional(),
+    originalTitle: z.string().min(1).max(256).optional().nullable(),
+    releaseYear: z.number().int().min(1800).max(2200).optional().nullable(),
     posterUrl: z.string().optional().nullable(),
   })
   .passthrough();
@@ -93,20 +97,40 @@ const mediaListSchema = z.union([
   z.array(catalogMediaSchema),
 ]);
 
-function toMediaSummary(raw: z.infer<typeof mediaObjectSchema>): MediaObjectSummary {
+function optionalCatalogFields(
+  raw: {
+    originalTitle?: string | null;
+    releaseYear?: number | null;
+    posterUrl?: string | null;
+  },
+): Pick<MediaObjectSummary, "originalTitle" | "releaseYear" | "posterUrl"> {
+  const fields: Pick<MediaObjectSummary, "originalTitle" | "releaseYear" | "posterUrl"> = {};
+  const originalTitle = raw.originalTitle?.trim();
+  if (originalTitle) fields.originalTitle = originalTitle;
+  if (typeof raw.releaseYear === "number") fields.releaseYear = raw.releaseYear;
   const posterUrl = safeHttpsUrl(raw.posterUrl ?? undefined);
-  return posterUrl
-    ? { id: raw.id, title: raw.title, type: raw.type, posterUrl }
-    : { id: raw.id, title: raw.title, type: raw.type };
+  if (posterUrl) fields.posterUrl = posterUrl;
+  return fields;
+}
+
+function toMediaSummary(raw: z.infer<typeof mediaObjectSchema>): MediaObjectSummary {
+  return {
+    id: raw.id,
+    title: raw.title,
+    type: raw.type,
+    ...optionalCatalogFields(raw),
+  };
 }
 
 function toCatalogMediaSummary(raw: z.infer<typeof catalogMediaSchema>): MediaObjectSummary | null {
   const type = raw.type ?? raw.primaryType;
   if (!type) return null;
-  const posterUrl = safeHttpsUrl(raw.posterUrl ?? undefined);
-  return posterUrl
-    ? { id: raw.id, title: raw.title, type, posterUrl }
-    : { id: raw.id, title: raw.title, type };
+  return {
+    id: raw.id,
+    title: raw.title,
+    type,
+    ...optionalCatalogFields(raw),
+  };
 }
 
 function mapSummary(
