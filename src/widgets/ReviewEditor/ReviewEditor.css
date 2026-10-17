@@ -46,6 +46,8 @@
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 92%, #000) 0%, var(--color-surface) 100%);
   color: var(--color-text);
+  /* contenteditable: тот же порог зума, что у input */
+  font-size: 16px;
   outline: none;
 }
 

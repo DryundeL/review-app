@@ -6,6 +6,8 @@
   border-radius: var(--radius-sm);
   background: var(--color-surface);
   color: var(--color-text);
+  /* <16px → iOS / Telegram Mini App зумит viewport при фокусе */
+  font-size: 16px;
   outline: none;
 }
 
