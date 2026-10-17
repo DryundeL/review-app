@@ -61,6 +61,13 @@ export type ListFeedParams = {
   limit?: number;
 };
 
+/** GET /v1/media-objects — substring ILIKE по title и original_title. */
+export type ListMediaObjectsParams = {
+  q?: string;
+  type?: MediaType;
+  limit?: number;
+};
+
 /** В теле create/update по-прежнему id произведения. */
 export type CreateReviewInput = {
   mediaObjectId: string;

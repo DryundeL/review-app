@@ -2,6 +2,7 @@ import { apiClient, ApiError } from "@/shared/api";
 import type {
   CreateReviewInput,
   ListFeedParams,
+  ListMediaObjectsParams,
   MediaObjectSummary,
   RemoteReview,
   RemoteReviewList,
@@ -127,11 +128,26 @@ export function viewReview(id: string, signal?: AbortSignal): Promise<void> {
   });
 }
 
-export function listMediaObjects(limit?: number, signal?: AbortSignal): Promise<MediaObjectSummary[]> {
+const MEDIA_QUERY_MAX = 80;
+
+function sanitizeMediaQuery(q?: string): string | undefined {
+  if (typeof q !== "string") return undefined;
+  const trimmed = q.trim().slice(0, MEDIA_QUERY_MAX);
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+export function listMediaObjects(
+  params: ListMediaObjectsParams = {},
+  signal?: AbortSignal,
+): Promise<MediaObjectSummary[]> {
   return apiClient("/v1/media-objects", {
     method: "GET",
     auth: false,
-    query: { limit: clampLimit(limit) },
+    query: {
+      q: sanitizeMediaQuery(params.q),
+      type: params.type,
+      limit: clampLimit(params.limit),
+    },
     signal,
     parse: parseMediaObjectsText,
   });

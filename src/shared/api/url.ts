@@ -1,6 +1,9 @@
 const QUERY_KEY = /^[a-zA-Z][a-zA-Z0-9_]{0,31}$/;
-/** Opaque cursors may be base64 (`=`, `/`) and longer than typical ids. */
-const QUERY_VALUE = /^[\w\-.:@+/=]{0,1024}$/;
+/**
+ * Opaque cursors (base64) and search substrings (Unicode titles).
+ * Values are still encoded by URLSearchParams; reject only control chars.
+ */
+const QUERY_VALUE = /^[^\x00-\x1F\x7F]{0,1024}$/;
 
 export type ApiQuery = Record<string, string | number | undefined>;
 

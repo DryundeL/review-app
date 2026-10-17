@@ -21,6 +21,7 @@ export type {
   FeedMode,
   FeedSort,
   ListFeedParams,
+  ListMediaObjectsParams,
   MediaObjectSummary,
   RemoteReview,
   RemoteReviewAuthor,

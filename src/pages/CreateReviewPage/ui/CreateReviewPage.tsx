@@ -1,14 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   createReview,
   getReview,
   listMediaObjects,
   updateReview,
+  type MediaObjectSummary,
 } from "@/entities/review";
 import { toCreatePayload, type DraftBlock } from "@/features/create-review";
 import { ApiError } from "@/shared/api";
+import { useDebouncedValue } from "@/shared/hooks";
 import { Button, Input } from "@/shared/ui";
 import { ReviewEditor } from "@/widgets/ReviewEditor";
 import "./CreateReviewPage.css";
@@ -24,6 +26,7 @@ export function CreateReviewPage() {
   const queryClient = useQueryClient();
 
   const [mediaObjectId, setMediaObjectId] = useState("");
+  const [selectedMedia, setSelectedMedia] = useState<MediaObjectSummary | null>(null);
   const [lockedMediaTitle, setLockedMediaTitle] = useState<string | null>(null);
   const [mediaQuery, setMediaQuery] = useState("");
   const [title, setTitle] = useState("");
@@ -32,6 +35,8 @@ export function CreateReviewPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [reviewId, setReviewId] = useState<string | null>(routeReviewId ?? null);
   const [hydrated, setHydrated] = useState(!isEdit);
+
+  const debouncedMediaQuery = useDebouncedValue(mediaQuery.trim(), 300);
 
   const existingQuery = useQuery({
     queryKey: ["review", routeReviewId],
@@ -61,20 +66,21 @@ export function CreateReviewPage() {
   }, [existingQuery.data, hydrated]);
 
   const mediaQueryResult = useQuery({
-    queryKey: ["media-objects"],
-    queryFn: ({ signal }) => listMediaObjects(50, signal),
+    queryKey: ["media-objects", debouncedMediaQuery],
+    queryFn: ({ signal }) =>
+      listMediaObjects(
+        {
+          q: debouncedMediaQuery || undefined,
+          limit: 50,
+        },
+        signal,
+      ),
     enabled: !isEdit,
     retry: false,
   });
 
-  const mediaOptions = useMemo(() => {
-    const items = mediaQueryResult.data ?? [];
-    const q = mediaQuery.trim().toLowerCase();
-    if (!q) return items.slice(0, 12);
-    return items.filter((item) => item.title.toLowerCase().includes(q)).slice(0, 12);
-  }, [mediaQuery, mediaQueryResult.data]);
-
-  const selectedMedia = mediaQueryResult.data?.find((item) => item.id === mediaObjectId);
+  const mediaOptions = mediaQueryResult.data ?? [];
+  const mediaSearchPending = mediaQuery.trim() !== debouncedMediaQuery;
 
   const saveMutation = useMutation({
     mutationFn: async (status: "draft" | "published") => {
@@ -170,33 +176,60 @@ export function CreateReviewPage() {
             </p>
           ) : null}
 
-          <ul className="create-review__media" role="listbox" aria-label="Произведения">
-            {mediaOptions.map((item) => {
-              const active = item.id === mediaObjectId;
-              return (
-                <li key={item.id}>
-                  <button
-                    type="button"
-                    role="option"
-                    aria-selected={active}
-                    className={
-                      active ? "create-review__media-item is-active" : "create-review__media-item"
-                    }
-                    onClick={() => setMediaObjectId(item.id)}
-                  >
-                    {item.title}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+          {mediaQueryResult.isFetching || mediaSearchPending ? (
+            <p className="muted" role="status">
+              Поиск…
+            </p>
+          ) : null}
 
-          {!selectedMedia ? (
+          {!mediaQueryResult.isError &&
+          !mediaQueryResult.isFetching &&
+          !mediaSearchPending &&
+          mediaOptions.length === 0 ? (
+            <p className="muted" role="status">
+              {debouncedMediaQuery
+                ? "Ничего не найдено. Уточните запрос или вставьте UUID ниже."
+                : "Начните вводить название — поиск идёт по каталогу."}
+            </p>
+          ) : null}
+
+          {mediaOptions.length > 0 ? (
+            <ul className="create-review__media" role="listbox" aria-label="Произведения">
+              {mediaOptions.map((item) => {
+                const active = item.id === mediaObjectId;
+                return (
+                  <li key={item.id}>
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={active}
+                      className={
+                        active
+                          ? "create-review__media-item is-active"
+                          : "create-review__media-item"
+                      }
+                      onClick={() => {
+                        setMediaObjectId(item.id);
+                        setSelectedMedia(item);
+                      }}
+                    >
+                      {item.title}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
+
+          {!selectedMedia || selectedMedia.id !== mediaObjectId ? (
             <label className="create-review__field">
               <span>UUID произведения</span>
               <Input
                 value={mediaObjectId}
-                onChange={(event) => setMediaObjectId(event.target.value.trim())}
+                onChange={(event) => {
+                  setMediaObjectId(event.target.value.trim());
+                  setSelectedMedia(null);
+                }}
                 placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
                 autoComplete="off"
                 spellCheck={false}

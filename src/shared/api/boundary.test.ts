@@ -36,6 +36,18 @@ describe("auth boundary", { concurrency: 1 }, () => {
     assert.ok(url.includes("sort=new"));
   });
 
+  test("accepts Unicode media search query values", () => {
+    const url = buildApiUrl("http://localhost:8080", "/v1/media-objects", {
+      q: "матрица",
+      limit: 50,
+    });
+    assert.ok(url.includes("q="));
+    assert.ok(url.includes("limit=50"));
+    assert.throws(() =>
+      buildApiUrl("http://localhost:8080", "/v1/media-objects", { q: "bad\nquery" }),
+    );
+  });
+
   test("accepts only compact JWTs", () => {
     assert.equal(isJwt(TOKEN), true);
     assert.equal(isJwt(`${TOKEN} extra`), false);
