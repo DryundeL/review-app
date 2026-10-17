@@ -1,21 +1,65 @@
-import { Link } from "react-router-dom";
-import { REVIEWS } from "@/entities/review";
-import { useFilterFeedStore } from "@/features/filter-feed";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
+import { listFeed, type FeedSort } from "@/entities/review";
+import { useAuthSession } from "@/features/auth";
+import { setFeedFilterOwner, useFilterFeedStore } from "@/features/filter-feed";
 import { MEDIA_TYPE_LABELS, type MediaType } from "@/shared/types";
-import { ReviewCard } from "@/widgets/ReviewCard";
+import { Button } from "@/shared/ui";
+import { RemoteReviewCard } from "@/widgets/RemoteReviewCard";
 import "./Feed.css";
 
 const FILTER_TYPES = Object.keys(MEDIA_TYPE_LABELS) as MediaType[];
+const PAGE_SIZE = 20;
 
 export function Feed() {
-  const { types, sort, setSort, toggleType } = useFilterFeedStore();
+  const { profile } = useAuthSession();
+  const { sort, mode, type, setSort, setMode, toggleType } = useFilterFeedStore();
 
-  const visibleReviews =
-    types.length === 0
-      ? REVIEWS
-      : REVIEWS.filter((review) =>
-          review.types.some((type) => types.includes(type)),
-        );
+  useEffect(() => {
+    setFeedFilterOwner(profile?.id);
+  }, [profile?.id]);
+
+  const feedQuery = useInfiniteQuery({
+    queryKey: ["feed", sort, mode, type],
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ pageParam, signal }) =>
+      listFeed(
+        {
+          sort,
+          mode,
+          type: type ?? undefined,
+          cursor: pageParam,
+          limit: PAGE_SIZE,
+        },
+        signal,
+      ),
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
+  });
+
+  const items = feedQuery.data?.pages.flatMap((page) => page.items) ?? [];
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const hasNextPage = feedQuery.hasNextPage;
+  const isFetchingNextPage = feedQuery.isFetchingNextPage;
+  const fetchNextPage = feedQuery.fetchNextPage;
+
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        if (!hasNextPage || isFetchingNextPage) return;
+        void fetchNextPage();
+      },
+      { rootMargin: "200px 0px" },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const followingActive = mode === "following";
 
   return (
     <section className="feed">
@@ -24,47 +68,86 @@ export function Feed() {
           Сортировка
           <select
             value={sort}
-            onChange={(event) =>
-              setSort(event.target.value as typeof sort)
-            }
+            onChange={(event) => setSort(event.target.value as FeedSort)}
           >
-            <option value="popular">Популярные</option>
+            <option value="new">Новые</option>
             <option value="views">По просмотрам</option>
             <option value="likes">По лайкам</option>
-            <option value="following">Подписки</option>
           </select>
         </label>
+
+        <button
+          type="button"
+          className={
+            followingActive ? "feed__chip feed__chip--active" : "feed__chip"
+          }
+          aria-pressed={followingActive}
+          onClick={() => setMode(followingActive ? "all" : "following")}
+        >
+          Подписки
+        </button>
       </div>
 
       <div className="feed__filters" role="list">
-        {FILTER_TYPES.map((type) => {
-          const active = types.includes(type);
+        {FILTER_TYPES.map((mediaType) => {
+          const active = type === mediaType;
           return (
             <button
-              key={type}
+              key={mediaType}
               type="button"
               role="listitem"
-              className={
-                active ? "feed__chip feed__chip--active" : "feed__chip"
-              }
-              onClick={() => toggleType(type)}
+              className={active ? "feed__chip feed__chip--active" : "feed__chip"}
+              aria-pressed={active}
+              onClick={() => toggleType(mediaType)}
             >
-              {MEDIA_TYPE_LABELS[type]}
+              {MEDIA_TYPE_LABELS[mediaType]}
             </button>
           );
         })}
       </div>
 
-      <div className="feed__list">
-        {visibleReviews.map((review) => (
-          <Link key={review.id} to={`/reviews/${review.id}`}>
-            <ReviewCard review={review} />
-          </Link>
-        ))}
-        {visibleReviews.length === 0 ? (
-          <p className="feed__empty">Нет обзоров по выбранным фильтрам.</p>
-        ) : null}
-      </div>
+      {feedQuery.isLoading ? (
+        <div className="feed__skeleton" aria-busy="true" aria-label="Загрузка ленты">
+          <div />
+          <div />
+          <div />
+        </div>
+      ) : null}
+
+      {feedQuery.isError ? (
+        <div className="feed__error" role="alert">
+          <p>Не удалось загрузить ленту.</p>
+          <Button type="button" variant="secondary" onClick={() => void feedQuery.refetch()}>
+            Повторить
+          </Button>
+        </div>
+      ) : null}
+
+      {!feedQuery.isLoading && !feedQuery.isError && items.length === 0 ? (
+        <p className="feed__empty" role="status">
+          {mode === "following"
+            ? "Пока нет обзоров от тех, на кого вы подписаны."
+            : "Нет обзоров по выбранным фильтрам."}
+        </p>
+      ) : null}
+
+      {items.length > 0 ? (
+        <ul className="feed__list">
+          {items.map((review) => (
+            <li key={review.id}>
+              <RemoteReviewCard review={review} showAuthor />
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      <div ref={sentinelRef} className="feed__sentinel" aria-hidden />
+
+      {feedQuery.isFetchingNextPage ? (
+        <p className="feed__loading-more" role="status">
+          Загрузка…
+        </p>
+      ) : null}
     </section>
   );
 }

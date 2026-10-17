@@ -29,6 +29,13 @@ describe("auth boundary", { concurrency: 1 }, () => {
     assert.throws(() => buildApiUrl("http://user:pass@localhost:8080", "/v1/profile"));
   });
 
+  test("accepts opaque base64 feed cursors as query values", () => {
+    const cursor = "eyJzIjoibmV3Ii+/padding==";
+    const url = buildApiUrl("http://localhost:8080", "/v1/feed", { cursor, sort: "new" });
+    assert.ok(url.includes("cursor="));
+    assert.ok(url.includes("sort=new"));
+  });
+
   test("accepts only compact JWTs", () => {
     assert.equal(isJwt(TOKEN), true);
     assert.equal(isJwt(`${TOKEN} extra`), false);

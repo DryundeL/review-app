@@ -6,7 +6,10 @@
 
 .feed__toolbar {
   display: flex;
-  justify-content: flex-end;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
 }
 
 .feed__sort {
@@ -54,9 +57,58 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .feed__empty {
   margin: 0;
   color: var(--color-muted);
+}
+
+.feed__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.feed__skeleton > div {
+  height: 108px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-surface) 70%, var(--color-border));
+  animation: feed-pulse 1.2s ease-in-out infinite;
+}
+
+.feed__error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  color: var(--color-muted);
+}
+
+.feed__error p {
+  margin: 0;
+}
+
+.feed__sentinel {
+  height: 1px;
+}
+
+.feed__loading-more {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+@keyframes feed-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
 }

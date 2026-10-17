@@ -28,9 +28,15 @@ const mediaObjectSchema = z.object({
   posterUrl: z.string().optional().nullable(),
 });
 
+const authorSchema = z.object({
+  id: uuid,
+  username: z.string(),
+});
+
 const reviewSummarySchema = z.object({
   id: uuid,
   authorId: uuid,
+  author: authorSchema.optional(),
   mediaObject: mediaObjectSchema,
   title: z.string().min(1).max(256),
   rating: z.number().int().min(1).max(10),
@@ -47,6 +53,7 @@ const reviewDetailSchema = reviewSummarySchema.extend({
 
 const listSchema = z.object({
   items: z.array(reviewSummarySchema),
+  nextCursor: z.string().nullable().optional(),
 });
 
 const catalogMediaSchema = z
@@ -115,7 +122,10 @@ export function parseRemoteReviewListText(text: string): RemoteReviewList {
   }
   const parsed = listSchema.safeParse(payload);
   if (!parsed.success) throw unexpectedResponseError();
-  return { items: parsed.data.items.map(mapSummary) };
+  return {
+    items: parsed.data.items.map(mapSummary),
+    nextCursor: parsed.data.nextCursor ?? null,
+  };
 }
 
 export function parseMediaObjectText(text: string): MediaObjectSummary {

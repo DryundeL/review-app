@@ -4,6 +4,11 @@
   align-items: center;
 }
 
+.user-header__actions {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
 .user-header__avatar {
   display: grid;
   place-items: center;

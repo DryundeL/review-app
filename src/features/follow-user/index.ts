@@ -1,2 +1,1 @@
-/** Placeholder public API for follow-user feature. */
-export {};
+export { useFollowUser } from "./model/useFollowUser";

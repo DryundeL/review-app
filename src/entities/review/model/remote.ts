@@ -16,10 +16,16 @@ export type MediaObjectSummary = {
   posterUrl?: string;
 };
 
+export type RemoteReviewAuthor = {
+  id: string;
+  username: string;
+};
+
 /** Элемент списка: без blocks, с флагом спойлеров и вложенным mediaObject. */
 export type RemoteReviewSummary = {
   id: string;
   authorId: string;
+  author?: RemoteReviewAuthor;
   mediaObject: MediaObjectSummary;
   title: string;
   rating: number;
@@ -35,7 +41,21 @@ export type RemoteReview = RemoteReviewSummary & {
   blocks: RemoteReviewBlock[];
 };
 
-export type RemoteReviewList = { items: RemoteReviewSummary[] };
+export type RemoteReviewList = {
+  items: RemoteReviewSummary[];
+  nextCursor?: string | null;
+};
+
+export type FeedSort = "new" | "views" | "likes";
+export type FeedMode = "all" | "following";
+
+export type ListFeedParams = {
+  sort?: FeedSort;
+  mode?: FeedMode;
+  type?: MediaType;
+  cursor?: string;
+  limit?: number;
+};
 
 /** В теле create/update по-прежнему id произведения. */
 export type CreateReviewInput = {

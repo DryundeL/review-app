@@ -1,4 +1,6 @@
-import { NavLink } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import { NavLink, useLocation } from "react-router-dom";
+import { refreshHomeFeed } from "@/shared/lib/refreshHome";
 import "./BottomNavigation.css";
 
 const links = [
@@ -10,6 +12,9 @@ const links = [
 ] as const;
 
 export function BottomNavigation() {
+  const location = useLocation();
+  const queryClient = useQueryClient();
+
   return (
     <nav className="bottom-nav" aria-label="Основная навигация">
       {links.map((link) => (
@@ -27,6 +32,12 @@ export function BottomNavigation() {
               .filter(Boolean)
               .join(" ")
           }
+          onClick={(event) => {
+            if (link.to !== "/") return;
+            if (location.pathname !== "/") return;
+            event.preventDefault();
+            refreshHomeFeed(queryClient);
+          }}
         >
           <NavIcon name={link.icon} />
         </NavLink>

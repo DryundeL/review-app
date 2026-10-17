@@ -19,6 +19,7 @@ export function AppRouter() {
           <Route path="create" element={<CreateReviewPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="profiles/:userId" element={<ProfilePage />} />
           <Route path="achievements" element={<AchievementsPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="reviews/:reviewId/edit" element={<CreateReviewPage />} />

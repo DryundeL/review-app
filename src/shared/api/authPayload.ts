@@ -27,6 +27,10 @@ const profileSchema = z.object({
   lastName: z.string(),
   languageCode: z.string(),
   isPremium: z.boolean(),
+  followersCount: z.number().int().nonnegative().optional(),
+  followingCount: z.number().int().nonnegative().optional(),
+  isFollowing: z.boolean().optional(),
+  isMe: z.boolean().optional(),
 });
 
 export type LoginChallenge = {
@@ -48,6 +52,10 @@ export type AuthProfile = {
   lastName: string;
   languageCode: string;
   isPremium: boolean;
+  followersCount: number;
+  followingCount: number;
+  isFollowing: boolean;
+  isMe: boolean;
 };
 
 export function parseTokenPayload(payload: unknown): string {
@@ -114,6 +122,10 @@ export function parseProfileText(text: string): AuthProfile {
     lastName: parsed.data.lastName,
     languageCode: parsed.data.languageCode,
     isPremium: parsed.data.isPremium,
+    followersCount: parsed.data.followersCount ?? 0,
+    followingCount: parsed.data.followingCount ?? 0,
+    isFollowing: parsed.data.isFollowing ?? false,
+    isMe: parsed.data.isMe ?? true,
   };
 }
 

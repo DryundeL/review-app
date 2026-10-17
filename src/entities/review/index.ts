@@ -18,8 +18,12 @@ export { matchesQuery } from "./model/search";
 export type { Review, ReviewBlock, ReviewComment } from "./model/types";
 export type {
   CreateReviewInput,
+  FeedMode,
+  FeedSort,
+  ListFeedParams,
   MediaObjectSummary,
   RemoteReview,
+  RemoteReviewAuthor,
   RemoteReviewBlock,
   RemoteReviewList,
   RemoteReviewSummary,
@@ -31,6 +35,7 @@ export {
   deleteReview,
   getMediaObject,
   getReview,
+  listFeed,
   listMediaObjects,
   listMyReviews,
   listUserReviews,

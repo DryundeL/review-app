@@ -1,1 +1,6 @@
-export type { SessionProfile, User } from "./model/types";
+export type { PublicProfile, SessionProfile, User } from "./model/types";
+export {
+  fetchPublicProfile,
+  followUser,
+  unfollowUser,
+} from "./api/profilesApi";

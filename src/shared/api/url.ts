@@ -1,5 +1,6 @@
 const QUERY_KEY = /^[a-zA-Z][a-zA-Z0-9_]{0,31}$/;
-const QUERY_VALUE = /^[\w\-.:@+]{0,200}$/;
+/** Opaque cursors may be base64 (`=`, `/`) and longer than typical ids. */
+const QUERY_VALUE = /^[\w\-.:@+/=]{0,1024}$/;
 
 export type ApiQuery = Record<string, string | number | undefined>;
 

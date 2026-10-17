@@ -1,1 +1,6 @@
-export { useFilterFeedStore, type FeedSort } from "./model/store";
+export {
+  setFeedFilterOwner,
+  useFilterFeedStore,
+  type FeedMode,
+  type FeedSort,
+} from "./model/store";

@@ -1,10 +1,13 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import logoUrl from "@/assets/review-hub-logo.png";
+import { refreshHomeFeed } from "@/shared/lib/refreshHome";
 import { BottomNavigation } from "@/widgets/BottomNavigation";
 import "./AppShell.css";
 
 export function AppShell() {
   const { pathname } = useLocation();
+  const queryClient = useQueryClient();
   const hideNav =
     pathname === "/create" ||
     pathname.startsWith("/reviews/");
@@ -17,7 +20,16 @@ export function AppShell() {
             Назад
           </Link>
         ) : (
-          <NavLink to="/" className="app-shell__brand" end>
+          <NavLink
+            to="/"
+            className="app-shell__brand"
+            end
+            onClick={(event) => {
+              if (pathname !== "/") return;
+              event.preventDefault();
+              refreshHomeFeed(queryClient);
+            }}
+          >
             <img className="app-shell__logo" src={logoUrl} alt="Review Hub" width={2172} height={724} />
           </NavLink>
         )}

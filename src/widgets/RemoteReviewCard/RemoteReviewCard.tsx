@@ -8,6 +8,7 @@ import "./RemoteReviewCard.css";
 type RemoteReviewCardProps = {
   review: RemoteReviewSummary;
   canEdit?: boolean;
+  showAuthor?: boolean;
   onDelete?: (reviewId: string) => Promise<void> | void;
   deleting?: boolean;
 };
@@ -15,6 +16,7 @@ type RemoteReviewCardProps = {
 export function RemoteReviewCard({
   review,
   canEdit = false,
+  showAuthor = false,
   onDelete,
   deleting = false,
 }: RemoteReviewCardProps) {
@@ -22,6 +24,10 @@ export function RemoteReviewCard({
   const media = review.mediaObject;
   const mediaTitle = media.title.trim() || "Произведение";
   const typeLabel = MEDIA_TYPE_LABELS[media.type];
+  const authorId = review.author?.id ?? review.authorId;
+  const authorLabel = review.author?.username.trim()
+    ? `@${review.author.username.trim()}`
+    : "Автор";
 
   return (
     <article className="remote-review">
@@ -56,6 +62,12 @@ export function RemoteReviewCard({
           <h2 className="remote-review__title">
             <Link to={`/reviews/${review.id}`}>{review.title}</Link>
           </h2>
+
+          {showAuthor ? (
+            <p className="remote-review__author">
+              <Link to={`/profiles/${authorId}`}>{authorLabel}</Link>
+            </p>
+          ) : null}
 
           <p className="remote-review__media">{mediaTitle}</p>
 

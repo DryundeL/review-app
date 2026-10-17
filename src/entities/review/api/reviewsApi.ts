@@ -1,6 +1,7 @@
 import { apiClient, ApiError } from "@/shared/api";
 import type {
   CreateReviewInput,
+  ListFeedParams,
   MediaObjectSummary,
   RemoteReview,
   RemoteReviewList,
@@ -86,8 +87,24 @@ export function listUserReviews(
   const id = assertUuid(userId);
   return apiClient(`/v1/profiles/${id}/reviews`, {
     method: "GET",
-    auth: false,
     query: { limit: clampLimit(limit) },
+    signal,
+    parse: parseRemoteReviewListText,
+  });
+}
+
+export function listFeed(params: ListFeedParams = {}, signal?: AbortSignal): Promise<RemoteReviewList> {
+  const sort = params.sort ?? "new";
+  const mode = params.mode ?? "all";
+  return apiClient("/v1/feed", {
+    method: "GET",
+    query: {
+      sort,
+      mode,
+      type: params.type,
+      cursor: params.cursor,
+      limit: clampLimit(params.limit),
+    },
     signal,
     parse: parseRemoteReviewListText,
   });
