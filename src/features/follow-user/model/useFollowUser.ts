@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { followUser, unfollowUser, type PublicProfile } from "@/entities/user";
-import { ApiError } from "@/shared/api";
+import type { PublicProfile } from "@/entities/user";
+import { toggleFollow } from "./toggleFollow";
 
 type FollowVars = { userId: string; nextFollowing: boolean };
 
@@ -8,23 +8,7 @@ export function useFollowUser(profileQueryKey: readonly unknown[]) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ userId, nextFollowing }: FollowVars) => {
-      if (nextFollowing) {
-        try {
-          await followUser(userId);
-        } catch (error) {
-          if (error instanceof ApiError && error.status === 409) return;
-          throw error;
-        }
-        return;
-      }
-      try {
-        await unfollowUser(userId);
-      } catch (error) {
-        if (error instanceof ApiError && error.status === 404) return;
-        throw error;
-      }
-    },
+    mutationFn: ({ userId, nextFollowing }: FollowVars) => toggleFollow(userId, nextFollowing),
     onSuccess: (_data, { nextFollowing }) => {
       queryClient.setQueryData<PublicProfile>(profileQueryKey, (prev) => {
         if (!prev || prev.isFollowing === nextFollowing) return prev;
@@ -36,5 +20,12 @@ export function useFollowUser(profileQueryKey: readonly unknown[]) {
         };
       });
     },
+  });
+}
+
+/** Follow без привязки к query-кэшу профиля (лента). */
+export function useFollowToggle() {
+  return useMutation({
+    mutationFn: ({ userId, nextFollowing }: FollowVars) => toggleFollow(userId, nextFollowing),
   });
 }

@@ -1,11 +1,11 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { listFeed, type FeedSort } from "@/entities/review";
 import { useAuthSession } from "@/features/auth";
 import { setFeedFilterOwner, useFilterFeedStore } from "@/features/filter-feed";
 import { MEDIA_TYPE_LABELS, type MediaType } from "@/shared/types";
 import { Button } from "@/shared/ui";
-import { RemoteReviewCard } from "@/widgets/RemoteReviewCard";
+import { FeedReviewItem } from "./FeedReviewItem";
 import "./Feed.css";
 
 const FILTER_TYPES = Object.keys(MEDIA_TYPE_LABELS) as MediaType[];
@@ -14,10 +14,15 @@ const PAGE_SIZE = 20;
 export function Feed() {
   const { profile } = useAuthSession();
   const { sort, mode, type, setSort, setMode, toggleType } = useFilterFeedStore();
+  const [followByAuthor, setFollowByAuthor] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     setFeedFilterOwner(profile?.id);
   }, [profile?.id]);
+
+  useEffect(() => {
+    setFollowByAuthor({});
+  }, [sort, mode, type]);
 
   const feedQuery = useInfiniteQuery({
     queryKey: ["feed", sort, mode, type],
@@ -133,11 +138,25 @@ export function Feed() {
 
       {items.length > 0 ? (
         <ul className="feed__list">
-          {items.map((review) => (
-            <li key={review.id}>
-              <RemoteReviewCard review={review} showAuthor />
-            </li>
-          ))}
+          {items.map((review) => {
+            const authorId = review.author?.id ?? review.authorId;
+            const fromApi =
+              review.author?.isFollowing ?? review.isFollowing ?? false;
+            const isFollowing =
+              authorId in followByAuthor ? followByAuthor[authorId] : fromApi;
+            return (
+              <li key={review.id}>
+                <FeedReviewItem
+                  review={review}
+                  viewerId={profile?.id ?? null}
+                  isFollowing={isFollowing}
+                  onFollowChange={(id, next) =>
+                    setFollowByAuthor((prev) => ({ ...prev, [id]: next }))
+                  }
+                />
+              </li>
+            );
+          })}
         </ul>
       ) : null}
 

@@ -93,20 +93,6 @@
   color: var(--color-gold);
 }
 
-.remote-review__author {
-  margin: 0;
-  font-size: 0.8125rem;
-}
-
-.remote-review__author a {
-  color: var(--color-muted);
-}
-
-.remote-review__author a:hover,
-.remote-review__author a:focus-visible {
-  color: var(--color-accent);
-}
-
 .remote-review__media {
   margin: 0;
   color: var(--color-muted);

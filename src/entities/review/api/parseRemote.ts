@@ -31,6 +31,7 @@ const mediaObjectSchema = z.object({
 const authorSchema = z.object({
   id: uuid,
   username: z.string(),
+  isFollowing: z.boolean().optional(),
 });
 
 const reviewSummarySchema = z.object({
@@ -45,6 +46,7 @@ const reviewSummarySchema = z.object({
   likesCount: z.number().int().nonnegative(),
   dislikesCount: z.number().int().nonnegative(),
   viewsCount: z.number().int().nonnegative(),
+  isFollowing: z.boolean().optional(),
 });
 
 const reviewDetailSchema = reviewSummarySchema.extend({

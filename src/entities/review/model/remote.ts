@@ -19,6 +19,8 @@ export type MediaObjectSummary = {
 export type RemoteReviewAuthor = {
   id: string;
   username: string;
+  /** Подписан ли текущий viewer на автора (на ленте / списках). */
+  isFollowing?: boolean;
 };
 
 /** Элемент списка: без blocks, с флагом спойлеров и вложенным mediaObject. */
@@ -34,6 +36,8 @@ export type RemoteReviewSummary = {
   likesCount: number;
   dislikesCount: number;
   viewsCount: number;
+  /** Алиас author.isFollowing, если бэкенд кладёт флаг на item. */
+  isFollowing?: boolean;
 };
 
 /** GET /reviews/:id и ответы create/update — полные блоки. */

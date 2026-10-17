@@ -8,7 +8,8 @@ import "./RemoteReviewCard.css";
 type RemoteReviewCardProps = {
   review: RemoteReviewSummary;
   canEdit?: boolean;
-  showAuthor?: boolean;
+  /** Лента: только published — иконку статуса не показываем. */
+  hideStatus?: boolean;
   onDelete?: (reviewId: string) => Promise<void> | void;
   deleting?: boolean;
 };
@@ -16,7 +17,7 @@ type RemoteReviewCardProps = {
 export function RemoteReviewCard({
   review,
   canEdit = false,
-  showAuthor = false,
+  hideStatus = false,
   onDelete,
   deleting = false,
 }: RemoteReviewCardProps) {
@@ -24,10 +25,6 @@ export function RemoteReviewCard({
   const media = review.mediaObject;
   const mediaTitle = media.title.trim() || "Произведение";
   const typeLabel = MEDIA_TYPE_LABELS[media.type];
-  const authorId = review.author?.id ?? review.authorId;
-  const authorLabel = review.author?.username.trim()
-    ? `@${review.author.username.trim()}`
-    : "Автор";
 
   return (
     <article className="remote-review">
@@ -46,28 +43,24 @@ export function RemoteReviewCard({
             {review.hasSpoilers ? (
               <span className="remote-review__spoiler-flag">есть спойлеры</span>
             ) : null}
-            <span
-              className={
-                review.status === "draft"
-                  ? "remote-review__status remote-review__status--draft"
-                  : "remote-review__status remote-review__status--live"
-              }
-              title={review.status === "draft" ? "Черновик" : "Опубликован"}
-              aria-label={review.status === "draft" ? "Черновик" : "Опубликован"}
-            >
-              {review.status === "draft" ? <DraftIcon /> : <PublishedIcon />}
-            </span>
+            {!hideStatus ? (
+              <span
+                className={
+                  review.status === "draft"
+                    ? "remote-review__status remote-review__status--draft"
+                    : "remote-review__status remote-review__status--live"
+                }
+                title={review.status === "draft" ? "Черновик" : "Опубликован"}
+                aria-label={review.status === "draft" ? "Черновик" : "Опубликован"}
+              >
+                {review.status === "draft" ? <DraftIcon /> : <PublishedIcon />}
+              </span>
+            ) : null}
           </div>
 
           <h2 className="remote-review__title">
             <Link to={`/reviews/${review.id}`}>{review.title}</Link>
           </h2>
-
-          {showAuthor ? (
-            <p className="remote-review__author">
-              <Link to={`/profiles/${authorId}`}>{authorLabel}</Link>
-            </p>
-          ) : null}
 
           <p className="remote-review__media">{mediaTitle}</p>
 

@@ -1,1 +1,1 @@
-export { useFollowUser } from "./model/useFollowUser";
+export { useFollowToggle, useFollowUser } from "./model/useFollowUser";
