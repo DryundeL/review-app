@@ -1,63 +1,73 @@
 .profile-page {
-  gap: var(--space-4);
-}
-
-.profile-page__note {
-  margin: 0;
-  color: var(--color-muted);
-  font-size: 0.8125rem;
-}
-
-.profile-page__ledger {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-4);
-  padding: var(--space-4) 0;
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.profile-page__ledger-num {
-  display: block;
-  color: var(--color-text);
-  font-size: 1.75rem;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.04em;
-  line-height: 1;
-}
-
-.profile-page__ledger-label {
-  color: var(--color-muted);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.profile-page__section-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
   gap: var(--space-3);
 }
 
-.profile-page__section-head h2 {
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+.profile-page__tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 0 calc(var(--space-4) * -1);
+  border-bottom: 1px solid var(--color-border);
 }
 
-.profile-page__write {
-  color: var(--color-accent);
+.profile-page__tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 0;
+  background: transparent;
+  color: var(--color-muted);
   font-size: 0.875rem;
-  font-weight: 700;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.profile-page__tab:hover,
+.profile-page__tab:focus-visible {
+  background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+  color: var(--color-text);
+}
+
+.profile-page__tab--active {
+  color: var(--color-text);
+}
+
+.profile-page__tab--active::after {
+  content: "";
+  position: absolute;
+  right: 16%;
+  bottom: 0;
+  left: 16%;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--color-accent);
+}
+
+.profile-page__tab-count {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.profile-page__tab--active .profile-page__tab-count {
+  color: var(--color-accent);
+}
+
+.profile-page__follow {
+  min-height: 32px;
+  padding: 0 var(--space-3);
+  font-size: 0.8125rem;
 }
 
 .profile-page__list {
   display: flex;
   flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .profile-page__empty {

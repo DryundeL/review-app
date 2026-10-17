@@ -5,9 +5,10 @@ import "./UserHeader.css";
 type UserHeaderProps = {
   user: User;
   actions?: ReactNode;
+  note?: ReactNode;
 };
 
-export function UserHeader({ user, actions }: UserHeaderProps) {
+export function UserHeader({ user, actions, note }: UserHeaderProps) {
   const initial = (user.displayName.trim() || "?").slice(0, 1).toUpperCase();
 
   return (
@@ -16,11 +17,21 @@ export function UserHeader({ user, actions }: UserHeaderProps) {
         {initial}
       </div>
       <div className="user-header__info">
-        <h1 className="user-header__name">{user.displayName}</h1>
+        <div className="user-header__title-row">
+          <h1 className="user-header__name">{user.displayName}</h1>
+          {note ? <span className="user-header__note">{note}</span> : null}
+        </div>
         {user.username ? <p className="user-header__meta">@{user.username}</p> : null}
         <p className="user-header__stats">
-          {user.followersCount} подписчиков · {user.followingCount} подписок
-          {user.popularityScore > 0 ? ` · Популярность ${user.popularityScore}` : null}
+          <span>{user.followersCount} подп.</span>
+          <span aria-hidden>·</span>
+          <span>{user.followingCount} подписок</span>
+          {user.popularityScore > 0 ? (
+            <>
+              <span aria-hidden>·</span>
+              <span>Поп. {user.popularityScore}</span>
+            </>
+          ) : null}
         </p>
       </div>
       {actions ? <div className="user-header__actions">{actions}</div> : null}

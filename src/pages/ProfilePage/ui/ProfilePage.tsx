@@ -21,6 +21,8 @@ import { RemoteReviewCard } from "@/widgets/RemoteReviewCard";
 import { UserHeader } from "@/widgets/UserHeader";
 import "./ProfilePage.css";
 
+type ReviewTab = "published" | "drafts";
+
 export function ProfilePage() {
   const { userId: routeUserId } = useParams<{ userId?: string }>();
   const { profile: sessionProfile } = useAuthSession();
@@ -37,6 +39,7 @@ export function ProfilePage() {
 function OwnProfileView({ profile }: { profile: SessionProfile }) {
   const queryClient = useQueryClient();
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [tab, setTab] = useState<ReviewTab>("published");
 
   const reviewsQuery = useQuery({
     queryKey: ["my-reviews"],
@@ -54,37 +57,26 @@ function OwnProfileView({ profile }: { profile: SessionProfile }) {
     },
   });
 
-  const user = toUser(profile);
   const reviews = reviewsQuery.data?.items ?? [];
-  const published = reviews.filter((item) => item.status === "published").length;
-  const drafts = reviews.length - published;
+  const { published, drafts, visible } = splitReviews(reviews, tab);
 
   return (
     <section className="profile-page screen">
-      <UserHeader user={user} />
-      {profile.isPremium ? <p className="profile-page__note">Telegram Premium</p> : null}
+      <UserHeader
+        user={toUser(profile)}
+        note={profile.isPremium ? "Premium" : null}
+      />
 
-      <div className="profile-page__ledger" aria-label="Сводка обзоров">
-        <div>
-          <span className="profile-page__ledger-num">{published}</span>
-          <span className="profile-page__ledger-label">опубликовано</span>
-        </div>
-        <div>
-          <span className="profile-page__ledger-num">{drafts}</span>
-          <span className="profile-page__ledger-label">черновики</span>
-        </div>
-      </div>
-
-      <header className="profile-page__section-head">
-        <h2>Мои обзоры</h2>
-        <Link className="profile-page__write" to="/create">
-          Написать
-        </Link>
-      </header>
+      <ReviewTabs
+        tab={tab}
+        onChange={setTab}
+        publishedCount={published.length}
+        draftsCount={drafts.length}
+      />
 
       <ReviewsBlock
         reviewsQuery={reviewsQuery}
-        reviews={reviews}
+        reviews={visible}
         canEdit
         deleteError={deleteError}
         deletingId={
@@ -94,6 +86,7 @@ function OwnProfileView({ profile }: { profile: SessionProfile }) {
         }
         onDelete={(id) => deleteMutation.mutateAsync(id)}
         emptyOwn
+        emptyTab={tab}
       />
     </section>
   );
@@ -109,6 +102,7 @@ function PublicProfileView({
   const queryClient = useQueryClient();
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [followError, setFollowError] = useState<string | null>(null);
+  const [tab, setTab] = useState<ReviewTab>("published");
   const profileKey = ["profile", userId] as const;
 
   const profileQuery = useQuery({
@@ -168,19 +162,20 @@ function PublicProfileView({
     );
   }
 
-  const user = toUser(profile);
   const reviews = reviewsQuery.data?.items ?? [];
-  const published = reviews.filter((item) => item.status === "published").length;
-  const drafts = isMe ? reviews.length - published : 0;
+  const { published, drafts, visible } = splitReviews(reviews, isMe ? tab : "published");
+  const list = isMe ? visible : published;
 
   return (
     <section className="profile-page screen">
       <UserHeader
-        user={user}
+        user={toUser(profile)}
+        note={isMe && profile.isPremium ? "Premium" : null}
         actions={
           isMe ? null : (
             <Button
               type="button"
+              className="profile-page__follow"
               variant={profile.isFollowing ? "secondary" : "primary"}
               disabled={followMutation.isPending}
               aria-pressed={profile.isFollowing}
@@ -208,35 +203,18 @@ function PublicProfileView({
         </p>
       ) : null}
 
-      {isMe && profile.isPremium ? (
-        <p className="profile-page__note">Telegram Premium</p>
-      ) : null}
-
       {isMe ? (
-        <div className="profile-page__ledger" aria-label="Сводка обзоров">
-          <div>
-            <span className="profile-page__ledger-num">{published}</span>
-            <span className="profile-page__ledger-label">опубликовано</span>
-          </div>
-          <div>
-            <span className="profile-page__ledger-num">{drafts}</span>
-            <span className="profile-page__ledger-label">черновики</span>
-          </div>
-        </div>
+        <ReviewTabs
+          tab={tab}
+          onChange={setTab}
+          publishedCount={published.length}
+          draftsCount={drafts.length}
+        />
       ) : null}
-
-      <header className="profile-page__section-head">
-        <h2>{isMe ? "Мои обзоры" : "Обзоры"}</h2>
-        {isMe ? (
-          <Link className="profile-page__write" to="/create">
-            Написать
-          </Link>
-        ) : null}
-      </header>
 
       <ReviewsBlock
         reviewsQuery={reviewsQuery}
-        reviews={reviews}
+        reviews={list}
         canEdit={isMe}
         deleteError={deleteError}
         deletingId={
@@ -246,8 +224,54 @@ function PublicProfileView({
         }
         onDelete={(id) => deleteMutation.mutateAsync(id)}
         emptyOwn={isMe}
+        emptyTab={isMe ? tab : "published"}
       />
     </section>
+  );
+}
+
+function ReviewTabs({
+  tab,
+  onChange,
+  publishedCount,
+  draftsCount,
+}: {
+  tab: ReviewTab;
+  onChange: (tab: ReviewTab) => void;
+  publishedCount: number;
+  draftsCount: number;
+}) {
+  return (
+    <div className="profile-page__tabs" role="tablist" aria-label="Обзоры">
+      <button
+        type="button"
+        role="tab"
+        aria-selected={tab === "published"}
+        className={
+          tab === "published"
+            ? "profile-page__tab profile-page__tab--active"
+            : "profile-page__tab"
+        }
+        onClick={() => onChange("published")}
+      >
+        Опубликовано
+        <span className="profile-page__tab-count">{publishedCount}</span>
+      </button>
+      <button
+        type="button"
+        role="tab"
+        aria-selected={tab === "drafts"}
+        className={
+          tab === "drafts"
+            ? "profile-page__tab profile-page__tab--active"
+            : "profile-page__tab"
+        }
+        onClick={() => onChange("drafts")}
+      >
+        Черновики
+        <span className="profile-page__tab-count">{draftsCount}</span>
+      </button>
+    </div>
   );
 }
 
@@ -259,6 +283,7 @@ function ReviewsBlock({
   deletingId,
   onDelete,
   emptyOwn,
+  emptyTab,
 }: {
   reviewsQuery: { isLoading: boolean; isError: boolean };
   reviews: RemoteReviewSummary[];
@@ -267,6 +292,7 @@ function ReviewsBlock({
   deletingId: string | null;
   onDelete: (id: string) => Promise<void>;
   emptyOwn: boolean;
+  emptyTab: ReviewTab;
 }) {
   return (
     <>
@@ -292,10 +318,14 @@ function ReviewsBlock({
       {!reviewsQuery.isLoading && !reviewsQuery.isError && reviews.length === 0 ? (
         <div className="profile-page__empty" role="status">
           {emptyOwn ? (
-            <>
-              <p>Пока пусто — ни одного обзора.</p>
-              <Link to="/create">Создать первый</Link>
-            </>
+            emptyTab === "drafts" ? (
+              <p>Черновиков пока нет.</p>
+            ) : (
+              <>
+                <p>Пока нет опубликованных обзоров.</p>
+                <Link to="/create">Создать первый</Link>
+              </>
+            )
           ) : (
             <p>У пользователя пока нет опубликованных обзоров.</p>
           )}
@@ -318,6 +348,16 @@ function ReviewsBlock({
       ) : null}
     </>
   );
+}
+
+function splitReviews(reviews: RemoteReviewSummary[], tab: ReviewTab) {
+  const published = reviews.filter((item) => item.status === "published");
+  const drafts = reviews.filter((item) => item.status === "draft");
+  return {
+    published,
+    drafts,
+    visible: tab === "published" ? published : drafts,
+  };
 }
 
 function toUser(profile: SessionProfile | PublicProfile): User {
