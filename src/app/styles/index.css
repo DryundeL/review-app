@@ -17,6 +17,7 @@
   --space-4: 16px;
   --space-5: 24px;
   --font-sans: "Manrope", "Segoe UI", sans-serif;
+  --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --shell: 480px;
 }

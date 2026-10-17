@@ -7,11 +7,37 @@ const defaultTheme: PlatformTheme = {
   buttonTextColor: "#ffffff",
 };
 
+let safeAreaListenersBound = false;
+
 export function readTelegramInitData(): string | null {
   if (typeof window === "undefined") return null;
   const initData = window.Telegram?.WebApp?.initData;
   if (typeof initData !== "string" || initData.length === 0) return null;
   return initData;
+}
+
+/** safeArea + contentSafeArea → CSS vars, иначе шапка/кнопки под системным UI Telegram. */
+function syncTelegramSafeAreaVars(webApp: TelegramWebApp): void {
+  const safe = webApp.safeAreaInset;
+  const content = webApp.contentSafeAreaInset;
+  const top = (safe?.top ?? 0) + (content?.top ?? 0);
+  const bottom = (safe?.bottom ?? 0) + (content?.bottom ?? 0);
+
+  const root = document.documentElement;
+  root.style.setProperty("--safe-top", `${top}px`);
+  root.style.setProperty("--safe-bottom", `${bottom}px`);
+}
+
+function bindTelegramSafeAreaSync(webApp: TelegramWebApp): void {
+  syncTelegramSafeAreaVars(webApp);
+
+  if (safeAreaListenersBound || typeof webApp.onEvent !== "function") return;
+
+  const sync = () => syncTelegramSafeAreaVars(webApp);
+  webApp.onEvent("safeAreaChanged", sync);
+  webApp.onEvent("contentSafeAreaChanged", sync);
+  webApp.onEvent("fullscreenChanged", sync);
+  safeAreaListenersBound = true;
 }
 
 /** Старт Mini App: ready → expand → fullscreen (Bot API 8.0+), иначе остаётся expand. */
@@ -29,6 +55,7 @@ function bootstrapTelegramWebApp(webApp: TelegramWebApp): void {
 
   webApp.setHeaderColor?.("secondary_bg_color");
   webApp.setBackgroundColor?.("bg_color");
+  bindTelegramSafeAreaSync(webApp);
 }
 
 export function createTelegramAdapter(): PlatformAdapter | null {

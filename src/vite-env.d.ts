@@ -28,15 +28,32 @@ type TelegramThemeParams = {
 type TelegramHeaderColor = "bg_color" | "secondary_bg_color" | `#${string}`;
 type TelegramBackgroundColor = "bg_color" | "secondary_bg_color" | `#${string}`;
 
+type TelegramSafeAreaInset = {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+};
+
+type TelegramWebAppEvent =
+  | "safeAreaChanged"
+  | "contentSafeAreaChanged"
+  | "fullscreenChanged";
+
 type TelegramWebApp = {
   initData: string;
   initDataUnsafe?: { user?: TelegramWebAppUser };
   themeParams?: TelegramThemeParams;
+  isFullscreen?: boolean;
+  safeAreaInset?: TelegramSafeAreaInset;
+  contentSafeAreaInset?: TelegramSafeAreaInset;
   ready: () => void;
   expand: () => void;
   requestFullscreen?: () => void;
   setHeaderColor?: (color: TelegramHeaderColor) => void;
   setBackgroundColor?: (color: TelegramBackgroundColor) => void;
+  onEvent?: (eventType: TelegramWebAppEvent, callback: () => void) => void;
+  offEvent?: (eventType: TelegramWebAppEvent, callback: () => void) => void;
   openLink: (url: string) => void;
   HapticFeedback?: {
     impactOccurred: (style: "light" | "medium" | "heavy") => void;
