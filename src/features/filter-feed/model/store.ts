@@ -9,6 +9,7 @@ type FilterFeedState = {
   type: MediaType | null;
   setSort: (sort: FeedSort) => void;
   setMode: (mode: FeedMode) => void;
+  setType: (type: MediaType) => void;
   toggleType: (type: MediaType) => void;
   clearType: () => void;
 };
@@ -39,6 +40,7 @@ export const useFilterFeedStore = create<FilterFeedState>()(
       type: null,
       setSort: (sort) => set({ sort }),
       setMode: (mode) => set({ mode }),
+      setType: (type) => set({ type }),
       toggleType: (type) =>
         set((state) => ({
           type: state.type === type ? null : type,
