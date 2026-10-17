@@ -1,9 +1,18 @@
 const QUERY_KEY = /^[a-zA-Z][a-zA-Z0-9_]{0,31}$/;
+const QUERY_VALUE_MAX = 1024;
+
 /**
  * Opaque cursors (base64) and search substrings (Unicode titles).
  * Values are still encoded by URLSearchParams; reject only control chars.
  */
-const QUERY_VALUE = /^[^\x00-\x1F\x7F]{0,1024}$/;
+function isAllowedQueryValue(text: string): boolean {
+  if (text.length > QUERY_VALUE_MAX) return false;
+  for (let i = 0; i < text.length; i++) {
+    const code = text.charCodeAt(i);
+    if (code <= 0x1f || code === 0x7f) return false;
+  }
+  return true;
+}
 
 export type ApiQuery = Record<string, string | number | undefined>;
 
@@ -55,7 +64,7 @@ export function appendQuery(url: string, query?: ApiQuery): string {
     if (value === undefined) continue;
     if (!QUERY_KEY.test(key)) throw new Error("Invalid query key");
     const text = String(value);
-    if (!QUERY_VALUE.test(text)) throw new Error("Invalid query value");
+    if (!isAllowedQueryValue(text)) throw new Error("Invalid query value");
     params.set(key, text);
   }
 
