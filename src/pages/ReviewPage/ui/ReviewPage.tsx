@@ -1,9 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getReview, viewReview, voteReview } from "@/entities/review";
 import { useAuthSession } from "@/features/auth";
 import { ApiError } from "@/shared/api";
+import { usePageMeta } from "@/shared/hooks";
+import { truncateMeta, type PageMeta } from "@/shared/lib/pageMeta";
+import { safeHttpsUrl } from "@/shared/lib/safeHttpsUrl";
 import { MEDIA_TYPE_LABELS } from "@/shared/types";
 import { Button, MediaPoster, SpoilerText } from "@/shared/ui";
 import "./ReviewPage.css";
@@ -19,6 +22,27 @@ export function ReviewPage() {
     enabled: Boolean(reviewId),
     retry: false,
   });
+
+  const pageMeta = useMemo((): PageMeta => {
+    const path = reviewId ? `/reviews/${reviewId}` : "/reviews";
+    if (!reviewQuery.data) {
+      return { path, title: "Обзор", noindex: reviewQuery.isError };
+    }
+    const review = reviewQuery.data;
+    const mediaTitle = review.mediaObject.title.trim() || "Произведение";
+    const draft = review.status !== "published";
+    return {
+      path,
+      title: review.title.trim() || mediaTitle,
+      description: truncateMeta(
+        `${mediaTitle} · оценка ${review.rating}/10. ${review.title}`.trim(),
+      ),
+      image: safeHttpsUrl(review.mediaObject.posterUrl),
+      noindex: draft,
+    };
+  }, [reviewId, reviewQuery.data, reviewQuery.isError]);
+
+  usePageMeta(pageMeta);
 
   useEffect(() => {
     if (!reviewId || reviewQuery.data?.status !== "published") return;

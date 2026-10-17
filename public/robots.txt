@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /create
+Disallow: /notifications
+Disallow: /settings
+Disallow: /achievements
+Disallow: /profile
+Disallow: /*/edit
+
+Sitemap: https://review-hub.ru/sitemap.xml

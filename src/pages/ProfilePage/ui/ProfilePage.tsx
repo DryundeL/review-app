@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   deleteReview,
@@ -16,6 +16,8 @@ import {
 import { useAuthSession } from "@/features/auth";
 import { useFollowUser } from "@/features/follow-user";
 import { ApiError } from "@/shared/api";
+import { usePageMeta } from "@/shared/hooks";
+import { truncateMeta, type PageMeta } from "@/shared/lib/pageMeta";
 import { Button } from "@/shared/ui";
 import { RemoteReviewCard } from "@/widgets/RemoteReviewCard";
 import { UserHeader } from "@/widgets/UserHeader";
@@ -114,6 +116,21 @@ function PublicProfileView({
   const isMe =
     profile?.isMe === true ||
     (sessionProfile !== null && sessionProfile.id === userId);
+
+  const pageMeta = useMemo((): PageMeta => {
+    const path = `/profiles/${userId}`;
+    if (!profileQuery.data) {
+      return { path, title: "Профиль", noindex: profileQuery.isError };
+    }
+    const name = displayName(profileQuery.data);
+    return {
+      path,
+      title: name,
+      description: truncateMeta(`Обзоры и профиль ${name} в Review Hub.`),
+    };
+  }, [userId, profileQuery.data, profileQuery.isError]);
+
+  usePageMeta(pageMeta);
 
   const reviewsQuery = useQuery({
     queryKey: isMe ? ["my-reviews"] : ["user-reviews", userId],

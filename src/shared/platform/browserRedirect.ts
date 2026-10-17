@@ -1,5 +1,5 @@
-import { appConfig } from "@/shared/config";
-import { readTelegramInitData } from "./telegram";
+import { appConfig } from "../config/index.ts";
+import { readTelegramInitData } from "./telegram.ts";
 
 const TELEGRAM_HOSTS = new Set(["t.me", "telegram.me"]);
 
@@ -36,15 +36,23 @@ function isMobileBrowser(): boolean {
   );
 }
 
+/** Краулеры и превью-боты не должны уезжать в t.me — иначе нет индекса и OG. */
+export function isSearchCrawler(userAgent: string): boolean {
+  return /Googlebot|Google-InspectionTool|bingbot|Yandex(Bot|Images|Webmaster)|DuckDuckBot|Baiduspider|Applebot|facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Slackbot|Discordbot|TelegramBot|WhatsApp|SemrushBot|AhrefsBot/i.test(
+    userAgent,
+  );
+}
+
 /**
  * Пока нет десктопной версии: десктопный браузер → редирект в Telegram-бота.
- * Мобильный браузер, Mini App и localhost — открываем сайт как есть.
+ * Мобильный браузер, Mini App, краулеры и localhost — открываем сайт как есть.
  * @returns true, если уходим в Telegram (приложение не монтировать).
  */
 export function redirectBrowserToTelegramIfNeeded(): boolean {
   if (typeof window === "undefined") return false;
   if (import.meta.env.DEV || isLocalDevHost(window.location.hostname)) return false;
   if (readTelegramInitData()) return false;
+  if (isSearchCrawler(navigator.userAgent)) return false;
   if (isMobileBrowser()) return false;
 
   const botUrl = appConfig.telegramBotUrl;

@@ -1,6 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import logoUrl from "@/assets/review-hub-logo.png";
+import { usePageMeta } from "@/shared/hooks";
+import { metaForPath } from "@/shared/lib/pageMeta";
 import { refreshHomeFeed } from "@/shared/lib/refreshHome";
 import { BottomNavigation } from "@/widgets/BottomNavigation";
 import "./AppShell.css";
@@ -8,6 +10,10 @@ import "./AppShell.css";
 export function AppShell() {
   const { pathname } = useLocation();
   const queryClient = useQueryClient();
+  // Обзор и публичный профиль ставят meta сами — иначе shell перетрёт после их effect.
+  const pageOwnsMeta =
+    /^\/reviews\/[^/]+$/.test(pathname) || pathname.startsWith("/profiles/");
+  usePageMeta(pageOwnsMeta ? null : metaForPath(pathname));
   const hideNav =
     pathname === "/create" ||
     pathname.startsWith("/reviews/");

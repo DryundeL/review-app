@@ -21,6 +21,8 @@ function readTelegramBotUrl(): string {
 export const appConfig = {
   apiBaseUrl: readApiBaseUrl(),
   telegramBotUrl: readTelegramBotUrl(),
+  /** Публичный origin для canonical / OG / sitemap. */
+  siteUrl: "https://review-hub.ru",
   feedPageSize: 10,
   maxReviewMedia: 5,
 } as const;
