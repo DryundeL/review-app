@@ -1,7 +1,7 @@
 import {
   createContext,
   useContext,
-  useEffect,
+  useLayoutEffect,
   useMemo,
   type ReactNode,
 } from "react";
@@ -21,7 +21,8 @@ export function PlatformProvider({ children }: PlatformProviderProps) {
     [],
   );
 
-  useEffect(() => {
+  // useLayoutEffect: expand/fullscreen до paint, меньше вспышки sheet-высоты
+  useLayoutEffect(() => {
     platform.ready();
   }, [platform]);
 

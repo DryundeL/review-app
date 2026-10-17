@@ -14,6 +14,23 @@ export function readTelegramInitData(): string | null {
   return initData;
 }
 
+/** Старт Mini App: ready → expand → fullscreen (Bot API 8.0+), иначе остаётся expand. */
+function bootstrapTelegramWebApp(webApp: TelegramWebApp): void {
+  webApp.ready();
+  webApp.expand();
+
+  if (typeof webApp.requestFullscreen === "function") {
+    try {
+      webApp.requestFullscreen();
+    } catch {
+      // старый клиент / недоступно — останется expand
+    }
+  }
+
+  webApp.setHeaderColor?.("secondary_bg_color");
+  webApp.setBackgroundColor?.("bg_color");
+}
+
 export function createTelegramAdapter(): PlatformAdapter | null {
   const webApp = window.Telegram?.WebApp;
 
@@ -23,7 +40,7 @@ export function createTelegramAdapter(): PlatformAdapter | null {
 
   return {
     kind: "telegram",
-    ready: () => webApp.ready(),
+    ready: () => bootstrapTelegramWebApp(webApp),
     getInitData: () => readTelegramInitData(),
     getUser: () => {
       const user = webApp.initDataUnsafe?.user;
