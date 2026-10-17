@@ -17,32 +17,38 @@ export function BottomNavigation() {
 
   return (
     <nav className="bottom-nav" aria-label="Основная навигация">
-      {links.map((link) => (
-        <NavLink
-          key={link.to}
-          to={link.to}
-          end={"end" in link ? link.end : false}
-          aria-label={link.label}
-          className={({ isActive }) =>
-            [
-              "bottom-nav__link",
-              `bottom-nav__link--${link.icon}`,
-              "create" in link ? "bottom-nav__create" : "",
-              isActive ? "bottom-nav__link--active" : "",
-            ]
-              .filter(Boolean)
-              .join(" ")
-          }
-          onClick={(event) => {
-            if (link.to !== "/") return;
-            if (location.pathname !== "/") return;
-            event.preventDefault();
-            refreshHomeFeed(queryClient);
-          }}
-        >
-          <NavIcon name={link.icon} />
-        </NavLink>
-      ))}
+      <div className="bottom-nav__bar" aria-hidden="true">
+        <span className="bottom-nav__notch" />
+      </div>
+
+      <div className="bottom-nav__items">
+        {links.map((link) => (
+          <NavLink
+            key={link.to}
+            to={link.to}
+            end={"end" in link ? link.end : false}
+            aria-label={link.label}
+            className={({ isActive }) =>
+              [
+                "bottom-nav__link",
+                `bottom-nav__link--${link.icon}`,
+                "create" in link ? "bottom-nav__create" : "",
+                isActive ? "bottom-nav__link--active" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")
+            }
+            onClick={(event) => {
+              if (link.to !== "/") return;
+              if (location.pathname !== "/") return;
+              event.preventDefault();
+              refreshHomeFeed(queryClient);
+            }}
+          >
+            <NavIcon name={link.icon} />
+          </NavLink>
+        ))}
+      </div>
     </nav>
   );
 }

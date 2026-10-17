@@ -20,8 +20,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: calc(56px + var(--safe-top));
-  padding: calc(var(--space-2) + var(--safe-top)) var(--space-4) var(--space-2);
+  min-height: calc(44px + var(--safe-top));
+  padding: calc(4px + var(--safe-top)) var(--space-4) 4px;
   border-bottom: 1px solid var(--color-border);
   background: rgb(16 20 19 / 92%);
   backdrop-filter: blur(8px);
@@ -45,15 +45,15 @@
 
 .app-shell__logo {
   display: block;
-  height: 40px;
+  height: 28px;
   width: auto;
 }
 
 .app-shell__main {
   flex: 1;
   padding: var(--space-4);
-  /* nav 48px + лёгкий вынос кнопки «+» (~10px) + небольшой зазор */
-  padding-bottom: calc(62px + var(--safe-bottom));
+  /* nav + вынос «+» + небольшой зазор */
+  padding-bottom: calc(72px + var(--safe-bottom));
 }
 
 .app-shell__main--solo {

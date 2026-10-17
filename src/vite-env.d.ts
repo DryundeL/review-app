@@ -44,12 +44,15 @@ type TelegramWebApp = {
   initData: string;
   initDataUnsafe?: { user?: TelegramWebAppUser };
   themeParams?: TelegramThemeParams;
+  /** ios | android | android_x | macos | tdesktop | weba | webk | … */
+  platform?: string;
   isFullscreen?: boolean;
   safeAreaInset?: TelegramSafeAreaInset;
   contentSafeAreaInset?: TelegramSafeAreaInset;
   ready: () => void;
   expand: () => void;
   requestFullscreen?: () => void;
+  exitFullscreen?: () => void;
   setHeaderColor?: (color: TelegramHeaderColor) => void;
   setBackgroundColor?: (color: TelegramBackgroundColor) => void;
   onEvent?: (eventType: TelegramWebAppEvent, callback: () => void) => void;

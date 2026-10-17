@@ -16,16 +16,25 @@ export function readTelegramInitData(): string | null {
   return initData;
 }
 
-/** safeArea + contentSafeArea → CSS vars, иначе шапка/кнопки под системным UI Telegram. */
+/**
+ * CSS vars для safe-area.
+ * Top: contentSafeArea (Telegram Close/меню) — без суммирования с safe, иначе двойной отступ.
+ * Bottom: только системный home-indicator; content.bottom в fullscreen даёт лишнюю пустоту под таббаром.
+ */
 function syncTelegramSafeAreaVars(webApp: TelegramWebApp): void {
   const safe = webApp.safeAreaInset;
   const content = webApp.contentSafeAreaInset;
-  const top = (safe?.top ?? 0) + (content?.top ?? 0);
-  const bottom = (safe?.bottom ?? 0) + (content?.bottom ?? 0);
-
   const root = document.documentElement;
+
+  const top = content && content.top > 0 ? content.top : (safe?.top ?? 0);
   root.style.setProperty("--safe-top", `${top}px`);
-  root.style.setProperty("--safe-bottom", `${bottom}px`);
+
+  const bottom = safe?.bottom ?? 0;
+  if (bottom > 0) {
+    root.style.setProperty("--safe-bottom", `${bottom}px`);
+  } else {
+    root.style.removeProperty("--safe-bottom");
+  }
 }
 
 function bindTelegramSafeAreaSync(webApp: TelegramWebApp): void {
@@ -40,16 +49,37 @@ function bindTelegramSafeAreaSync(webApp: TelegramWebApp): void {
   safeAreaListenersBound = true;
 }
 
-/** Старт Mini App: ready → expand → fullscreen (Bot API 8.0+), иначе остаётся expand. */
+function isMobileTelegramPlatform(platform: string | undefined): boolean {
+  const value = platform?.toLowerCase() ?? "";
+  return value === "ios" || value === "android" || value === "android_x";
+}
+
+/**
+ * Старт Mini App.
+ * Mobile: expand + fullscreen (как Altyn на телефоне).
+ * Desktop/web: только ready — иначе уходит в полный экран вместо компактного модала.
+ */
 function bootstrapTelegramWebApp(webApp: TelegramWebApp): void {
   webApp.ready();
-  webApp.expand();
 
-  if (typeof webApp.requestFullscreen === "function") {
-    try {
-      webApp.requestFullscreen();
-    } catch {
-      // старый клиент / недоступно — останется expand
+  if (isMobileTelegramPlatform(webApp.platform)) {
+    webApp.expand();
+
+    if (typeof webApp.requestFullscreen === "function") {
+      try {
+        webApp.requestFullscreen();
+      } catch {
+        // старый клиент / недоступно — останется expand
+      }
+    }
+  } else {
+    // на macOS/tdesktop не разворачиваем; сбросим fullscreen, если уже включился
+    if (webApp.isFullscreen && typeof webApp.exitFullscreen === "function") {
+      try {
+        webApp.exitFullscreen();
+      } catch {
+        // ignore
+      }
     }
   }
 
