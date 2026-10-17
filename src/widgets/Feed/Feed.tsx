@@ -4,17 +4,24 @@ import { listFeed, type FeedSort } from "@/entities/review";
 import { useAuthSession } from "@/features/auth";
 import { setFeedFilterOwner, useFilterFeedStore } from "@/features/filter-feed";
 import { MEDIA_TYPE_LABELS, type MediaType } from "@/shared/types";
-import { Button } from "@/shared/ui";
+import { Button, Modal } from "@/shared/ui";
 import { FeedReviewItem } from "./FeedReviewItem";
 import "./Feed.css";
 
 const FILTER_TYPES = Object.keys(MEDIA_TYPE_LABELS) as MediaType[];
 const PAGE_SIZE = 20;
 
+const SORT_OPTIONS: { value: FeedSort; label: string }[] = [
+  { value: "new", label: "Новые" },
+  { value: "views", label: "По просмотрам" },
+  { value: "likes", label: "По лайкам" },
+];
+
 export function Feed() {
   const { profile } = useAuthSession();
-  const { sort, mode, type, setSort, setMode, toggleType } = useFilterFeedStore();
+  const { sort, mode, type, setSort, setMode, toggleType, clearType } = useFilterFeedStore();
   const [followByAuthor, setFollowByAuthor] = useState<Record<string, boolean>>({});
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {
     setFeedFilterOwner(profile?.id);
@@ -66,52 +73,109 @@ export function Feed() {
     return () => observer.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const followingActive = mode === "following";
+  const sortLabel = SORT_OPTIONS.find((option) => option.value === sort)?.label ?? "Новые";
+  const typeLabel = type ? MEDIA_TYPE_LABELS[type] : null;
 
   return (
     <section className="feed">
-      <div className="feed__toolbar">
-        <label className="feed__sort">
-          Сортировка
-          <select
-            value={sort}
-            onChange={(event) => setSort(event.target.value as FeedSort)}
-          >
-            <option value="new">Новые</option>
-            <option value="views">По просмотрам</option>
-            <option value="likes">По лайкам</option>
-          </select>
-        </label>
-
+      <div className="feed__tabs" role="tablist" aria-label="Режим ленты">
         <button
           type="button"
+          role="tab"
+          aria-selected={mode === "all"}
+          className={mode === "all" ? "feed__tab feed__tab--active" : "feed__tab"}
+          onClick={() => setMode("all")}
+        >
+          Все
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mode === "following"}
           className={
-            followingActive ? "feed__chip feed__chip--active" : "feed__chip"
+            mode === "following" ? "feed__tab feed__tab--active" : "feed__tab"
           }
-          aria-pressed={followingActive}
-          onClick={() => setMode(followingActive ? "all" : "following")}
+          onClick={() => setMode("following")}
         >
           Подписки
         </button>
       </div>
 
-      <div className="feed__filters" role="list">
-        {FILTER_TYPES.map((mediaType) => {
-          const active = type === mediaType;
-          return (
-            <button
-              key={mediaType}
-              type="button"
-              role="listitem"
-              className={active ? "feed__chip feed__chip--active" : "feed__chip"}
-              aria-pressed={active}
-              onClick={() => toggleType(mediaType)}
-            >
-              {MEDIA_TYPE_LABELS[mediaType]}
-            </button>
-          );
-        })}
+      <div className="feed__controls">
+        <label className="feed__sort-control">
+          <span className="sr-only">Сортировка</span>
+          <select
+            value={sort}
+            aria-label="Сортировка"
+            onChange={(event) => setSort(event.target.value as FeedSort)}
+          >
+            {SORT_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <span className="feed__sort-face" aria-hidden>
+            {sortLabel}
+            <SortCaret />
+          </span>
+        </label>
+
+        <button
+          type="button"
+          className={
+            type
+              ? "feed__filter-btn feed__filter-btn--active"
+              : "feed__filter-btn"
+          }
+          aria-haspopup="dialog"
+          aria-expanded={filtersOpen}
+          onClick={() => setFiltersOpen(true)}
+        >
+          {typeLabel ?? "Тип"}
+        </button>
       </div>
+
+      <Modal
+        open={filtersOpen}
+        onOpenChange={setFiltersOpen}
+        title="Тип произведения"
+        className="feed__filters-modal"
+      >
+        <div className="feed__filter-grid" role="list">
+          {FILTER_TYPES.map((mediaType) => {
+            const active = type === mediaType;
+            return (
+              <button
+                key={mediaType}
+                type="button"
+                role="listitem"
+                className={active ? "feed__chip feed__chip--active" : "feed__chip"}
+                aria-pressed={active}
+                onClick={() => {
+                  toggleType(mediaType);
+                  setFiltersOpen(false);
+                }}
+              >
+                {MEDIA_TYPE_LABELS[mediaType]}
+              </button>
+            );
+          })}
+        </div>
+        {type ? (
+          <Button
+            type="button"
+            variant="ghost"
+            className="feed__filter-clear"
+            onClick={() => {
+              clearType();
+              setFiltersOpen(false);
+            }}
+          >
+            Сбросить фильтр
+          </Button>
+        ) : null}
+      </Modal>
 
       {feedQuery.isLoading ? (
         <div className="feed__skeleton" aria-busy="true" aria-label="Загрузка ленты">
@@ -170,5 +234,20 @@ export function Feed() {
         </p>
       ) : null}
     </section>
+  );
+}
+
+function SortCaret() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden focusable="false">
+      <path
+        d="M3 4.5 6 7.5 9 4.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
