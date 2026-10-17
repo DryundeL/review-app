@@ -39,6 +39,8 @@ export function Feed() {
         signal,
       ),
     getNextPageParam: (last) => last.nextCursor ?? undefined,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   const items = feedQuery.data?.pages.flatMap((page) => page.items) ?? [];

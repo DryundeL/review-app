@@ -30,10 +30,11 @@ const mediaObjectSchema = z.object({
 
 const authorSchema = z.object({
   id: uuid,
-  username: z.string(),
-  isFollowing: z.boolean().optional(),
+  username: z.string().nullish().transform((value) => value ?? ""),
+  isFollowing: z.boolean().nullish(),
 });
 
+/** Строгий summary для detail / create — status обязателен. */
 const reviewSummarySchema = z.object({
   id: uuid,
   authorId: uuid,
@@ -46,7 +47,26 @@ const reviewSummarySchema = z.object({
   likesCount: z.number().int().nonnegative(),
   dislikesCount: z.number().int().nonnegative(),
   viewsCount: z.number().int().nonnegative(),
-  isFollowing: z.boolean().optional(),
+  isFollowing: z.boolean().nullish(),
+});
+
+/**
+ * Лента/списки: бэкенд может не слать status (всегда published)
+ * и класть isFollowing на item или на author.
+ */
+const reviewListItemSchema = z.object({
+  id: uuid,
+  authorId: uuid,
+  author: authorSchema.optional(),
+  mediaObject: mediaObjectSchema,
+  title: z.string().min(1).max(256),
+  rating: z.number().min(1).max(10),
+  status: z.enum(["draft", "published"]).optional().default("published"),
+  hasSpoilers: z.boolean().optional().default(false),
+  likesCount: z.number().nonnegative().optional().default(0),
+  dislikesCount: z.number().nonnegative().optional().default(0),
+  viewsCount: z.number().nonnegative().optional().default(0),
+  isFollowing: z.boolean().nullish(),
 });
 
 const reviewDetailSchema = reviewSummarySchema.extend({
@@ -54,7 +74,7 @@ const reviewDetailSchema = reviewSummarySchema.extend({
 });
 
 const listSchema = z.object({
-  items: z.array(reviewSummarySchema),
+  items: z.array(reviewListItemSchema),
   nextCursor: z.string().nullable().optional(),
 });
 
@@ -89,10 +109,38 @@ function toCatalogMediaSummary(raw: z.infer<typeof catalogMediaSchema>): MediaOb
     : { id: raw.id, title: raw.title, type };
 }
 
-function mapSummary(item: z.infer<typeof reviewSummarySchema>) {
+function mapSummary(
+  item: z.infer<typeof reviewSummarySchema> | z.infer<typeof reviewListItemSchema>,
+) {
+  const author = item.author
+    ? {
+        id: item.author.id,
+        username: item.author.username,
+        ...(item.author.isFollowing != null
+          ? { isFollowing: item.author.isFollowing }
+          : item.isFollowing != null
+            ? { isFollowing: item.isFollowing }
+            : {}),
+      }
+    : undefined;
+
   return {
-    ...item,
+    id: item.id,
+    authorId: item.authorId,
+    ...(author ? { author } : {}),
     mediaObject: toMediaSummary(item.mediaObject),
+    title: item.title,
+    rating: Math.round(item.rating),
+    status: item.status,
+    hasSpoilers: item.hasSpoilers,
+    likesCount: item.likesCount,
+    dislikesCount: item.dislikesCount,
+    viewsCount: item.viewsCount,
+    ...(item.isFollowing != null
+      ? { isFollowing: item.isFollowing }
+      : author?.isFollowing != null
+        ? { isFollowing: author.isFollowing }
+        : {}),
   };
 }
 
