@@ -24,22 +24,25 @@ export function RemoteReviewCard({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const media = review.mediaObject;
   const mediaTitle = media.title.trim() || "Произведение";
-  const typeLabel = MEDIA_TYPE_LABELS[media.type];
+  const typeLabel = media.type ? MEDIA_TYPE_LABELS[media.type] : null;
+  const reviewHref = `/reviews/${review.id}`;
 
   return (
     <article className="remote-review">
-      <div className="remote-review__main">
-        <Link
-          className="remote-review__poster"
-          to={`/reviews/${review.id}`}
-          aria-label={`Обзор: ${review.title}`}
-        >
+      <Link
+        className="remote-review__main"
+        to={reviewHref}
+        aria-label={`Обзор: ${review.title}`}
+      >
+        <span className="remote-review__poster">
           <MediaPoster title={mediaTitle} posterUrl={media.posterUrl} />
-        </Link>
+        </span>
 
-        <div className="remote-review__body">
-          <div className="remote-review__meta">
-            <span className="remote-review__badge remote-review__badge--live">{typeLabel}</span>
+        <span className="remote-review__body">
+          <span className="remote-review__meta">
+            {typeLabel ? (
+              <span className="remote-review__badge remote-review__badge--live">{typeLabel}</span>
+            ) : null}
             {review.hasSpoilers ? (
               <span className="remote-review__spoiler-flag">есть спойлеры</span>
             ) : null}
@@ -56,15 +59,13 @@ export function RemoteReviewCard({
                 {review.status === "draft" ? <DraftIcon /> : <PublishedIcon />}
               </span>
             ) : null}
-          </div>
+          </span>
 
-          <h2 className="remote-review__title">
-            <Link to={`/reviews/${review.id}`}>{review.title}</Link>
-          </h2>
+          <span className="remote-review__title">{review.title}</span>
 
-          <p className="remote-review__media">{mediaTitle}</p>
+          <span className="remote-review__media">{mediaTitle}</span>
 
-          <footer className="remote-review__stats">
+          <span className="remote-review__stats">
             <span className="remote-review__stats-left">
               <span>+{review.likesCount}</span>
               <span>−{review.dislikesCount}</span>
@@ -74,9 +75,9 @@ export function RemoteReviewCard({
               {review.rating}
               <small>/10</small>
             </span>
-          </footer>
-        </div>
-      </div>
+          </span>
+        </span>
+      </Link>
 
       {canEdit ? (
         <div className="remote-review__actions">
