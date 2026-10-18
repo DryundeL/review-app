@@ -172,16 +172,15 @@ a.search-page__row {
 }
 
 .search-page__avatar {
-  display: grid;
-  flex-shrink: 0;
-  place-items: center;
   width: 44px;
   height: 44px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--color-accent) 22%, var(--color-surface));
-  color: var(--color-text);
   font-size: 1rem;
-  font-weight: 700;
+}
+
+.search-page__avatar--review {
+  width: 36px;
+  height: 36px;
+  font-size: 0.8125rem;
 }
 
 .search-page__poster {

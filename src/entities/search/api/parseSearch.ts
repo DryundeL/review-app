@@ -25,6 +25,7 @@ const authorHitSchema = z.object({
   firstName: z.string().nullish().transform((value) => value ?? ""),
   followersCount: z.number().nonnegative().optional().default(0),
   isFollowing: z.boolean().nullish().transform((value) => value ?? false),
+  photoUrl: z.string().optional().nullable(),
 });
 
 const mediaTrendSchema = z.object({
@@ -46,6 +47,7 @@ const reviewHitSchema = z.object({
   title: z.string().min(1).max(256),
   authorId: uuid,
   username: z.string().nullish().transform((value) => value ?? ""),
+  photoUrl: z.string().optional().nullable(),
   mediaObject: z.object({
     id: uuid,
     title: z.string().min(1).max(256),
@@ -77,6 +79,11 @@ function optionalPoster(url: string | null | undefined): { posterUrl?: string } 
   return posterUrl ? { posterUrl } : {};
 }
 
+function optionalPhoto(url: string | null | undefined): { photoUrl?: string } {
+  const photoUrl = safeHttpsUrl(url ?? undefined);
+  return photoUrl ? { photoUrl } : {};
+}
+
 function toAuthor(raw: z.infer<typeof authorHitSchema>): SearchAuthorHit {
   return {
     id: raw.id,
@@ -84,6 +91,7 @@ function toAuthor(raw: z.infer<typeof authorHitSchema>): SearchAuthorHit {
     firstName: raw.firstName,
     followersCount: Math.floor(raw.followersCount),
     isFollowing: raw.isFollowing,
+    ...optionalPhoto(raw.photoUrl),
   };
 }
 
@@ -111,6 +119,7 @@ function toReviewHit(raw: z.infer<typeof reviewHitSchema>): SearchReviewHit {
     title: raw.title,
     authorId: raw.authorId,
     username: raw.username,
+    ...optionalPhoto(raw.photoUrl),
     mediaObject: {
       id: raw.mediaObject.id,
       title: raw.mediaObject.title,

@@ -16,7 +16,12 @@ test("parseRemoteReview requires author like feed", () => {
   const review = parseRemoteReview({
     id: reviewId,
     authorId,
-    author: { id: authorId, username: "ann", isFollowing: true },
+    author: {
+      id: authorId,
+      username: "ann",
+      isFollowing: true,
+      photoUrl: "https://cdn.example/a.jpg",
+    },
     mediaObject,
     title: "Обзор",
     rating: 8,
@@ -32,8 +37,32 @@ test("parseRemoteReview requires author like feed", () => {
     id: authorId,
     username: "ann",
     isFollowing: true,
+    photoUrl: "https://cdn.example/a.jpg",
   });
   assert.equal(review.isFollowing, true);
+});
+
+test("parseRemoteReview strips unsafe author.photoUrl", () => {
+  const review = parseRemoteReview({
+    id: reviewId,
+    authorId,
+    author: {
+      id: authorId,
+      username: "ann",
+      photoUrl: "javascript:alert(1)",
+    },
+    mediaObject,
+    title: "Обзор",
+    rating: 8,
+    status: "published",
+    hasSpoilers: false,
+    likesCount: 0,
+    dislikesCount: 0,
+    viewsCount: 0,
+    blocks: [],
+  });
+
+  assert.equal(review.author.photoUrl, undefined);
 });
 
 test("parseRemoteReview defaults missing isFollowing to false", () => {
@@ -73,14 +102,19 @@ test("parseRemoteReview rejects payload without author", () => {
   );
 });
 
-test("feed list maps author.isFollowing", () => {
+test("feed list maps author.isFollowing and photoUrl", () => {
   const list = parseRemoteReviewListText(
     JSON.stringify({
       items: [
         {
           id: reviewId,
           authorId,
-          author: { id: authorId, username: "ann", isFollowing: false },
+          author: {
+            id: authorId,
+            username: "ann",
+            isFollowing: false,
+            photoUrl: "https://cdn.example/a.jpg",
+          },
           mediaObject,
           title: "Обзор",
           rating: 8,
@@ -98,5 +132,6 @@ test("feed list maps author.isFollowing", () => {
     id: authorId,
     username: "ann",
     isFollowing: false,
+    photoUrl: "https://cdn.example/a.jpg",
   });
 });

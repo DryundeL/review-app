@@ -17,7 +17,7 @@ import { useAuthSession } from "@/features/auth";
 import { useFilterFeedStore } from "@/features/filter-feed";
 import { useFollowToggle } from "@/features/follow-user";
 import { useDebouncedValue } from "@/shared/hooks";
-import { Button, Input, MediaPoster } from "@/shared/ui";
+import { Button, Input, MediaPoster, UserAvatar } from "@/shared/ui";
 import "./SearchPage.css";
 
 const TABS: { id: SearchTrendsTab; label: string }[] = [
@@ -335,14 +335,15 @@ function AuthorRow({
   const followMutation = useFollowToggle();
   const isMe = viewerId !== null && viewerId === item.id;
   const display = item.firstName.trim() || (item.username ? `@${item.username}` : "Пользователь");
-  const initial = (display.trim()[0] ?? "?").toUpperCase();
 
   return (
     <div className="search-page__row search-page__row--author">
       <Link className="search-page__author-link" to={`/profiles/${item.id}`}>
-        <span className="search-page__avatar" aria-hidden>
-          {initial}
-        </span>
+        <UserAvatar
+          className="search-page__avatar"
+          label={display}
+          photoUrl={item.photoUrl}
+        />
         <span className="search-page__row-body">
           <span className="search-page__row-title">{display}</span>
           <span className="search-page__row-meta">
@@ -433,8 +434,15 @@ function TypeTrendRow({
 }
 
 function ReviewRow({ item }: { item: SearchReviewHit }) {
+  const authorLabel = item.username ? `@${item.username}` : "Автор";
+
   return (
     <Link className="search-page__row" to={`/reviews/${item.id}`}>
+      <UserAvatar
+        className="search-page__avatar search-page__avatar--review"
+        label={authorLabel}
+        photoUrl={item.photoUrl}
+      />
       <MediaPoster
         className="search-page__poster"
         title={item.mediaObject.title}
@@ -443,8 +451,7 @@ function ReviewRow({ item }: { item: SearchReviewHit }) {
       <span className="search-page__row-body">
         <span className="search-page__row-title">{item.title}</span>
         <span className="search-page__row-meta">
-          {item.username ? `@${item.username}` : "Автор"} · {item.mediaObject.title} · ★{item.rating} ·{" "}
-          {item.likesCount} ♥
+          {authorLabel} · {item.mediaObject.title} · ★{item.rating} · {item.likesCount} ♥
         </span>
       </span>
     </Link>

@@ -12,17 +12,31 @@
 }
 
 .review-page__author-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.review-page__author-name {
   min-width: 0;
   overflow: hidden;
-  color: var(--color-text);
   font-size: 0.9375rem;
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.review-page__author-link:hover,
-.review-page__author-link:focus-visible {
+.review-page__avatar {
+  width: 28px;
+  height: 28px;
+  font-size: 0.75rem;
+}
+
+.review-page__author-link:hover .review-page__author-name,
+.review-page__author-link:focus-visible .review-page__author-name {
   color: var(--color-accent);
 }
 

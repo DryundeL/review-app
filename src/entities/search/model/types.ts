@@ -8,6 +8,8 @@ export type SearchAuthorHit = {
   firstName: string;
   followersCount: number;
   isFollowing: boolean;
+  /** HTTPS-аватар; omitempty — поля может не быть. */
+  photoUrl?: string;
 };
 
 export type SearchMediaTrend = {
@@ -34,6 +36,8 @@ export type SearchReviewHit = {
   title: string;
   authorId: string;
   username: string;
+  /** Аватар автора в выдаче поиска (плоское поле на hit). */
+  photoUrl?: string;
   mediaObject: {
     id: string;
     title: string;

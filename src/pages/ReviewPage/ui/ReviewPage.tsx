@@ -9,7 +9,7 @@ import { usePageMeta } from "@/shared/hooks";
 import { truncateMeta, type PageMeta } from "@/shared/lib/pageMeta";
 import { safeHttpsUrl } from "@/shared/lib/safeHttpsUrl";
 import { MEDIA_TYPE_LABELS } from "@/shared/types";
-import { Button, MediaPoster, SpoilerText } from "@/shared/ui";
+import { Button, MediaPoster, SpoilerText, UserAvatar } from "@/shared/ui";
 import "./ReviewPage.css";
 
 export function ReviewPage() {
@@ -122,7 +122,12 @@ export function ReviewPage() {
     <article className="review-page screen">
       <div className="review-page__author">
         <Link className="review-page__author-link" to={`/profiles/${authorId}`}>
-          {authorLabel}
+          <UserAvatar
+            className="review-page__avatar"
+            label={authorLabel}
+            photoUrl={review.author.photoUrl}
+          />
+          <span className="review-page__author-name">{authorLabel}</span>
         </Link>
         {!isOwn ? (
           <Button

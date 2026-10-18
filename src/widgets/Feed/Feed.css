@@ -163,17 +163,31 @@
 }
 
 .feed-item__author-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.feed-item__author-name {
   min-width: 0;
   overflow: hidden;
-  color: var(--color-text);
   font-size: 0.9375rem;
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.feed-item__author-link:hover,
-.feed-item__author-link:focus-visible {
+.feed-item__avatar {
+  width: 28px;
+  height: 28px;
+  font-size: 0.75rem;
+}
+
+.feed-item__author-link:hover .feed-item__author-name,
+.feed-item__author-link:focus-visible .feed-item__author-name {
   color: var(--color-accent);
 }
 

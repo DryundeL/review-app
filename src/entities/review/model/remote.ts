@@ -25,6 +25,8 @@ export type RemoteReviewAuthor = {
   username: string;
   /** Подписан ли текущий viewer на автора (feed, detail, create/update). */
   isFollowing: boolean;
+  /** HTTPS-аватар; omitempty — поля может не быть. */
+  photoUrl?: string;
 };
 
 /** Элемент списка: без blocks, с флагом спойлеров и вложенным mediaObject. */

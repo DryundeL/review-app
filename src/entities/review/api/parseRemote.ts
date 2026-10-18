@@ -34,6 +34,7 @@ const authorSchema = z.object({
   id: uuid,
   username: z.string().nullish().transform((value) => value ?? ""),
   isFollowing: z.boolean().nullish().transform((value) => value ?? false),
+  photoUrl: z.string().optional().nullable(),
 });
 
 /** Строгий summary для detail / create / update — status и author обязательны. */
@@ -140,11 +141,14 @@ function mapAuthor(
   id: string;
   username: string;
   isFollowing: boolean;
+  photoUrl?: string;
 } {
+  const photoUrl = safeHttpsUrl(author.photoUrl ?? undefined);
   return {
     id: author.id,
     username: author.username,
     isFollowing: itemIsFollowing ?? author.isFollowing,
+    ...(photoUrl ? { photoUrl } : {}),
   };
 }
 

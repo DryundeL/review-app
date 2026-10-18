@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import type { RemoteReviewSummary } from "@/entities/review";
 import { useFollowToggle } from "@/features/follow-user";
-import { Button } from "@/shared/ui";
+import { Button, UserAvatar } from "@/shared/ui";
 import { RemoteReviewCard } from "@/widgets/RemoteReviewCard";
 
 type FeedReviewItemProps = {
@@ -27,7 +27,12 @@ export function FeedReviewItem({
     <div className="feed-item">
       <div className="feed-item__author">
         <Link className="feed-item__author-link" to={`/profiles/${authorId}`}>
-          {authorLabel}
+          <UserAvatar
+            className="feed-item__avatar"
+            label={authorLabel}
+            photoUrl={review.author?.photoUrl}
+          />
+          <span className="feed-item__author-name">{authorLabel}</span>
         </Link>
         {!isMe ? (
           <Button

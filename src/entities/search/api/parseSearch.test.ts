@@ -40,11 +40,28 @@ test("parses unified search; empty sections default to []", () => {
           firstName: "Ann",
           followersCount: 12,
           isFollowing: true,
+          photoUrl: "https://cdn.example/u.jpg",
+        },
+      ],
+      reviews: [
+        {
+          id: "22222222-2222-4222-8222-222222222222",
+          title: "Обзор",
+          authorId: "11111111-1111-4111-8111-111111111111",
+          username: "ann",
+          photoUrl: "javascript:alert(1)",
+          mediaObject: {
+            id: "33333333-3333-4333-8333-333333333333",
+            title: "Title",
+            type: "manga",
+          },
+          rating: 8,
         },
       ],
     }),
   );
   assert.equal(result.users[0]?.username, "ann");
-  assert.deepEqual(result.reviews, []);
+  assert.equal(result.users[0]?.photoUrl, "https://cdn.example/u.jpg");
+  assert.equal(result.reviews[0]?.photoUrl, undefined);
   assert.deepEqual(result.mediaObjects, []);
 });
