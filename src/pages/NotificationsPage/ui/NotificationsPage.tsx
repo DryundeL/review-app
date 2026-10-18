@@ -4,21 +4,32 @@ import { Link } from "react-router-dom";
 import {
   fetchNotificationSettings,
   fetchSettings,
+  fetchUnreadNotificationsCount,
+  listNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
   patchNotificationSettings,
+  type InboxNotification,
+  type InboxNotificationList,
+  type UnreadNotificationsCount,
 } from "@/entities/settings";
 import { ApiError } from "@/shared/api";
 import { Button, Modal } from "@/shared/ui";
 import "./NotificationsPage.css";
 
-const ITEMS = [
-  { id: "n1", href: "/reviews/r-frieren", text: "Плюс к обзору о Фрирен" },
-  { id: "n2", href: "/reviews/r-aot", text: "Комментарий к обзору «Атаки титанов»" },
-  { id: "n3", href: "/profile", text: "Новая подписка на профиль" },
-] as const;
-
 export function NotificationsPage() {
   const [prefsOpen, setPrefsOpen] = useState(false);
   const queryClient = useQueryClient();
+
+  const inboxQuery = useQuery({
+    queryKey: ["notifications"],
+    queryFn: ({ signal }) => listNotifications({ limit: 20, offset: 0 }, signal),
+  });
+
+  const unreadQuery = useQuery({
+    queryKey: ["notifications-unread"],
+    queryFn: ({ signal }) => fetchUnreadNotificationsCount(signal),
+  });
 
   const prefsQuery = useQuery({
     queryKey: ["notification-settings"],
@@ -40,30 +51,186 @@ export function NotificationsPage() {
     },
   });
 
+  const readOneMutation = useMutation({
+    mutationFn: (id: string) => markNotificationRead(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ["notifications"] });
+      await queryClient.cancelQueries({ queryKey: ["notifications-unread"] });
+
+      const previousList = queryClient.getQueryData<InboxNotificationList>(["notifications"]);
+      const previousUnread = queryClient.getQueryData<UnreadNotificationsCount>([
+        "notifications-unread",
+      ]);
+
+      queryClient.setQueryData<InboxNotificationList>(["notifications"], (old) => {
+        if (!old) return old;
+        return {
+          items: old.items.map((item) =>
+            item.id === id ? { ...item, isRead: true } : item,
+          ),
+        };
+      });
+
+      const wasUnread = previousList?.items.some((item) => item.id === id && !item.isRead);
+      if (wasUnread && previousUnread) {
+        queryClient.setQueryData<UnreadNotificationsCount>(["notifications-unread"], {
+          count: Math.max(0, previousUnread.count - 1),
+        });
+      }
+
+      return { previousList, previousUnread };
+    },
+    onError: (_error, _id, context) => {
+      if (context?.previousList) {
+        queryClient.setQueryData(["notifications"], context.previousList);
+      }
+      if (context?.previousUnread) {
+        queryClient.setQueryData(["notifications-unread"], context.previousUnread);
+      }
+    },
+    onSettled: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["notifications"] }),
+        queryClient.invalidateQueries({ queryKey: ["notifications-unread"] }),
+      ]);
+    },
+  });
+
+  const readAllMutation = useMutation({
+    mutationFn: () => markAllNotificationsRead(),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["notifications"] });
+      await queryClient.cancelQueries({ queryKey: ["notifications-unread"] });
+
+      const previousList = queryClient.getQueryData<InboxNotificationList>(["notifications"]);
+      const previousUnread = queryClient.getQueryData<UnreadNotificationsCount>([
+        "notifications-unread",
+      ]);
+
+      queryClient.setQueryData<InboxNotificationList>(["notifications"], (old) => {
+        if (!old) return old;
+        return { items: old.items.map((item) => ({ ...item, isRead: true })) };
+      });
+      queryClient.setQueryData<UnreadNotificationsCount>(["notifications-unread"], {
+        count: 0,
+      });
+
+      return { previousList, previousUnread };
+    },
+    onError: (_error, _vars, context) => {
+      if (context?.previousList) {
+        queryClient.setQueryData(["notifications"], context.previousList);
+      }
+      if (context?.previousUnread) {
+        queryClient.setQueryData(["notifications-unread"], context.previousUnread);
+      }
+    },
+    onSettled: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["notifications"] }),
+        queryClient.invalidateQueries({ queryKey: ["notifications-unread"] }),
+      ]);
+    },
+  });
+
+  const unreadCount = unreadQuery.data?.count ?? 0;
+  const items = inboxQuery.data?.items ?? [];
+
   return (
     <section className="screen notifications-page">
       <div className="notifications-page__header">
         <h1 className="notifications-page__title">Уведомления</h1>
-        <Button
-          type="button"
-          variant="ghost"
-          className="notifications-page__gear"
-          aria-label="Настройки уведомлений"
-          onClick={() => setPrefsOpen(true)}
-        >
-          <SettingsGearIcon />
-        </Button>
+        <div className="notifications-page__header-actions">
+          {unreadCount > 0 ? (
+            <Button
+              type="button"
+              variant="ghost"
+              className="notifications-page__read-all"
+              disabled={readAllMutation.isPending}
+              onClick={() => readAllMutation.mutate()}
+            >
+              Прочитать все
+            </Button>
+          ) : null}
+          <Button
+            type="button"
+            variant="ghost"
+            className="notifications-page__gear"
+            aria-label="Настройки уведомлений"
+            onClick={() => setPrefsOpen(true)}
+          >
+            <SettingsGearIcon />
+          </Button>
+        </div>
       </div>
 
-      <ul className="notes">
-        {ITEMS.map((item) => (
-          <li key={item.id}>
-            <Link className="notes__link" to={item.href}>
-              {item.text}
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {inboxQuery.isLoading ? (
+        <p className="notifications-page__muted" aria-busy="true">
+          Загрузка…
+        </p>
+      ) : null}
+
+      {inboxQuery.isError ? (
+        <div className="notifications-page__prefs-error" role="alert">
+          <p>{messageFromError(inboxQuery.error, "Не удалось загрузить уведомления.")}</p>
+          <Button type="button" variant="secondary" onClick={() => void inboxQuery.refetch()}>
+            Повторить
+          </Button>
+        </div>
+      ) : null}
+
+      {inboxQuery.data && items.length === 0 ? (
+        <p className="notifications-page__muted" role="status">
+          Пока нет уведомлений.
+        </p>
+      ) : null}
+
+      {items.length > 0 ? (
+        <ul className="notes">
+          {items.map((item) => {
+            const href = notificationHref(item);
+            const className = item.isRead
+              ? "notes__link"
+              : "notes__link notes__link--unread";
+
+            if (href) {
+              return (
+                <li key={item.id}>
+                  <Link
+                    className={className}
+                    to={href}
+                    onClick={() => {
+                      if (!item.isRead) readOneMutation.mutate(item.id);
+                    }}
+                  >
+                    <NotificationRow item={item} />
+                  </Link>
+                </li>
+              );
+            }
+
+            return (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  className={`${className} notes__link--button`}
+                  onClick={() => {
+                    if (!item.isRead) readOneMutation.mutate(item.id);
+                  }}
+                >
+                  <NotificationRow item={item} />
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+
+      {readAllMutation.isError ? (
+        <p className="notifications-page__error" role="alert">
+          {messageFromError(readAllMutation.error, "Не удалось отметить уведомления.")}
+        </p>
+      ) : null}
 
       <Modal
         open={prefsOpen}
@@ -147,6 +314,37 @@ export function NotificationsPage() {
       </Modal>
     </section>
   );
+}
+
+function NotificationRow({ item }: { item: InboxNotification }) {
+  return (
+    <>
+      <span className="notes__main">
+        <span className="notes__title">{item.title}</span>
+        <span className="notes__body">{item.body}</span>
+      </span>
+      <time className="notes__time" dateTime={item.createdAt}>
+        {formatNotifTime(item.createdAt)}
+      </time>
+    </>
+  );
+}
+
+function notificationHref(item: InboxNotification): string | null {
+  if (item.reviewId) return `/reviews/${item.reviewId}`;
+  if (item.actorId) return `/profiles/${item.actorId}`;
+  return null;
+}
+
+function formatNotifTime(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString("ru-RU", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function SettingsGearIcon() {

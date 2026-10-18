@@ -1,6 +1,11 @@
 import { z } from "zod";
 import { unexpectedResponseError } from "../../../shared/api/errors.ts";
-import type { AppSettings, NotificationSettings } from "../model/types.ts";
+import type {
+  AppSettings,
+  InboxNotificationList,
+  NotificationSettings,
+  UnreadNotificationsCount,
+} from "../model/types.ts";
 
 const settingsSchema = z.object({
   language: z.string().min(2).max(16),
@@ -18,26 +23,55 @@ const notificationSettingsSchema = z.object({
   items: z.array(notificationItemSchema),
 });
 
-export function parseSettingsText(text: string): AppSettings {
-  let json: unknown;
+const uuid = z.string().uuid();
+
+const inboxItemSchema = z.object({
+  id: uuid,
+  type: z.string().min(1).max(64),
+  title: z.string().min(1).max(128),
+  body: z.string().min(1).max(1024),
+  actorId: uuid.nullish().transform((value) => value ?? null),
+  reviewId: uuid.nullish().transform((value) => value ?? null),
+  isRead: z.boolean(),
+  createdAt: z.string().min(1),
+});
+
+const inboxListSchema = z.object({
+  items: z.array(inboxItemSchema),
+});
+
+const unreadCountSchema = z.object({
+  count: z.number().int().nonnegative(),
+});
+
+function parseJson(text: string): unknown {
   try {
-    json = JSON.parse(text) as unknown;
+    return JSON.parse(text) as unknown;
   } catch {
     throw unexpectedResponseError();
   }
-  const parsed = settingsSchema.safeParse(json);
+}
+
+export function parseSettingsText(text: string): AppSettings {
+  const parsed = settingsSchema.safeParse(parseJson(text));
   if (!parsed.success) throw unexpectedResponseError();
   return parsed.data;
 }
 
 export function parseNotificationSettingsText(text: string): NotificationSettings {
-  let json: unknown;
-  try {
-    json = JSON.parse(text) as unknown;
-  } catch {
-    throw unexpectedResponseError();
-  }
-  const parsed = notificationSettingsSchema.safeParse(json);
+  const parsed = notificationSettingsSchema.safeParse(parseJson(text));
+  if (!parsed.success) throw unexpectedResponseError();
+  return parsed.data;
+}
+
+export function parseInboxNotificationsText(text: string): InboxNotificationList {
+  const parsed = inboxListSchema.safeParse(parseJson(text));
+  if (!parsed.success) throw unexpectedResponseError();
+  return parsed.data;
+}
+
+export function parseUnreadCountText(text: string): UnreadNotificationsCount {
+  const parsed = unreadCountSchema.safeParse(parseJson(text));
   if (!parsed.success) throw unexpectedResponseError();
   return parsed.data;
 }

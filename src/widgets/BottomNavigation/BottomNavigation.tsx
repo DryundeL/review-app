@@ -1,5 +1,6 @@
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink, useLocation } from "react-router-dom";
+import { fetchUnreadNotificationsCount } from "@/entities/settings";
 import { refreshHomeFeed } from "@/shared/lib/refreshHome";
 import "./BottomNavigation.css";
 
@@ -15,6 +16,15 @@ export function BottomNavigation() {
   const location = useLocation();
   const queryClient = useQueryClient();
 
+  const unreadQuery = useQuery({
+    queryKey: ["notifications-unread"],
+    queryFn: ({ signal }) => fetchUnreadNotificationsCount(signal),
+    refetchInterval: 60_000,
+  });
+
+  const unreadCount = unreadQuery.data?.count ?? 0;
+  const badgeLabel = unreadCount > 99 ? "99+" : String(unreadCount);
+
   return (
     <nav className="bottom-nav" aria-label="Основная навигация">
       <div className="bottom-nav__bar" aria-hidden="true">
@@ -22,32 +32,44 @@ export function BottomNavigation() {
       </div>
 
       <div className="bottom-nav__items">
-        {links.map((link) => (
-          <NavLink
-            key={link.to}
-            to={link.to}
-            end={"end" in link ? link.end : false}
-            aria-label={link.label}
-            className={({ isActive }) =>
-              [
-                "bottom-nav__link",
-                `bottom-nav__link--${link.icon}`,
-                "create" in link ? "bottom-nav__create" : "",
-                isActive ? "bottom-nav__link--active" : "",
-              ]
-                .filter(Boolean)
-                .join(" ")
-            }
-            onClick={(event) => {
-              if (link.to !== "/") return;
-              if (location.pathname !== "/") return;
-              event.preventDefault();
-              refreshHomeFeed(queryClient);
-            }}
-          >
-            <NavIcon name={link.icon} />
-          </NavLink>
-        ))}
+        {links.map((link) => {
+          const showBadge = link.icon === "bell" && unreadCount > 0;
+          return (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              end={"end" in link ? link.end : false}
+              aria-label={
+                showBadge ? `${link.label}, непрочитанных: ${unreadCount}` : link.label
+              }
+              className={({ isActive }) =>
+                [
+                  "bottom-nav__link",
+                  `bottom-nav__link--${link.icon}`,
+                  "create" in link ? "bottom-nav__create" : "",
+                  isActive ? "bottom-nav__link--active" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")
+              }
+              onClick={(event) => {
+                if (link.to !== "/") return;
+                if (location.pathname !== "/") return;
+                event.preventDefault();
+                refreshHomeFeed(queryClient);
+              }}
+            >
+              <span className="bottom-nav__icon-wrap">
+                <NavIcon name={link.icon} />
+                {showBadge ? (
+                  <span className="bottom-nav__badge" aria-hidden>
+                    {badgeLabel}
+                  </span>
+                ) : null}
+              </span>
+            </NavLink>
+          );
+        })}
       </div>
     </nav>
   );
