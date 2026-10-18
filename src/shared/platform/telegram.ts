@@ -18,16 +18,29 @@ export function readTelegramInitData(): string | null {
 
 /**
  * CSS vars для safe-area.
- * Top: contentSafeArea (Telegram Close/меню) — без суммирования с safe, иначе двойной отступ.
- * Bottom: только системный home-indicator; content.bottom в fullscreen даёт лишнюю пустоту под таббаром.
+ * Top: safe + contentSafe (status + Close). Шапка: padding-top = spacer, ряд с «Назад» ниже.
+ * Bottom: только home-indicator (без content.bottom — иначе пустота под таббаром).
+ * Не пишем 0px — иначе затирается env(safe-area-inset-*).
  */
 function syncTelegramSafeAreaVars(webApp: TelegramWebApp): void {
   const safe = webApp.safeAreaInset;
   const content = webApp.contentSafeAreaInset;
   const root = document.documentElement;
 
-  const top = content && content.top > 0 ? content.top : (safe?.top ?? 0);
-  root.style.setProperty("--safe-top", `${top}px`);
+  const systemTop = safe?.top ?? 0;
+  const contentTop = content?.top ?? 0;
+  let top = systemTop + contentTop;
+
+  // fullscreen: insets часто приходят с задержкой / нулями — минимум под Close
+  if (webApp.isFullscreen && top < 56) {
+    top = systemTop > 0 ? systemTop + 48 : 88;
+  }
+
+  if (top > 0) {
+    root.style.setProperty("--safe-top", `${top}px`);
+  } else {
+    root.style.removeProperty("--safe-top");
+  }
 
   const bottom = safe?.bottom ?? 0;
   if (bottom > 0) {
@@ -38,11 +51,11 @@ function syncTelegramSafeAreaVars(webApp: TelegramWebApp): void {
 }
 
 function bindTelegramSafeAreaSync(webApp: TelegramWebApp): void {
-  syncTelegramSafeAreaVars(webApp);
+  const sync = () => syncTelegramSafeAreaVars(webApp);
+  sync();
 
   if (safeAreaListenersBound || typeof webApp.onEvent !== "function") return;
 
-  const sync = () => syncTelegramSafeAreaVars(webApp);
   webApp.onEvent("safeAreaChanged", sync);
   webApp.onEvent("contentSafeAreaChanged", sync);
   webApp.onEvent("fullscreenChanged", sync);
@@ -86,6 +99,10 @@ function bootstrapTelegramWebApp(webApp: TelegramWebApp): void {
   webApp.setHeaderColor?.("secondary_bg_color");
   webApp.setBackgroundColor?.("bg_color");
   bindTelegramSafeAreaSync(webApp);
+
+  // insets после requestFullscreen часто обновляются не сразу
+  window.setTimeout(() => syncTelegramSafeAreaVars(webApp), 50);
+  window.setTimeout(() => syncTelegramSafeAreaVars(webApp), 300);
 }
 
 export function createTelegramAdapter(): PlatformAdapter | null {

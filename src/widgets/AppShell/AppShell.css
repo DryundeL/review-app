@@ -17,8 +17,8 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  /* safe-top — зона Close/status Telegram; контент шапки только ниже */
-  padding-top: var(--safe-top);
+  /* safe-top — зона Close/status Telegram; контент шапки («Назад») только ниже */
+  padding-top: max(var(--safe-top), env(safe-area-inset-top, 0px));
   border-bottom: 1px solid var(--color-border);
   background: rgb(16 20 19 / 92%);
   backdrop-filter: blur(8px);
