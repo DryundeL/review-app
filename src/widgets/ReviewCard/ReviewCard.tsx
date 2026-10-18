@@ -1,5 +1,6 @@
 import type { Review } from "@/entities/review";
 import { MEDIA_TYPE_LABELS } from "@/shared/types";
+import { VoteCounts } from "@/shared/ui";
 import "./ReviewCard.css";
 
 type ReviewCardProps = {
@@ -16,8 +17,9 @@ export function ReviewCard({ review }: ReviewCardProps) {
       <p className="review-card__excerpt">{review.excerpt}</p>
       <footer className="review-card__meta">
         <span>{MEDIA_TYPE_LABELS[review.primaryType]}</span>
-        <span>
-          +{review.likesCount} / -{review.dislikesCount} / {review.viewsCount} просм.
+        <span className="review-card__votes">
+          <VoteCounts likes={review.likesCount} dislikes={review.dislikesCount} />
+          <span>{review.viewsCount} просм.</span>
         </span>
       </footer>
     </article>

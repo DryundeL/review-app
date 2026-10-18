@@ -4,5 +4,6 @@ export { MediaPoster } from "./MediaPoster";
 export { Modal } from "./Modal";
 export { SpoilerText } from "./SpoilerText";
 export { UserAvatar } from "./UserAvatar";
+export { DislikeIcon, LikeIcon, VoteCounts } from "./VoteIcons";
 
 

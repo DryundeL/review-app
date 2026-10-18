@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { RemoteReviewSummary } from "@/entities/review";
 import { MEDIA_TYPE_LABELS } from "@/shared/types";
-import { Button, MediaPoster, Modal } from "@/shared/ui";
+import { Button, MediaPoster, Modal, VoteCounts } from "@/shared/ui";
 import "./RemoteReviewCard.css";
 
 type RemoteReviewCardProps = {
@@ -67,8 +67,7 @@ export function RemoteReviewCard({
 
           <span className="remote-review__stats">
             <span className="remote-review__stats-left">
-              <span>+{review.likesCount}</span>
-              <span>−{review.dislikesCount}</span>
+              <VoteCounts likes={review.likesCount} dislikes={review.dislikesCount} />
               <span>{review.viewsCount} просм.</span>
             </span>
             <span className="remote-review__rating" aria-label={`Оценка ${review.rating} из 10`}>

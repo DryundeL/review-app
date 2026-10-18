@@ -39,3 +39,10 @@
   color: var(--color-muted);
   font-size: 0.8125rem;
 }
+
+.review-card__votes {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}

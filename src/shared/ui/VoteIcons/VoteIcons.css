@@ -1,0 +1,18 @@
+.vote-counts {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.vote-counts__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-variant-numeric: tabular-nums;
+}
+
+.vote-counts__item svg {
+  flex-shrink: 0;
+  opacity: 0.9;
+}

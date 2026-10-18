@@ -9,7 +9,15 @@ import { usePageMeta } from "@/shared/hooks";
 import { truncateMeta, type PageMeta } from "@/shared/lib/pageMeta";
 import { safeHttpsUrl } from "@/shared/lib/safeHttpsUrl";
 import { MEDIA_TYPE_LABELS } from "@/shared/types";
-import { Button, MediaPoster, SpoilerText, UserAvatar } from "@/shared/ui";
+import {
+  Button,
+  DislikeIcon,
+  LikeIcon,
+  MediaPoster,
+  SpoilerText,
+  UserAvatar,
+  VoteCounts,
+} from "@/shared/ui";
 import "./ReviewPage.css";
 
 export function ReviewPage() {
@@ -170,7 +178,9 @@ export function ReviewPage() {
           </p>
           <h1>{review.title}</h1>
           <p className="review-page__stats">
-            +{review.likesCount} · −{review.dislikesCount} · {review.viewsCount} просм.
+            <VoteCounts likes={review.likesCount} dislikes={review.dislikesCount} />
+            <span>·</span>
+            <span>{review.viewsCount} просм.</span>
             <span className="review-page__rating" aria-label={`Оценка ${review.rating} из 10`}>
               {review.rating}
               <small>/10</small>
@@ -201,22 +211,27 @@ export function ReviewPage() {
         <div className="review-page__vote" role="group" aria-label="Оценка обзора">
           <Button
             type="button"
+            className="review-page__vote-btn"
             variant={myVote === true ? "primary" : "secondary"}
+            aria-label="Нравится"
             aria-pressed={myVote === true}
             disabled={voteMutation.isPending}
             onClick={() => voteMutation.mutate(true)}
           >
-            Нравится
+            <LikeIcon size={20} />
+            <span>{review.likesCount}</span>
           </Button>
           <Button
             type="button"
-            className="review-page__vote-dislike"
+            className="review-page__vote-btn review-page__vote-dislike"
             variant="secondary"
+            aria-label="Не нравится"
             aria-pressed={myVote === false}
             disabled={voteMutation.isPending}
             onClick={() => voteMutation.mutate(false)}
           >
-            Не нравится
+            <DislikeIcon size={20} />
+            <span>{review.dislikesCount}</span>
           </Button>
         </div>
       ) : null}
