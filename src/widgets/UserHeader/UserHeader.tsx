@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { User } from "@/entities/user";
+import { ruPlural } from "@/shared/lib/ruPlural";
 import { UserAvatar } from "@/shared/ui";
 import "./UserHeader.css";
 
@@ -34,14 +35,17 @@ export function UserHeader({
         <div className="user-header__stats">
           <StatControl
             count={user.followersCount}
-            label="подп."
-            ariaLabel={`${user.followersCount} подписчиков`}
+            label={ruPlural(
+              user.followersCount,
+              "подписчик",
+              "подписчика",
+              "подписчиков",
+            )}
             onClick={onFollowersClick}
           />
           <StatControl
             count={user.followingCount}
-            label="подписок"
-            ariaLabel={`${user.followingCount} подписок`}
+            label={ruPlural(user.followingCount, "подписка", "подписки", "подписок")}
             onClick={onFollowingClick}
           />
           {user.popularityScore > 0 ? (
@@ -59,30 +63,25 @@ export function UserHeader({
 function StatControl({
   count,
   label,
-  ariaLabel,
   onClick,
 }: {
   count: number;
   label: string;
-  ariaLabel: string;
   onClick?: () => void;
 }) {
+  const text = (
+    <>
+      <span className="user-header__stat-count">{count}</span> {label}
+    </>
+  );
+
   if (!onClick) {
-    return (
-      <span className="user-header__stat-chip">
-        <span className="user-header__stat-count">{count}</span> {label}
-      </span>
-    );
+    return <span className="user-header__stat-chip">{text}</span>;
   }
 
   return (
-    <button
-      type="button"
-      className="user-header__stat-btn"
-      aria-label={ariaLabel}
-      onClick={onClick}
-    >
-      <span className="user-header__stat-count">{count}</span> {label}
+    <button type="button" className="user-header__stat-btn" onClick={onClick}>
+      {text}
     </button>
   );
 }
