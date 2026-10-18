@@ -31,14 +31,13 @@ export function UserHeader({
           {note ? <span className="user-header__note">{note}</span> : null}
         </div>
         {user.username ? <p className="user-header__meta">@{user.username}</p> : null}
-        <p className="user-header__stats">
+        <div className="user-header__stats">
           <StatControl
             count={user.followersCount}
             label="подп."
             ariaLabel={`${user.followersCount} подписчиков`}
             onClick={onFollowersClick}
           />
-          <span aria-hidden>·</span>
           <StatControl
             count={user.followingCount}
             label="подписок"
@@ -46,12 +45,11 @@ export function UserHeader({
             onClick={onFollowingClick}
           />
           {user.popularityScore > 0 ? (
-            <>
-              <span aria-hidden>·</span>
-              <span>Поп. {user.popularityScore}</span>
-            </>
+            <span className="user-header__stat-chip user-header__stat-chip--muted">
+              Поп. {user.popularityScore}
+            </span>
           ) : null}
-        </p>
+        </div>
       </div>
       {actions ? <div className="user-header__actions">{actions}</div> : null}
     </header>
@@ -71,8 +69,8 @@ function StatControl({
 }) {
   if (!onClick) {
     return (
-      <span>
-        {count} {label}
+      <span className="user-header__stat-chip">
+        <span className="user-header__stat-count">{count}</span> {label}
       </span>
     );
   }

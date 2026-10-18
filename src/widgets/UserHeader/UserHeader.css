@@ -1,18 +1,19 @@
 .user-header {
   display: flex;
   gap: var(--space-3);
-  align-items: center;
+  align-items: flex-start;
 }
 
 .user-header__actions {
   margin-left: auto;
   flex-shrink: 0;
+  align-self: center;
 }
 
 .user-header__avatar {
-  width: 40px;
-  height: 40px;
-  font-size: 0.9375rem;
+  width: 56px;
+  height: 56px;
+  font-size: 1.125rem;
 }
 
 .user-header__info {
@@ -20,7 +21,7 @@
   min-width: 0;
   flex: 1;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-2);
 }
 
 .user-header__title-row {
@@ -32,7 +33,7 @@
 
 .user-header__name {
   margin: 0;
-  font-size: 1.0625rem;
+  font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.2;
@@ -40,7 +41,7 @@
 
 .user-header__note {
   color: var(--color-muted);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -48,37 +49,53 @@
 
 .user-header__meta {
   margin: 0;
-  color: var(--color-muted);
-  font-size: 0.8125rem;
-  line-height: 1.2;
+  color: var(--color-text);
+  font-size: 1.0625rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
 }
 
 .user-header__stats {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-1) var(--space-2);
+  gap: var(--space-2);
   margin: 0;
+}
+
+.user-header__stat-btn,
+.user-header__stat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  min-height: 36px;
+  margin: 0;
+  padding: 0.35rem 0.85rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-surface) 80%, transparent);
   color: var(--color-muted);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 .user-header__stat-btn {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  line-height: inherit;
   cursor: pointer;
   text-align: left;
 }
 
 .user-header__stat-btn:hover,
 .user-header__stat-btn:focus-visible {
+  border-color: color-mix(in srgb, var(--color-accent) 55%, var(--color-border));
+  background: color-mix(in srgb, var(--color-surface) 60%, var(--color-accent) 8%);
   color: var(--color-text);
+}
+
+.user-header__stat-chip--muted {
+  border-style: dashed;
 }
 
 .user-header__stat-count {
