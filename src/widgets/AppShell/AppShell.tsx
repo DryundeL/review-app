@@ -21,28 +21,25 @@ export function AppShell() {
   return (
     <div className="app-shell">
       <header className="app-shell__header">
-        <div className="app-shell__header-row">
-          {hideNav ? (
-            <Link className="app-shell__back" to="/">
-              Назад
-            </Link>
-          ) : (
-            <NavLink
-              to="/"
-              className="app-shell__brand"
-              end
-              onClick={(event) => {
-                if (pathname !== "/") return;
-                event.preventDefault();
-                refreshHomeFeed(queryClient);
-              }}
-            >
-              <img className="app-shell__logo" src={logoUrl} alt="Review Hub" width={2172} height={724} />
-            </NavLink>
-          )}
-        </div>
+        <NavLink
+          to="/"
+          className="app-shell__brand"
+          end
+          onClick={(event) => {
+            if (pathname !== "/") return;
+            event.preventDefault();
+            refreshHomeFeed(queryClient);
+          }}
+        >
+          <img className="app-shell__logo" src={logoUrl} alt="Review Hub" width={2172} height={724} />
+        </NavLink>
       </header>
       <main className={hideNav ? "app-shell__main app-shell__main--solo" : "app-shell__main"}>
+        {hideNav ? (
+          <Link className="app-shell__back" to="/">
+            Назад
+          </Link>
+        ) : null}
         <Outlet />
       </main>
       {hideNav ? null : <BottomNavigation />}
