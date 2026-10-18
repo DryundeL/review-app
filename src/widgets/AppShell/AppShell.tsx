@@ -17,6 +17,7 @@ export function AppShell() {
   const hideNav =
     pathname === "/create" ||
     pathname.startsWith("/reviews/");
+  const backTo = pathname === "/settings" ? "/profile" : hideNav ? "/" : null;
 
   return (
     <div className="app-shell">
@@ -37,8 +38,8 @@ export function AppShell() {
         </div>
       </header>
       <main className={hideNav ? "app-shell__main app-shell__main--solo" : "app-shell__main"}>
-        {hideNav ? (
-          <Link className="app-shell__back" to="/">
+        {backTo ? (
+          <Link className="app-shell__back" to={backTo}>
             Назад
           </Link>
         ) : null}

@@ -21,11 +21,14 @@ export function UserHeader({
 }: UserHeaderProps) {
   return (
     <header className="user-header">
-      <UserAvatar
-        className="user-header__avatar"
-        label={user.displayName}
-        photoUrl={user.photoUrl}
-      />
+      <div className="user-header__aside">
+        <UserAvatar
+          className="user-header__avatar"
+          label={user.displayName}
+          photoUrl={user.photoUrl}
+        />
+        {actions ? <div className="user-header__actions">{actions}</div> : null}
+      </div>
       <div className="user-header__info">
         <div className="user-header__title-row">
           <h1 className="user-header__name">{user.displayName}</h1>
@@ -55,7 +58,6 @@ export function UserHeader({
           ) : null}
         </div>
       </div>
-      {actions ? <div className="user-header__actions">{actions}</div> : null}
     </header>
   );
 }
