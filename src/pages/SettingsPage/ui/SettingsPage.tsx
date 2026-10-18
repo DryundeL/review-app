@@ -95,21 +95,28 @@ export function SettingsPage() {
 
         <li className="settings-page__row">
           <div className="settings-page__copy">
-            <label className="settings-page__label" htmlFor="settings-mute">
+            <span className="settings-page__label" id="settings-mute-label">
               Отключить все уведомления
-            </label>
-            <span className="settings-page__hint">Глобальный mute пушей</span>
+            </span>
+            <span className="settings-page__hint" id="settings-mute-hint">
+              Глобальный mute пушей
+            </span>
           </div>
-          <input
+          <button
             id="settings-mute"
-            className="settings-page__checkbox"
-            type="checkbox"
-            checked={settings.notificationsMuted}
+            type="button"
+            className="ui-switch"
+            role="switch"
+            aria-checked={settings.notificationsMuted}
+            aria-labelledby="settings-mute-label"
+            aria-describedby="settings-mute-hint"
             disabled={saveMutation.isPending}
-            onChange={(event) => {
-              saveMutation.mutate({ notificationsMuted: event.target.checked });
+            onClick={() => {
+              saveMutation.mutate({ notificationsMuted: !settings.notificationsMuted });
             }}
-          />
+          >
+            <span className="ui-switch__thumb" aria-hidden />
+          </button>
         </li>
       </ul>
 
