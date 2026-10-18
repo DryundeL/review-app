@@ -5,8 +5,8 @@
 ## Поток: лента → профиль → подписка
 
 ```
-1. GET /v1/feed
-   → authorId / author.id (uuid), author.username
+1. GET /v1/feed  (и GET/POST/PATCH /v1/reviews — тот же author)
+   → authorId / author.id (uuid), author.username, author.isFollowing
 
 2. GET /v1/profiles/{userId}          # чужой/свой по uuid (Bearer опционален)
    или GET /v1/profile                # только свой (Bearer обязателен)

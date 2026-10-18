@@ -33,7 +33,8 @@
       "authorId": "uuid",
       "author": {
         "id": "uuid",
-        "username": "ann"
+        "username": "ann",
+        "isFollowing": false
       },
       "mediaObject": {
         "id": "uuid",
@@ -58,6 +59,7 @@
 - `nextCursor`: `string` или `null`. Если `null` — конец ленты.
 - `author.username` — ник Telegram **без** `@`. Может быть `""` — UI fallback / плейсхолдер.
 - `author.id` === `authorId` — по этому UUID: профиль, обзоры, подписка. См. [api-social.md](api-social.md).
+- `author.isFollowing` — подписан ли текущий viewer; без auth / на себя → `false`. Тот же объект `author` отдаёт `GET/POST/PATCH /v1/reviews`.
 
 ### Скролл / подгрузка
 

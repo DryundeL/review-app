@@ -27,9 +27,16 @@ type ReviewBlock = {
   body: string;
 };
 
+type ReviewAuthor = {
+  id: string;       // uuid, === authorId
+  username: string; // ник TG без @; может быть ""
+  isFollowing: boolean;
+};
+
 type Review = {
   id: string;
   authorId: string;
+  author: ReviewAuthor; // тот же shape, что в feed
   mediaObjectId: string;
   title: string;
   rating: number; // 1..10
@@ -109,7 +116,7 @@ type ApiError = {
 - `status` — optional, default `draft`  
 - `blocks` — optional (пустой ок для draft)
 
-**201** → `Review`  
+**201** → `Review` (включая `author: { id, username, isFollowing }`)  
 **422** / **409** — см. ошибки ниже
 
 ---
@@ -124,7 +131,7 @@ type ApiError = {
 - если `status` не передан — остаётся как был
 - `blocks` — полный новый список
 
-**200** → `Review`  
+**200** → `Review` (включая `author`, как в feed)  
 **403** — не свой  
 **404** — нет обзора
 
@@ -134,7 +141,7 @@ type ApiError = {
 
 `GET /v1/reviews/:id` — Auth
 
-**200** → `Review`  
+**200** → `Review` с `author: { id, username, isFollowing }` (тот же shape, что list-item в feed)  
 **404** — нет / чужой draft
 
 ---

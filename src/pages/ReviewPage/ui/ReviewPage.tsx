@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getReview, viewReview, voteReview } from "@/entities/review";
 import { useAuthSession } from "@/features/auth";
+import { useFollowToggle } from "@/features/follow-user";
 import { ApiError } from "@/shared/api";
 import { usePageMeta } from "@/shared/hooks";
 import { truncateMeta, type PageMeta } from "@/shared/lib/pageMeta";
@@ -15,6 +16,8 @@ export function ReviewPage() {
   const { reviewId } = useParams();
   const { profile } = useAuthSession();
   const queryClient = useQueryClient();
+  const followMutation = useFollowToggle();
+  const [followOverride, setFollowOverride] = useState<boolean | null>(null);
 
   const reviewQuery = useQuery({
     queryKey: ["review", reviewId],
@@ -22,6 +25,10 @@ export function ReviewPage() {
     enabled: Boolean(reviewId),
     retry: false,
   });
+
+  useEffect(() => {
+    setFollowOverride(null);
+  }, [reviewId]);
 
   const pageMeta = useMemo((): PageMeta => {
     const path = reviewId ? `/reviews/${reviewId}` : "/reviews";
@@ -90,13 +97,41 @@ export function ReviewPage() {
   }
 
   const review = reviewQuery.data;
-  const isOwn = Boolean(profile && review.authorId === profile.id);
+  const authorId = review.author.id;
+  const isOwn = Boolean(profile && authorId === profile.id);
+  const username = review.author.username.trim();
+  const authorLabel = username ? `@${username}` : "Автор";
+  const isFollowing =
+    followOverride ?? review.author.isFollowing ?? review.isFollowing ?? false;
   const media = review.mediaObject;
   const mediaTitle = media.title.trim() || "Произведение";
   const typeLabel = MEDIA_TYPE_LABELS[media.type];
 
   return (
     <article className="review-page screen">
+      <div className="review-page__author">
+        <Link className="review-page__author-link" to={`/profiles/${authorId}`}>
+          {authorLabel}
+        </Link>
+        {!isOwn ? (
+          <Button
+            type="button"
+            className="review-page__follow"
+            variant={isFollowing ? "secondary" : "primary"}
+            disabled={followMutation.isPending}
+            aria-pressed={isFollowing}
+            onClick={() => {
+              const next = !isFollowing;
+              followMutation.mutate(
+                { userId: authorId, nextFollowing: next },
+                { onSuccess: () => setFollowOverride(next) },
+              );
+            }}
+          >
+            {isFollowing ? "Отписаться" : "Подписаться"}
+          </Button>
+        ) : null}
+      </div>
       <header className="review-page__head">
         <div className="review-page__poster" aria-hidden>
           <MediaPoster title={mediaTitle} posterUrl={media.posterUrl} />

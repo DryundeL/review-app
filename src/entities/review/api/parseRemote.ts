@@ -1,12 +1,12 @@
 import { z } from "zod";
-import { unexpectedResponseError } from "@/shared/api/errors";
-import { safeHttpsUrl } from "@/shared/lib/safeHttpsUrl";
-import { MEDIA_TYPE_LABELS, type MediaType } from "@/shared/types";
+import { unexpectedResponseError } from "../../../shared/api/errors.ts";
+import { safeHttpsUrl } from "../../../shared/lib/safeHttpsUrl.ts";
+import { MEDIA_TYPE_LABELS, type MediaType } from "../../../shared/types/media.ts";
 import type {
   MediaObjectSummary,
   RemoteReview,
   RemoteReviewList,
-} from "../model/remote";
+} from "../model/remote.ts";
 
 const uuid = z.string().uuid();
 
@@ -33,14 +33,14 @@ const mediaObjectSchema = z.object({
 const authorSchema = z.object({
   id: uuid,
   username: z.string().nullish().transform((value) => value ?? ""),
-  isFollowing: z.boolean().nullish(),
+  isFollowing: z.boolean().nullish().transform((value) => value ?? false),
 });
 
-/** Строгий summary для detail / create — status обязателен. */
+/** Строгий summary для detail / create / update — status и author обязательны. */
 const reviewSummarySchema = z.object({
   id: uuid,
   authorId: uuid,
-  author: authorSchema.optional(),
+  author: authorSchema,
   mediaObject: mediaObjectSchema,
   title: z.string().min(1).max(256),
   rating: z.number().int().min(1).max(10),
@@ -133,19 +133,26 @@ function toCatalogMediaSummary(raw: z.infer<typeof catalogMediaSchema>): MediaOb
   };
 }
 
+function mapAuthor(
+  author: z.infer<typeof authorSchema>,
+  itemIsFollowing?: boolean | null,
+): {
+  id: string;
+  username: string;
+  isFollowing: boolean;
+} {
+  return {
+    id: author.id,
+    username: author.username,
+    isFollowing: itemIsFollowing ?? author.isFollowing,
+  };
+}
+
 function mapSummary(
   item: z.infer<typeof reviewSummarySchema> | z.infer<typeof reviewListItemSchema>,
 ) {
   const author = item.author
-    ? {
-        id: item.author.id,
-        username: item.author.username,
-        ...(item.author.isFollowing != null
-          ? { isFollowing: item.author.isFollowing }
-          : item.isFollowing != null
-            ? { isFollowing: item.isFollowing }
-            : {}),
-      }
+    ? mapAuthor(item.author, item.isFollowing)
     : undefined;
 
   return {
@@ -160,10 +167,10 @@ function mapSummary(
     likesCount: item.likesCount,
     dislikesCount: item.dislikesCount,
     viewsCount: item.viewsCount,
-    ...(item.isFollowing != null
-      ? { isFollowing: item.isFollowing }
-      : author?.isFollowing != null
-        ? { isFollowing: author.isFollowing }
+    ...(author
+      ? { isFollowing: author.isFollowing }
+      : item.isFollowing != null
+        ? { isFollowing: item.isFollowing }
         : {}),
   };
 }
@@ -171,8 +178,11 @@ function mapSummary(
 export function parseRemoteReview(payload: unknown): RemoteReview {
   const parsed = reviewDetailSchema.safeParse(payload);
   if (!parsed.success) throw unexpectedResponseError();
+  const summary = mapSummary(parsed.data);
+  if (!summary.author) throw unexpectedResponseError();
   return {
-    ...mapSummary(parsed.data),
+    ...summary,
+    author: summary.author,
     blocks: parsed.data.blocks,
   };
 }

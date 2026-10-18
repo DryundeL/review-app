@@ -23,14 +23,15 @@ export type MediaObjectSummary = {
 export type RemoteReviewAuthor = {
   id: string;
   username: string;
-  /** Подписан ли текущий viewer на автора (на ленте / списках). */
-  isFollowing?: boolean;
+  /** Подписан ли текущий viewer на автора (feed, detail, create/update). */
+  isFollowing: boolean;
 };
 
 /** Элемент списка: без blocks, с флагом спойлеров и вложенным mediaObject. */
 export type RemoteReviewSummary = {
   id: string;
   authorId: string;
+  /** Лента и списки профиля обычно отдают; без auth isFollowing = false. */
   author?: RemoteReviewAuthor;
   mediaObject: MediaObjectSummary;
   title: string;
@@ -44,8 +45,9 @@ export type RemoteReviewSummary = {
   isFollowing?: boolean;
 };
 
-/** GET /reviews/:id и ответы create/update — полные блоки. */
-export type RemoteReview = RemoteReviewSummary & {
+/** GET /reviews/:id и ответы create/update — полные блоки + author как в feed. */
+export type RemoteReview = Omit<RemoteReviewSummary, "author"> & {
+  author: RemoteReviewAuthor;
   blocks: RemoteReviewBlock[];
 };
 
