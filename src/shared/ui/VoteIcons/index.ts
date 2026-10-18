@@ -1,3 +1,3 @@
 import "./VoteIcons.css";
 
-export { DislikeIcon, LikeIcon, VoteCounts } from "./VoteIcons";
+export { DislikeIcon, LikeIcon, ViewsIcon, VoteCounts } from "./VoteIcons";

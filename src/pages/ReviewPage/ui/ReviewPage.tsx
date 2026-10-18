@@ -178,9 +178,11 @@ export function ReviewPage() {
           </p>
           <h1>{review.title}</h1>
           <p className="review-page__stats">
-            <VoteCounts likes={review.likesCount} dislikes={review.dislikesCount} />
-            <span>·</span>
-            <span>{review.viewsCount} просм.</span>
+            <VoteCounts
+              likes={review.likesCount}
+              dislikes={review.dislikesCount}
+              views={review.viewsCount}
+            />
             <span className="review-page__rating" aria-label={`Оценка ${review.rating} из 10`}>
               {review.rating}
               <small>/10</small>

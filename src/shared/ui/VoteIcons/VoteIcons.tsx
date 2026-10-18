@@ -39,13 +39,32 @@ export function DislikeIcon({ size = 14, className }: IconProps) {
   );
 }
 
+export function ViewsIcon({ size = 14, className }: IconProps) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      aria-hidden
+      focusable="false"
+    >
+      <path
+        fill="currentColor"
+        d="M12 5c-5.5 0-9.7 4.2-10.9 6.1a1.4 1.4 0 0 0 0 1.8C2.3 14.8 6.5 19 12 19s9.7-4.2 10.9-6.1a1.4 1.4 0 0 0 0-1.8C21.7 9.2 17.5 5 12 5Zm0 11.5A4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 0 1 0 9Zm0-7A2.5 2.5 0 1 0 12 14a2.5 2.5 0 0 0 0-5Z"
+      />
+    </svg>
+  );
+}
+
 type VoteCountsProps = {
   likes: number;
   dislikes: number;
+  views?: number;
   className?: string;
 };
 
-export function VoteCounts({ likes, dislikes, className }: VoteCountsProps) {
+export function VoteCounts({ likes, dislikes, views, className }: VoteCountsProps) {
   return (
     <span className={className ? `vote-counts ${className}` : "vote-counts"}>
       <span className="vote-counts__item" aria-label={`Нравится: ${likes}`}>
@@ -56,6 +75,12 @@ export function VoteCounts({ likes, dislikes, className }: VoteCountsProps) {
         <DislikeIcon />
         <span>{dislikes}</span>
       </span>
+      {views !== undefined ? (
+        <span className="vote-counts__item" aria-label={`Просмотры: ${views}`}>
+          <ViewsIcon />
+          <span>{views}</span>
+        </span>
+      ) : null}
     </span>
   );
 }

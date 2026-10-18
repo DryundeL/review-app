@@ -17,10 +17,11 @@ export function ReviewCard({ review }: ReviewCardProps) {
       <p className="review-card__excerpt">{review.excerpt}</p>
       <footer className="review-card__meta">
         <span>{MEDIA_TYPE_LABELS[review.primaryType]}</span>
-        <span className="review-card__votes">
-          <VoteCounts likes={review.likesCount} dislikes={review.dislikesCount} />
-          <span>{review.viewsCount} просм.</span>
-        </span>
+        <VoteCounts
+          likes={review.likesCount}
+          dislikes={review.dislikesCount}
+          views={review.viewsCount}
+        />
       </footer>
     </article>
   );

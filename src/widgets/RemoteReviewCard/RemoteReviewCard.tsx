@@ -67,8 +67,11 @@ export function RemoteReviewCard({
 
           <span className="remote-review__stats">
             <span className="remote-review__stats-left">
-              <VoteCounts likes={review.likesCount} dislikes={review.dislikesCount} />
-              <span>{review.viewsCount} просм.</span>
+              <VoteCounts
+                likes={review.likesCount}
+                dislikes={review.dislikesCount}
+                views={review.viewsCount}
+              />
             </span>
             <span className="remote-review__rating" aria-label={`Оценка ${review.rating} из 10`}>
               {review.rating}
