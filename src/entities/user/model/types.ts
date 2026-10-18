@@ -40,3 +40,16 @@ export type User = {
   followersCount: number;
   followingCount: number;
 };
+
+/** Элемент GET /v1/profiles/:id/followers|following. */
+export type FollowConnection = {
+  userId: string;
+  username: string;
+  isFollowing: boolean;
+  createdAt: string;
+  photoUrl?: string;
+};
+
+export type FollowConnectionList = {
+  items: FollowConnection[];
+};

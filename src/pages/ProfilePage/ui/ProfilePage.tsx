@@ -1,4 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type InfiniteData,
+} from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
@@ -8,23 +14,30 @@ import {
   type RemoteReviewSummary,
 } from "@/entities/review";
 import {
+  listProfileFollowers,
+  listProfileFollowing,
   fetchPublicProfile,
+  type FollowConnection,
+  type FollowConnectionList,
   type PublicProfile,
   type SessionProfile,
   type User,
 } from "@/entities/user";
 import { useAuthSession } from "@/features/auth";
-import { useFollowUser } from "@/features/follow-user";
+import { useFollowToggle, useFollowUser } from "@/features/follow-user";
 import { ApiError } from "@/shared/api";
 import { usePageMeta } from "@/shared/hooks";
 import { truncateMeta, type PageMeta } from "@/shared/lib/pageMeta";
 import { safeHttpsUrl } from "@/shared/lib/safeHttpsUrl";
-import { Button } from "@/shared/ui";
+import { Button, Modal, UserAvatar } from "@/shared/ui";
 import { RemoteReviewCard } from "@/widgets/RemoteReviewCard";
 import { UserHeader } from "@/widgets/UserHeader";
 import "./ProfilePage.css";
 
 type ReviewTab = "published" | "drafts";
+type FollowListKind = "followers" | "following";
+
+const FOLLOW_PAGE_SIZE = 20;
 
 export function ProfilePage() {
   const { userId: routeUserId } = useParams<{ userId?: string }>();
@@ -43,6 +56,7 @@ function OwnProfileView({ profile }: { profile: SessionProfile }) {
   const queryClient = useQueryClient();
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [tab, setTab] = useState<ReviewTab>("published");
+  const [followList, setFollowList] = useState<FollowListKind | null>(null);
 
   const reviewsQuery = useQuery({
     queryKey: ["my-reviews"],
@@ -68,6 +82,8 @@ function OwnProfileView({ profile }: { profile: SessionProfile }) {
       <UserHeader
         user={toUser(profile)}
         note={profile.isPremium ? "Premium" : null}
+        onFollowersClick={() => setFollowList("followers")}
+        onFollowingClick={() => setFollowList("following")}
       />
 
       <ReviewTabs
@@ -91,6 +107,13 @@ function OwnProfileView({ profile }: { profile: SessionProfile }) {
         emptyOwn
         emptyTab={tab}
       />
+
+      <FollowConnectionsModal
+        profileId={profile.id}
+        viewerId={profile.id}
+        kind={followList}
+        onClose={() => setFollowList(null)}
+      />
     </section>
   );
 }
@@ -106,6 +129,7 @@ function PublicProfileView({
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [followError, setFollowError] = useState<string | null>(null);
   const [tab, setTab] = useState<ReviewTab>("published");
+  const [followList, setFollowList] = useState<FollowListKind | null>(null);
   const profileKey = ["profile", userId] as const;
 
   const profileQuery = useQuery({
@@ -190,6 +214,8 @@ function PublicProfileView({
       <UserHeader
         user={toUser(profile)}
         note={isMe && profile.isPremium ? "Premium" : null}
+        onFollowersClick={() => setFollowList("followers")}
+        onFollowingClick={() => setFollowList("following")}
         actions={
           isMe ? null : (
             <Button
@@ -245,7 +271,181 @@ function PublicProfileView({
         emptyOwn={isMe}
         emptyTab={isMe ? tab : "published"}
       />
+
+      <FollowConnectionsModal
+        profileId={profile.id}
+        viewerId={sessionProfile?.id ?? null}
+        kind={followList}
+        onClose={() => setFollowList(null)}
+      />
     </section>
+  );
+}
+
+function FollowConnectionsModal({
+  profileId,
+  viewerId,
+  kind,
+  onClose,
+}: {
+  profileId: string;
+  viewerId: string | null;
+  kind: FollowListKind | null;
+  onClose: () => void;
+}) {
+  const open = kind !== null;
+  const queryClient = useQueryClient();
+  const title = kind === "following" ? "Подписки" : "Подписчики";
+
+  const listQuery = useInfiniteQuery({
+    queryKey: ["profile-connections", profileId, kind],
+    enabled: open && kind !== null,
+    initialPageParam: 0,
+    queryFn: ({ pageParam, signal }) => {
+      const params = { limit: FOLLOW_PAGE_SIZE, offset: pageParam };
+      return kind === "following"
+        ? listProfileFollowing(profileId, params, signal)
+        : listProfileFollowers(profileId, params, signal);
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.items.length < FOLLOW_PAGE_SIZE) return undefined;
+      return allPages.reduce((sum, page) => sum + page.items.length, 0);
+    },
+  });
+
+  const items = listQuery.data?.pages.flatMap((page) => page.items) ?? [];
+
+  return (
+    <Modal
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
+      title={title}
+      className="profile-page__follow-modal"
+    >
+      {listQuery.isLoading ? (
+        <div
+          className="profile-page__skeleton profile-page__follow-skeleton"
+          aria-busy="true"
+          aria-label={`Загрузка: ${title.toLowerCase()}`}
+        >
+          <div />
+          <div />
+        </div>
+      ) : null}
+
+      {listQuery.isError ? (
+        <div className="profile-page__follow-error" role="alert">
+          <p>Не удалось загрузить список.</p>
+          <Button type="button" variant="secondary" onClick={() => void listQuery.refetch()}>
+            Повторить
+          </Button>
+        </div>
+      ) : null}
+
+      {!listQuery.isLoading && !listQuery.isError && items.length === 0 ? (
+        <p className="profile-page__follow-empty" role="status">
+          {kind === "following" ? "Подписок пока нет." : "Подписчиков пока нет."}
+        </p>
+      ) : null}
+
+      {items.length > 0 ? (
+        <ul className="profile-page__follow-list">
+          {items.map((item) => (
+            <li key={item.userId}>
+              <FollowConnectionRow
+                item={item}
+                viewerId={viewerId}
+                onOpenProfile={onClose}
+                onFollowChange={(userId, nextFollowing) => {
+                  queryClient.setQueryData<InfiniteData<FollowConnectionList, number>>(
+                    ["profile-connections", profileId, kind],
+                    (prev) => {
+                      if (!prev) return prev;
+                      return {
+                        ...prev,
+                        pages: prev.pages.map((page) => ({
+                          ...page,
+                          items: page.items.map((row) =>
+                            row.userId === userId
+                              ? { ...row, isFollowing: nextFollowing }
+                              : row,
+                          ),
+                        })),
+                      };
+                    },
+                  );
+                }}
+              />
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      {listQuery.hasNextPage ? (
+        <Button
+          type="button"
+          variant="secondary"
+          className="profile-page__follow-more"
+          disabled={listQuery.isFetchingNextPage}
+          onClick={() => void listQuery.fetchNextPage()}
+        >
+          {listQuery.isFetchingNextPage ? "Загрузка…" : "Ещё"}
+        </Button>
+      ) : null}
+    </Modal>
+  );
+}
+
+function FollowConnectionRow({
+  item,
+  viewerId,
+  onOpenProfile,
+  onFollowChange,
+}: {
+  item: FollowConnection;
+  viewerId: string | null;
+  onOpenProfile: () => void;
+  onFollowChange: (userId: string, nextFollowing: boolean) => void;
+}) {
+  const followMutation = useFollowToggle();
+  const isMe = viewerId !== null && viewerId === item.userId;
+  const label = item.username ? `@${item.username}` : "Пользователь";
+
+  return (
+    <div className="profile-page__follow-row">
+      <Link
+        className="profile-page__follow-link"
+        to={`/profiles/${item.userId}`}
+        onClick={onOpenProfile}
+      >
+        <UserAvatar
+          className="profile-page__follow-avatar"
+          label={label}
+          photoUrl={item.photoUrl}
+        />
+        <span className="profile-page__follow-name">{label}</span>
+      </Link>
+      {!isMe ? (
+        <Button
+          type="button"
+          className="profile-page__follow"
+          variant={item.isFollowing ? "secondary" : "primary"}
+          disabled={followMutation.isPending}
+          aria-pressed={item.isFollowing}
+          onClick={() => {
+            const next = !item.isFollowing;
+            followMutation.mutate(
+              { userId: item.userId, nextFollowing: next },
+              { onSuccess: () => onFollowChange(item.userId, next) },
+            );
+          }}
+        >
+          {item.isFollowing ? "Отписаться" : "Подписаться"}
+        </Button>
+      ) : null}
+    </div>
   );
 }
 
