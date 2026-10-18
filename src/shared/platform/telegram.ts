@@ -18,8 +18,9 @@ export function readTelegramInitData(): string | null {
 
 /**
  * CSS vars для safe-area.
- * Top: safe + contentSafe (status + Close). Шапка: padding-top = spacer, ряд с «Назад» ниже.
- * Bottom: только home-indicator (без content.bottom — иначе пустота под таббаром).
+ * Top: только contentSafeArea (зона под Close). Сумма с safe + floor 88px давала
+ * огромную пустую «шапку» между Close и логотипом.
+ * Bottom: только home-indicator.
  * Не пишем 0px — иначе затирается env(safe-area-inset-*).
  */
 function syncTelegramSafeAreaVars(webApp: TelegramWebApp): void {
@@ -27,14 +28,7 @@ function syncTelegramSafeAreaVars(webApp: TelegramWebApp): void {
   const content = webApp.contentSafeAreaInset;
   const root = document.documentElement;
 
-  const systemTop = safe?.top ?? 0;
-  const contentTop = content?.top ?? 0;
-  let top = systemTop + contentTop;
-
-  // fullscreen: insets часто приходят с задержкой / нулями — минимум под Close
-  if (webApp.isFullscreen && top < 56) {
-    top = systemTop > 0 ? systemTop + 48 : 88;
-  }
+  const top = content && content.top > 0 ? content.top : (safe?.top ?? 0);
 
   if (top > 0) {
     root.style.setProperty("--safe-top", `${top}px`);
