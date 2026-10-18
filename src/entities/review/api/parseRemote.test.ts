@@ -12,25 +12,30 @@ const mediaObject = {
   type: "manga",
 };
 
+const detailBase = {
+  id: reviewId,
+  authorId,
+  mediaObject,
+  title: "Обзор",
+  rating: 8,
+  hasSpoilers: false,
+  likesCount: 0,
+  dislikesCount: 0,
+  viewsCount: 0,
+  blocks: [] as const,
+};
+
 test("parseRemoteReview requires author like feed", () => {
   const review = parseRemoteReview({
-    id: reviewId,
-    authorId,
+    ...detailBase,
     author: {
       id: authorId,
       username: "ann",
       isFollowing: true,
       photoUrl: "https://cdn.example/a.jpg",
     },
-    mediaObject,
-    title: "Обзор",
-    rating: 8,
-    status: "published",
-    hasSpoilers: false,
     likesCount: 1,
-    dislikesCount: 0,
     viewsCount: 3,
-    blocks: [],
   });
 
   assert.deepEqual(review.author, {
@@ -40,26 +45,26 @@ test("parseRemoteReview requires author like feed", () => {
     photoUrl: "https://cdn.example/a.jpg",
   });
   assert.equal(review.isFollowing, true);
+  assert.equal(review.status, "published");
+});
+
+test("parseRemoteReview accepts missing status", () => {
+  const review = parseRemoteReview({
+    ...detailBase,
+    author: { id: authorId, username: "ann" },
+  });
+
+  assert.equal(review.status, "published");
 });
 
 test("parseRemoteReview strips unsafe author.photoUrl", () => {
   const review = parseRemoteReview({
-    id: reviewId,
-    authorId,
+    ...detailBase,
     author: {
       id: authorId,
       username: "ann",
       photoUrl: "javascript:alert(1)",
     },
-    mediaObject,
-    title: "Обзор",
-    rating: 8,
-    status: "published",
-    hasSpoilers: false,
-    likesCount: 0,
-    dislikesCount: 0,
-    viewsCount: 0,
-    blocks: [],
   });
 
   assert.equal(review.author.photoUrl, undefined);
@@ -67,39 +72,15 @@ test("parseRemoteReview strips unsafe author.photoUrl", () => {
 
 test("parseRemoteReview defaults missing isFollowing to false", () => {
   const review = parseRemoteReview({
-    id: reviewId,
-    authorId,
+    ...detailBase,
     author: { id: authorId, username: "ann" },
-    mediaObject,
-    title: "Обзор",
-    rating: 8,
-    status: "published",
-    hasSpoilers: false,
-    likesCount: 0,
-    dislikesCount: 0,
-    viewsCount: 0,
-    blocks: [],
   });
 
   assert.equal(review.author.isFollowing, false);
 });
 
 test("parseRemoteReview rejects payload without author", () => {
-  assert.throws(() =>
-    parseRemoteReview({
-      id: reviewId,
-      authorId,
-      mediaObject,
-      title: "Обзор",
-      rating: 8,
-      status: "published",
-      hasSpoilers: false,
-      likesCount: 0,
-      dislikesCount: 0,
-      viewsCount: 0,
-      blocks: [],
-    }),
-  );
+  assert.throws(() => parseRemoteReview({ ...detailBase }));
 });
 
 test("feed list maps author.isFollowing and photoUrl", () => {

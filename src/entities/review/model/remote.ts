@@ -38,6 +38,7 @@ export type RemoteReviewSummary = {
   mediaObject: MediaObjectSummary;
   title: string;
   rating: number;
+  /** В detail может отсутствовать на бэке — парсер подставляет published. В списках профиля различает draft. */
   status: ReviewStatus;
   hasSpoilers: boolean;
   likesCount: number;

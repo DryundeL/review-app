@@ -48,7 +48,6 @@ export function ReviewPage() {
     }
     const review = reviewQuery.data;
     const mediaTitle = review.mediaObject.title.trim() || "Произведение";
-    const draft = review.status !== "published";
     return {
       path,
       title: review.title.trim() || mediaTitle,
@@ -56,19 +55,19 @@ export function ReviewPage() {
         `${mediaTitle} · оценка ${review.rating}/10. ${review.title}`.trim(),
       ),
       image: safeHttpsUrl(review.mediaObject.posterUrl),
-      noindex: draft,
+      noindex: false,
     };
   }, [reviewId, reviewQuery.data, reviewQuery.isError]);
 
   usePageMeta(pageMeta);
 
   useEffect(() => {
-    if (!reviewId || reviewQuery.data?.status !== "published") return;
+    if (!reviewId || !reviewQuery.data) return;
     if (profile && reviewQuery.data.authorId === profile.id) return;
     void viewReview(reviewId).catch(() => {
       // просмотр не критичен для чтения
     });
-  }, [profile, reviewId, reviewQuery.data?.authorId, reviewQuery.data?.status]);
+  }, [profile, reviewId, reviewQuery.data]);
 
   const voteMutation = useMutation({
     mutationFn: (isLike: boolean) => voteReview(reviewId!, isLike),
@@ -161,16 +160,11 @@ export function ReviewPage() {
           <MediaPoster title={mediaTitle} posterUrl={media.posterUrl} />
         </div>
         <div className="review-page__titles">
-          <div className="review-page__meta">
-            {review.status === "draft" ? (
-              <span className="review-page__draft">Черновик</span>
-            ) : (
-              <span className="review-page__draft review-page__draft--live">Опубликован</span>
-            )}
-            {review.hasSpoilers ? (
+          {review.hasSpoilers ? (
+            <div className="review-page__meta">
               <span className="review-page__spoiler-flag">есть спойлеры</span>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
           <p className="review-page__media">
             <span className="review-page__type">{typeLabel}</span>
             <span aria-hidden>·</span>
@@ -209,7 +203,7 @@ export function ReviewPage() {
         )}
       </div>
 
-      {review.status === "published" && !isOwn ? (
+      {!isOwn ? (
         <div className="review-page__vote" role="group" aria-label="Оценка обзора">
           <Button
             type="button"

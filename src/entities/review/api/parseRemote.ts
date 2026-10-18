@@ -37,7 +37,10 @@ const authorSchema = z.object({
   photoUrl: z.string().optional().nullable(),
 });
 
-/** Строгий summary для detail / create / update — status и author обязательны. */
+/**
+ * Detail / create / update: author обязателен.
+ * status с detail убран на бэке — если нет, считаем published.
+ */
 const reviewSummarySchema = z.object({
   id: uuid,
   authorId: uuid,
@@ -45,7 +48,7 @@ const reviewSummarySchema = z.object({
   mediaObject: mediaObjectSchema,
   title: z.string().min(1).max(256),
   rating: z.number().int().min(1).max(10),
-  status: z.enum(["draft", "published"]),
+  status: z.enum(["draft", "published"]).optional().default("published"),
   hasSpoilers: z.boolean(),
   likesCount: z.number().int().nonnegative(),
   dislikesCount: z.number().int().nonnegative(),
@@ -54,8 +57,9 @@ const reviewSummarySchema = z.object({
 });
 
 /**
- * Лента/списки: бэкенд может не слать status (всегда published)
- * и класть isFollowing на item или на author.
+ * Лента/списки: status нужен для черновиков в профиле;
+ * в feed может отсутствовать (тогда published).
+ * isFollowing — на item или на author.
  */
 const reviewListItemSchema = z.object({
   id: uuid,

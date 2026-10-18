@@ -158,6 +158,26 @@ export function CreateReviewPage() {
           Произведение: <strong>{lockedMediaTitle ?? "…"}</strong>
           <span className="muted"> (не меняется)</span>
         </p>
+      ) : selectedMedia ? (
+        <div className="create-review__picked-block">
+          <span className="create-review__field-label">Произведение</span>
+          <div className="create-review__picked-row">
+            <p className="create-review__picked">
+              Выбрано: <strong>{selectedMedia.title}</strong>
+              <span className="create-review__picked-meta"> · {mediaMetaLine(selectedMedia)}</span>
+            </p>
+            <button
+              type="button"
+              className="create-review__change-media"
+              onClick={() => {
+                setSelectedMedia(null);
+                setMediaObjectId("");
+              }}
+            >
+              Изменить
+            </button>
+          </div>
+        </div>
       ) : (
         <>
           <label className="create-review__field">
@@ -173,7 +193,7 @@ export function CreateReviewPage() {
 
           {mediaQueryResult.isError ? (
             <p className="create-review__warn" role="status">
-              Каталог недоступен. Можно вставить UUID произведения вручную ниже.
+              Каталог недоступен. Попробуйте позже.
             </p>
           ) : null}
 
@@ -189,60 +209,32 @@ export function CreateReviewPage() {
           mediaOptions.length === 0 ? (
             <p className="muted" role="status">
               {debouncedMediaQuery
-                ? "Ничего не найдено. Уточните запрос или вставьте UUID ниже."
+                ? "Ничего не найдено. Уточните запрос."
                 : "Начните вводить название — поиск идёт по каталогу."}
             </p>
           ) : null}
 
           {mediaOptions.length > 0 ? (
             <ul className="create-review__media" role="listbox" aria-label="Произведения">
-              {mediaOptions.map((item) => {
-                const active = item.id === mediaObjectId;
-                return (
-                  <li key={item.id}>
-                    <button
-                      type="button"
-                      role="option"
-                      aria-selected={active}
-                      className={
-                        active
-                          ? "create-review__media-item is-active"
-                          : "create-review__media-item"
-                      }
-                      onClick={() => {
-                        setMediaObjectId(item.id);
-                        setSelectedMedia(item);
-                      }}
-                    >
-                      <span className="create-review__media-title">{item.title}</span>
-                      <span className="create-review__media-meta">{mediaMetaLine(item)}</span>
-                    </button>
-                  </li>
-                );
-              })}
+              {mediaOptions.map((item) => (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={false}
+                    className="create-review__media-item"
+                    onClick={() => {
+                      setMediaObjectId(item.id);
+                      setSelectedMedia(item);
+                    }}
+                  >
+                    <span className="create-review__media-title">{item.title}</span>
+                    <span className="create-review__media-meta">{mediaMetaLine(item)}</span>
+                  </button>
+                </li>
+              ))}
             </ul>
           ) : null}
-
-          {!selectedMedia || selectedMedia.id !== mediaObjectId ? (
-            <label className="create-review__field">
-              <span>UUID произведения</span>
-              <Input
-                value={mediaObjectId}
-                onChange={(event) => {
-                  setMediaObjectId(event.target.value.trim());
-                  setSelectedMedia(null);
-                }}
-                placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                autoComplete="off"
-                spellCheck={false}
-              />
-            </label>
-          ) : (
-            <p className="create-review__picked">
-              Выбрано: <strong>{selectedMedia.title}</strong>
-              <span className="create-review__picked-meta"> · {mediaMetaLine(selectedMedia)}</span>
-            </p>
-          )}
         </>
       )}
 
