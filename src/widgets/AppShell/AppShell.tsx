@@ -39,13 +39,24 @@ export function AppShell() {
       </header>
       <main className={hideNav ? "app-shell__main app-shell__main--solo" : "app-shell__main"}>
         {backTo ? (
-          <Link className="app-shell__back" to={backTo}>
-            Назад
+          <Link className="app-shell__back" to={backTo} aria-label="Назад">
+            <BackArrowIcon />
           </Link>
         ) : null}
         <Outlet />
       </main>
       {hideNav ? null : <BottomNavigation />}
     </div>
+  );
+}
+
+function BackArrowIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden focusable="false">
+      <path
+        fill="currentColor"
+        d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"
+      />
+    </svg>
   );
 }
