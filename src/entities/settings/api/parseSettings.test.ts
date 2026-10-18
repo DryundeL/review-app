@@ -9,9 +9,9 @@ import {
 
 test("parseSettingsText accepts valid payload", () => {
   const settings = parseSettingsText(
-    JSON.stringify({ language: "ru", notificationsMuted: false }),
+    JSON.stringify({ language: "ru", allowNotifications: true }),
   );
-  assert.deepEqual(settings, { language: "ru", notificationsMuted: false });
+  assert.deepEqual(settings, { language: "ru", allowNotifications: true });
 });
 
 test("parseSettingsText rejects broken json", () => {

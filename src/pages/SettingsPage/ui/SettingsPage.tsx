@@ -96,10 +96,7 @@ export function SettingsPage() {
         <li className="settings-page__row">
           <div className="settings-page__copy">
             <span className="settings-page__label" id="settings-mute-label">
-              Отключить все уведомления
-            </span>
-            <span className="settings-page__hint" id="settings-mute-hint">
-              Глобальный mute пушей
+              Присылать уведомление в чат
             </span>
           </div>
           <button
@@ -107,12 +104,11 @@ export function SettingsPage() {
             type="button"
             className="ui-switch"
             role="switch"
-            aria-checked={settings.notificationsMuted}
+            aria-checked={settings.allowNotifications}
             aria-labelledby="settings-mute-label"
-            aria-describedby="settings-mute-hint"
             disabled={saveMutation.isPending}
             onClick={() => {
-              saveMutation.mutate({ notificationsMuted: !settings.notificationsMuted });
+              saveMutation.mutate({ allowNotifications: !settings.allowNotifications });
             }}
           >
             <span className="ui-switch__thumb" aria-hidden />

@@ -9,7 +9,7 @@ import type {
 
 const settingsSchema = z.object({
   language: z.string().min(2).max(16),
-  notificationsMuted: z.boolean(),
+  allowNotifications: z.boolean(),
 });
 
 const notificationItemSchema = z.object({

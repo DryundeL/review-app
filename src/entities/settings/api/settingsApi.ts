@@ -50,8 +50,8 @@ function normalizePatchSettings(input: PatchSettingsInput): PatchSettingsInput {
   if (input.language !== undefined) {
     body.language = assertLanguage(input.language);
   }
-  if (input.notificationsMuted !== undefined) {
-    body.notificationsMuted = input.notificationsMuted;
+  if (input.allowNotifications !== undefined) {
+    body.allowNotifications = input.allowNotifications;
   }
   return body;
 }

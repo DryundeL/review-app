@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import logoUrl from "@/assets/review-hub-logo.png";
 import { usePageMeta } from "@/shared/hooks";
 import { metaForPath } from "@/shared/lib/pageMeta";
@@ -7,8 +7,25 @@ import { refreshHomeFeed } from "@/shared/lib/refreshHome";
 import { BottomNavigation } from "@/widgets/BottomNavigation";
 import "./AppShell.css";
 
+function showBackButton(pathname: string): boolean {
+  return (
+    pathname === "/settings" ||
+    pathname === "/create" ||
+    pathname === "/achievements" ||
+    pathname.startsWith("/reviews/") ||
+    pathname.startsWith("/profiles/")
+  );
+}
+
+/** React Router кладёт idx в history.state — надёжнее, чем history.length. */
+function canNavigateBack(): boolean {
+  const idx = (window.history.state as { idx?: number } | null)?.idx;
+  return typeof idx === "number" ? idx > 0 : window.history.length > 1;
+}
+
 export function AppShell() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   // Обзор и публичный профиль ставят meta сами — иначе shell перетрёт после их effect.
   const pageOwnsMeta =
@@ -17,7 +34,18 @@ export function AppShell() {
   const hideNav =
     pathname === "/create" ||
     pathname.startsWith("/reviews/");
-  const backTo = pathname === "/settings" ? "/profile" : hideNav ? "/" : null;
+  const showBack = showBackButton(pathname);
+
+  function handleBack() {
+    // Помечаем кэш устаревшим без рефетча текущей страницы —
+    // предыдущий экран подтянет свежие данные при монтировании.
+    void queryClient.invalidateQueries({ refetchType: "none" });
+    if (canNavigateBack()) {
+      navigate(-1);
+      return;
+    }
+    navigate(pathname === "/settings" ? "/profile" : "/", { replace: true });
+  }
 
   return (
     <div className="app-shell">
@@ -38,10 +66,10 @@ export function AppShell() {
         </div>
       </header>
       <main className={hideNav ? "app-shell__main app-shell__main--solo" : "app-shell__main"}>
-        {backTo ? (
-          <Link className="app-shell__back" to={backTo} aria-label="Назад">
+        {showBack ? (
+          <button type="button" className="app-shell__back" aria-label="Назад" onClick={handleBack}>
             <BackArrowIcon />
-          </Link>
+          </button>
         ) : null}
         <Outlet />
       </main>

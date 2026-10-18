@@ -238,9 +238,9 @@ export function NotificationsPage() {
         title="Настройки уведомлений"
         className="notifications-page__prefs-modal"
       >
-        {settingsQuery.data?.notificationsMuted ? (
+        {settingsQuery.data && !settingsQuery.data.allowNotifications ? (
           <p className="notifications-page__mute-note" role="status">
-            Все пуши отключены в{" "}
+            Уведомления в чат отключены в{" "}
             <Link className="notifications-page__inline-link" to="/settings">
               Настройках
             </Link>

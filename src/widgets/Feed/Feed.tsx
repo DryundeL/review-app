@@ -46,7 +46,8 @@ export function Feed() {
         signal,
       ),
     getNextPageParam: (last) => last.nextCursor ?? undefined,
-    refetchOnMount: false,
+    // true: после «Назад» (invalidate) лента перезапросится; иначе останется stale-кэш
+    refetchOnMount: true,
     refetchOnReconnect: false,
   });
 

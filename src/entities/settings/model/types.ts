@@ -1,11 +1,11 @@
 export type AppSettings = {
   language: string;
-  notificationsMuted: boolean;
+  allowNotifications: boolean;
 };
 
 export type PatchSettingsInput = {
   language?: string;
-  notificationsMuted?: boolean;
+  allowNotifications?: boolean;
 };
 
 export type NotificationSettingItem = {

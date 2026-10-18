@@ -198,7 +198,6 @@
   position: sticky;
   bottom: 0;
   padding: var(--space-3) 0 calc(var(--space-3) + var(--safe-bottom));
-  background: linear-gradient(180deg, transparent, #0c0f0e 28%);
 }
 
 .create-review__error {
