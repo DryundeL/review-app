@@ -88,7 +88,7 @@ export function RemoteReviewCard({
             <Button
               type="button"
               className="remote-review__action remote-review__action--danger"
-              variant="ghost"
+              variant="secondary"
               disabled={deleting}
               onClick={() => setConfirmOpen(true)}
             >

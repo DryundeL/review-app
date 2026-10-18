@@ -173,3 +173,13 @@
   grid-template-columns: 1fr 1fr;
   gap: var(--space-3);
 }
+
+.review-page__vote .ui-button {
+  width: 100%;
+}
+
+.review-page__vote-dislike[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--color-danger) 85%, #000);
+  border-color: transparent;
+  color: #fff;
+}
