@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { User } from "@/entities/user";
+import { UserAvatar } from "@/shared/ui";
 import "./UserHeader.css";
 
 type UserHeaderProps = {
@@ -9,13 +10,13 @@ type UserHeaderProps = {
 };
 
 export function UserHeader({ user, actions, note }: UserHeaderProps) {
-  const initial = (user.displayName.trim() || "?").slice(0, 1).toUpperCase();
-
   return (
     <header className="user-header">
-      <div className="user-header__avatar" aria-hidden>
-        {initial}
-      </div>
+      <UserAvatar
+        className="user-header__avatar"
+        label={user.displayName}
+        photoUrl={user.photoUrl}
+      />
       <div className="user-header__info">
         <div className="user-header__title-row">
           <h1 className="user-header__name">{user.displayName}</h1>

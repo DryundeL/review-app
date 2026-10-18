@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { unexpectedResponseError } from "@/shared/api/errors";
+import { safeHttpsUrl } from "@/shared/lib/safeHttpsUrl";
 import type { PublicProfile } from "../model/types";
 
 const uuid = z.string().uuid();
@@ -16,6 +17,7 @@ const publicProfileSchema = z.object({
   telegramId: z.number().optional(),
   languageCode: z.string().optional(),
   isPremium: z.boolean().optional(),
+  photoUrl: z.string().optional().nullable(),
 });
 
 export function parsePublicProfileText(text: string): PublicProfile {
@@ -29,9 +31,11 @@ export function parsePublicProfileText(text: string): PublicProfile {
   const parsed = publicProfileSchema.safeParse(payload);
   if (!parsed.success) throw unexpectedResponseError();
 
-  const { telegramId, ...rest } = parsed.data;
+  const { telegramId, photoUrl: rawPhotoUrl, ...rest } = parsed.data;
+  const photoUrl = safeHttpsUrl(rawPhotoUrl ?? undefined);
   return {
     ...rest,
     ...(telegramId !== undefined ? { telegramId: String(telegramId) } : {}),
+    ...(photoUrl ? { photoUrl } : {}),
   };
 }

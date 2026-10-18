@@ -10,6 +10,8 @@ export type SessionProfile = {
   followingCount: number;
   isFollowing: boolean;
   isMe: boolean;
+  /** HTTPS-аватар; omitempty — поля может не быть. */
+  photoUrl?: string;
 };
 
 /** Карточка профиля из GET /v1/profiles/:id (и свой /v1/profile). */
@@ -25,13 +27,15 @@ export type PublicProfile = {
   telegramId?: string;
   languageCode?: string;
   isPremium?: boolean;
+  /** HTTPS-аватар; omitempty — поля может не быть. */
+  photoUrl?: string;
 };
 
 export type User = {
   id: string;
   username: string;
   displayName: string;
-  avatarUrl?: string;
+  photoUrl?: string;
   popularityScore: number;
   followersCount: number;
   followingCount: number;

@@ -10,15 +10,9 @@
 }
 
 .user-header__avatar {
-  display: grid;
-  place-items: center;
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  background: rgb(61 139 253 / 20%);
-  color: var(--color-accent);
   font-size: 0.9375rem;
-  font-weight: 700;
 }
 
 .user-header__info {

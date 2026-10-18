@@ -18,6 +18,7 @@ import { useFollowUser } from "@/features/follow-user";
 import { ApiError } from "@/shared/api";
 import { usePageMeta } from "@/shared/hooks";
 import { truncateMeta, type PageMeta } from "@/shared/lib/pageMeta";
+import { safeHttpsUrl } from "@/shared/lib/safeHttpsUrl";
 import { Button } from "@/shared/ui";
 import { RemoteReviewCard } from "@/widgets/RemoteReviewCard";
 import { UserHeader } from "@/widgets/UserHeader";
@@ -127,6 +128,7 @@ function PublicProfileView({
       path,
       title: name,
       description: truncateMeta(`Обзоры и профиль ${name} в Review Hub.`),
+      image: safeHttpsUrl(profileQuery.data.photoUrl),
     };
   }, [userId, profileQuery.data, profileQuery.isError]);
 
@@ -382,6 +384,7 @@ function toUser(profile: SessionProfile | PublicProfile): User {
     id: profile.id,
     username: profile.username.trim(),
     displayName: displayName(profile),
+    ...(profile.photoUrl ? { photoUrl: profile.photoUrl } : {}),
     popularityScore: 0,
     followersCount: profile.followersCount,
     followingCount: profile.followingCount,

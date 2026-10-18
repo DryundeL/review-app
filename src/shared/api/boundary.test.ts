@@ -83,10 +83,11 @@ describe("auth boundary", { concurrency: 1 }, () => {
 
     const telegramId = "1234567890123456789";
     const profile = parseProfileText(
-      `{"id":"11111111-1111-4111-8111-111111111111","telegramId":${telegramId},"username":"","firstName":"Ada","lastName":"","languageCode":"","isPremium":false}`,
+      `{"id":"11111111-1111-4111-8111-111111111111","telegramId":${telegramId},"username":"","firstName":"Ada","lastName":"","languageCode":"","isPremium":false,"photoUrl":"https://cdn.example/a.jpg"}`,
     );
     assert.equal(profile.telegramId, telegramId);
     assert.equal(profile.id, "11111111-1111-4111-8111-111111111111");
+    assert.equal(profile.photoUrl, "https://cdn.example/a.jpg");
     assert.notEqual(String(Number(telegramId)), telegramId);
   });
 

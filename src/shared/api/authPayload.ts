@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { safeHttpsUrl } from "../lib/safeHttpsUrl.ts";
 import { ApiError, readErrorCode, toPublicMessage, unexpectedResponseError } from "./errors.ts";
 import { isJwt } from "./jwt.ts";
 
@@ -31,6 +32,7 @@ const profileSchema = z.object({
   followingCount: z.number().int().nonnegative().optional(),
   isFollowing: z.boolean().optional(),
   isMe: z.boolean().optional(),
+  photoUrl: z.string().optional().nullable(),
 });
 
 export type LoginChallenge = {
@@ -56,6 +58,7 @@ export type AuthProfile = {
   followingCount: number;
   isFollowing: boolean;
   isMe: boolean;
+  photoUrl?: string;
 };
 
 export function parseTokenPayload(payload: unknown): string {
@@ -114,6 +117,7 @@ export function parseProfileText(text: string): AuthProfile {
   }
 
   const telegramId = readRawTelegramId(text) ?? String(parsed.data.telegramId);
+  const photoUrl = safeHttpsUrl(parsed.data.photoUrl ?? undefined);
   return {
     id: parsed.data.id,
     telegramId,
@@ -126,6 +130,7 @@ export function parseProfileText(text: string): AuthProfile {
     followingCount: parsed.data.followingCount ?? 0,
     isFollowing: parsed.data.isFollowing ?? false,
     isMe: parsed.data.isMe ?? true,
+    ...(photoUrl ? { photoUrl } : {}),
   };
 }
 
