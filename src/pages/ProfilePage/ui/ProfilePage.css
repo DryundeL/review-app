@@ -2,6 +2,19 @@
   gap: var(--space-3);
 }
 
+.profile-page__settings-btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: 12px;
+}
+
+.profile-page__settings-btn:hover,
+.profile-page__settings-btn:focus-visible {
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+}
+
 .profile-page__tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
