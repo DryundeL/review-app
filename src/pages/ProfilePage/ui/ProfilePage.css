@@ -50,9 +50,16 @@
   margin: 0 calc(var(--space-4) * -1);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
-  background-image: var(--profile-backdrop);
-  background-size: auto;
-  background-repeat: repeat;
+  background-color: var(--color-bg);
+  background-image: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-bg) 25%, transparent),
+      color-mix(in srgb, var(--color-bg) 55%, transparent)
+    ),
+    var(--profile-backdrop);
+  background-size: cover;
+  background-position: top center;
+  background-repeat: no-repeat;
 }
 
 .profile-page__follow {
