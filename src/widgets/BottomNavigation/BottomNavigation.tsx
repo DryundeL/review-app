@@ -27,9 +27,7 @@ export function BottomNavigation() {
 
   return (
     <nav className="bottom-nav" aria-label="Основная навигация">
-      <div className="bottom-nav__bar" aria-hidden="true">
-        <span className="bottom-nav__notch" />
-      </div>
+      <div className="bottom-nav__bar" aria-hidden="true" />
 
       <div className="bottom-nav__items">
         {links.map((link) => {

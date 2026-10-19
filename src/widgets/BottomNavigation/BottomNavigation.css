@@ -18,22 +18,25 @@
 }
 
 .bottom-nav__bar {
+  /* радиус выреза = половина notch; центр на верхнем крае бара */
+  --notch-r: calc(var(--notch-size) / 2);
+
   position: absolute;
   inset: 0;
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   pointer-events: none;
-}
-
-.bottom-nav__notch {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: var(--notch-size);
-  height: var(--notch-size);
-  border-radius: 50%;
-  background: var(--color-bg);
-  transform: translate(-50%, -50%);
+  /* настоящая «дырка» вместо залитого круга — контент виден под FAB */
+  -webkit-mask-image: radial-gradient(
+    circle var(--notch-r) at 50% 0,
+    transparent calc(var(--notch-r) - 0.5px),
+    #000 var(--notch-r)
+  );
+  mask-image: radial-gradient(
+    circle var(--notch-r) at 50% 0,
+    transparent calc(var(--notch-r) - 0.5px),
+    #000 var(--notch-r)
+  );
 }
 
 .bottom-nav__items {

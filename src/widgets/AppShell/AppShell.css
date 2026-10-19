@@ -17,9 +17,10 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  /* прозрачный spacer под Telegram Close — не рисуем тут «толстую» шапку */
+  /* spacer под Telegram Close; фон непрозрачный — иначе контент
+     проступает сквозь safe-area в статус-бар при скролле */
   padding-top: var(--safe-top);
-  background: transparent;
+  background: var(--color-bg);
 }
 
 .app-shell__header-row {
@@ -29,8 +30,7 @@
   min-height: 49px;
   padding: 6px var(--space-4);
   border-bottom: 1px solid var(--color-border);
-  background: rgb(16 20 19 / 92%);
-  backdrop-filter: blur(8px);
+  background: var(--color-bg);
 }
 
 .app-shell__brand {
