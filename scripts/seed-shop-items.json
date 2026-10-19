@@ -1,0 +1,82 @@
+[
+  {
+    "code": "frame_gold",
+    "kind": "avatar_frame",
+    "title": "Gold frame",
+    "price": 50,
+    "sortOrder": 10,
+    "isActive": true
+  },
+  {
+    "code": "frame_silver",
+    "kind": "avatar_frame",
+    "title": "Silver frame",
+    "price": 30,
+    "sortOrder": 20,
+    "isActive": true
+  },
+  {
+    "code": "frame_sage",
+    "kind": "avatar_frame",
+    "title": "Sage frame",
+    "price": 40,
+    "sortOrder": 30,
+    "isActive": true
+  },
+  {
+    "code": "frame_ember",
+    "kind": "avatar_frame",
+    "title": "Ember frame",
+    "price": 80,
+    "sortOrder": 40,
+    "isActive": true
+  },
+  {
+    "code": "bg_stars",
+    "kind": "background",
+    "title": "Starfield",
+    "price": 60,
+    "sortOrder": 10,
+    "isActive": true
+  },
+  {
+    "code": "bg_forest",
+    "kind": "background",
+    "title": "Night forest",
+    "price": 70,
+    "sortOrder": 20,
+    "isActive": true
+  },
+  {
+    "code": "bg_mist",
+    "kind": "background",
+    "title": "Soft mist",
+    "price": 45,
+    "sortOrder": 30,
+    "isActive": true
+  },
+  {
+    "code": "list_dark",
+    "kind": "backdrop",
+    "title": "Dark slate",
+    "price": 25,
+    "sortOrder": 10,
+    "isActive": true
+  },
+  {
+    "code": "list_grid",
+    "kind": "backdrop",
+    "title": "Faint grid",
+    "price": 35,
+    "sortOrder": 20,
+    "isActive": true
+  },
+  {
+    "code": "list_wave",
+    "kind": "backdrop",
+    "title": "Soft waves",
+    "price": 40,
+    "sortOrder": 30,
+    "isActive": true
+  }
+]

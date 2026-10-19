@@ -4,6 +4,21 @@
   align-items: flex-start;
 }
 
+.user-header--has-bg {
+  margin: 0 calc(var(--space-4) * -1);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  background-image: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-bg) 35%, transparent),
+      color-mix(in srgb, var(--color-bg) 78%, transparent)
+    ),
+    var(--user-header-bg);
+  background-size: cover;
+  background-position: center;
+}
+
 .user-header__aside {
   display: flex;
   flex-shrink: 0;
@@ -21,6 +36,15 @@
 .user-header__avatar {
   width: 56px;
   height: 56px;
+  font-size: 1.125rem;
+}
+
+.user-header__avatar.user-avatar-frame {
+  width: 56px;
+  height: 56px;
+}
+
+.user-header__avatar.user-avatar-frame .user-avatar {
   font-size: 1.125rem;
 }
 

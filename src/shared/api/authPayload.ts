@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { safeHttpsUrl } from "../lib/safeHttpsUrl.ts";
+import { parseShopCode } from "../lib/shopCode.ts";
 import { ApiError, readErrorCode, toPublicMessage, unexpectedResponseError } from "./errors.ts";
 import { isJwt } from "./jwt.ts";
 
@@ -33,6 +34,9 @@ const profileSchema = z.object({
   isFollowing: z.boolean().optional(),
   isMe: z.boolean().optional(),
   photoUrl: z.string().optional().nullable(),
+  background: z.string().optional().nullable(),
+  avatarFrame: z.string().optional().nullable(),
+  backdrop: z.string().optional().nullable(),
 });
 
 export type LoginChallenge = {
@@ -59,6 +63,9 @@ export type AuthProfile = {
   isFollowing: boolean;
   isMe: boolean;
   photoUrl?: string;
+  background?: string;
+  avatarFrame?: string;
+  backdrop?: string;
 };
 
 export function parseTokenPayload(payload: unknown): string {
@@ -118,6 +125,9 @@ export function parseProfileText(text: string): AuthProfile {
 
   const telegramId = readRawTelegramId(text) ?? String(parsed.data.telegramId);
   const photoUrl = safeHttpsUrl(parsed.data.photoUrl ?? undefined);
+  const background = parseShopCode(parsed.data.background ?? undefined);
+  const avatarFrame = parseShopCode(parsed.data.avatarFrame ?? undefined);
+  const backdrop = parseShopCode(parsed.data.backdrop ?? undefined);
   return {
     id: parsed.data.id,
     telegramId,
@@ -131,6 +141,9 @@ export function parseProfileText(text: string): AuthProfile {
     isFollowing: parsed.data.isFollowing ?? false,
     isMe: parsed.data.isMe ?? true,
     ...(photoUrl ? { photoUrl } : {}),
+    ...(background ? { background } : {}),
+    ...(avatarFrame ? { avatarFrame } : {}),
+    ...(backdrop ? { backdrop } : {}),
   };
 }
 

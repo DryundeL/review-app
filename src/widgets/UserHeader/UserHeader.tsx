@@ -1,5 +1,6 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { User } from "@/entities/user";
+import { shopAssetUrl } from "@/shared/lib/shopCode";
 import { ruPlural } from "@/shared/lib/ruPlural";
 import { UserAvatar } from "@/shared/ui";
 import "./UserHeader.css";
@@ -19,13 +20,22 @@ export function UserHeader({
   onFollowersClick,
   onFollowingClick,
 }: UserHeaderProps) {
+  const backgroundUrl = user.background ? shopAssetUrl(user.background) : undefined;
+  const headerStyle: CSSProperties | undefined = backgroundUrl
+    ? { ["--user-header-bg" as string]: `url("${backgroundUrl}")` }
+    : undefined;
+
   return (
-    <header className="user-header">
+    <header
+      className={backgroundUrl ? "user-header user-header--has-bg" : "user-header"}
+      style={headerStyle}
+    >
       <div className="user-header__aside">
         <UserAvatar
           className="user-header__avatar"
           label={user.displayName}
           photoUrl={user.photoUrl}
+          frameCode={user.avatarFrame}
         />
         {actions ? <div className="user-header__actions">{actions}</div> : null}
       </div>

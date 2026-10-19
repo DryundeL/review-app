@@ -29,6 +29,7 @@ import { ApiError } from "@/shared/api";
 import { usePageMeta } from "@/shared/hooks";
 import { truncateMeta, type PageMeta } from "@/shared/lib/pageMeta";
 import { safeHttpsUrl } from "@/shared/lib/safeHttpsUrl";
+import { shopAssetUrl } from "@/shared/lib/shopCode";
 import { Button, Modal, UserAvatar } from "@/shared/ui";
 import { RemoteReviewCard } from "@/widgets/RemoteReviewCard";
 import { UserHeader } from "@/widgets/UserHeader";
@@ -83,11 +84,18 @@ function OwnProfileView({ profile }: { profile: SessionProfile }) {
         user={toUser(profile)}
         note={profile.isPremium ? "Premium" : null}
         actions={
-          <Button asChild variant="ghost" className="profile-page__settings-btn">
-            <Link to="/settings" aria-label="Настройки">
-              <SettingsGearIcon />
-            </Link>
-          </Button>
+          <div className="profile-page__header-actions">
+            <Button asChild variant="ghost" className="profile-page__settings-btn">
+              <Link to="/shop" aria-label="Магазин">
+                <ShopBagIcon />
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" className="profile-page__settings-btn">
+              <Link to="/settings" aria-label="Настройки">
+                <SettingsGearIcon />
+              </Link>
+            </Button>
+          </div>
         }
         onFollowersClick={() => setFollowList("followers")}
         onFollowingClick={() => setFollowList("following")}
@@ -113,6 +121,7 @@ function OwnProfileView({ profile }: { profile: SessionProfile }) {
         onDelete={(id) => deleteMutation.mutateAsync(id)}
         emptyOwn
         emptyTab={tab}
+        backdropCode={profile.backdrop}
       />
 
       <FollowConnectionsModal
@@ -277,6 +286,7 @@ function PublicProfileView({
         onDelete={(id) => deleteMutation.mutateAsync(id)}
         emptyOwn={isMe}
         emptyTab={isMe ? tab : "published"}
+        backdropCode={profile.backdrop}
       />
 
       <FollowConnectionsModal
@@ -510,6 +520,7 @@ function ReviewsBlock({
   onDelete,
   emptyOwn,
   emptyTab,
+  backdropCode,
 }: {
   reviewsQuery: { isLoading: boolean; isError: boolean };
   reviews: RemoteReviewSummary[];
@@ -519,9 +530,19 @@ function ReviewsBlock({
   onDelete: (id: string) => Promise<void>;
   emptyOwn: boolean;
   emptyTab: ReviewTab;
+  backdropCode?: string;
 }) {
+  const backdropUrl = backdropCode ? shopAssetUrl(backdropCode) : undefined;
+
   return (
-    <>
+    <div
+      className={backdropUrl ? "profile-page__reviews profile-page__reviews--backdrop" : "profile-page__reviews"}
+      style={
+        backdropUrl
+          ? { ["--profile-backdrop" as string]: `url("${backdropUrl}")` }
+          : undefined
+      }
+    >
       {reviewsQuery.isLoading ? (
         <div className="profile-page__skeleton" aria-busy="true" aria-label="Загрузка обзоров">
           <div />
@@ -572,7 +593,7 @@ function ReviewsBlock({
           ))}
         </ul>
       ) : null}
-    </>
+    </div>
   );
 }
 
@@ -592,6 +613,9 @@ function toUser(profile: SessionProfile | PublicProfile): User {
     username: profile.username.trim(),
     displayName: displayName(profile),
     ...(profile.photoUrl ? { photoUrl: profile.photoUrl } : {}),
+    ...(profile.background ? { background: profile.background } : {}),
+    ...(profile.avatarFrame ? { avatarFrame: profile.avatarFrame } : {}),
+    ...(profile.backdrop ? { backdrop: profile.backdrop } : {}),
     popularityScore: 0,
     followersCount: profile.followersCount,
     followingCount: profile.followingCount,
@@ -621,6 +645,17 @@ function SettingsGearIcon() {
       <path
         fill="currentColor"
         d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.6.24-1.15.55-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.77 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.14.24.42.34.66.22l2.39-.96c.48.39 1.03.7 1.63.94l.36 2.54c.05.24.25.42.5.42h3.84c.24 0 .45-.18.5-.42l.36-2.54c.6-.24 1.15-.55 1.63-.94l2.39.96c.24.12.52.02.66-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Z"
+      />
+    </svg>
+  );
+}
+
+function ShopBagIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden focusable="false">
+      <path
+        fill="currentColor"
+        d="M7 4h10l1.2 3H21v2h-1l-1.5 11H5.5L4 9H3V7h2.8L7 4Zm1.3 3h7.4l-.6-1.6H8.9L8.3 7ZM6.6 9l1.2 9h8.4l1.2-9H6.6Z"
       />
     </svg>
   );

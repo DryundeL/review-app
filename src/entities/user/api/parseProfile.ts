@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { unexpectedResponseError } from "@/shared/api/errors";
 import { safeHttpsUrl } from "@/shared/lib/safeHttpsUrl";
+import { parseShopCode } from "@/shared/lib/shopCode";
 import type { FollowConnection, FollowConnectionList, PublicProfile } from "../model/types";
 
 const uuid = z.string().uuid();
@@ -18,6 +19,9 @@ const publicProfileSchema = z.object({
   languageCode: z.string().optional(),
   isPremium: z.boolean().optional(),
   photoUrl: z.string().optional().nullable(),
+  background: z.string().optional().nullable(),
+  avatarFrame: z.string().optional().nullable(),
+  backdrop: z.string().optional().nullable(),
 });
 
 const followConnectionSchema = z.object({
@@ -43,12 +47,25 @@ export function parsePublicProfileText(text: string): PublicProfile {
   const parsed = publicProfileSchema.safeParse(payload);
   if (!parsed.success) throw unexpectedResponseError();
 
-  const { telegramId, photoUrl: rawPhotoUrl, ...rest } = parsed.data;
+  const {
+    telegramId,
+    photoUrl: rawPhotoUrl,
+    background: rawBackground,
+    avatarFrame: rawAvatarFrame,
+    backdrop: rawBackdrop,
+    ...rest
+  } = parsed.data;
   const photoUrl = safeHttpsUrl(rawPhotoUrl ?? undefined);
+  const background = parseShopCode(rawBackground ?? undefined);
+  const avatarFrame = parseShopCode(rawAvatarFrame ?? undefined);
+  const backdrop = parseShopCode(rawBackdrop ?? undefined);
   return {
     ...rest,
     ...(telegramId !== undefined ? { telegramId: String(telegramId) } : {}),
     ...(photoUrl ? { photoUrl } : {}),
+    ...(background ? { background } : {}),
+    ...(avatarFrame ? { avatarFrame } : {}),
+    ...(backdrop ? { backdrop } : {}),
   };
 }
 

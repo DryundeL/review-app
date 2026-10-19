@@ -7,6 +7,7 @@ import { ProfilePage } from "@/pages/ProfilePage";
 import { ReviewPage } from "@/pages/ReviewPage";
 import { SearchPage } from "@/pages/SearchPage";
 import { SettingsPage } from "@/pages/SettingsPage";
+import { ShopPage } from "@/pages/ShopPage";
 import { AppShell } from "@/widgets/AppShell";
 
 export function AppRouter() {
@@ -21,6 +22,7 @@ export function AppRouter() {
           <Route path="profile" element={<ProfilePage />} />
           <Route path="profiles/:userId" element={<ProfilePage />} />
           <Route path="achievements" element={<AchievementsPage />} />
+          <Route path="shop" element={<ShopPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="reviews/:reviewId/edit" element={<CreateReviewPage />} />
           <Route path="reviews/:reviewId" element={<ReviewPage />} />

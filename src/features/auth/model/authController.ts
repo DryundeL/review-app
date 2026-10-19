@@ -103,6 +103,27 @@ export function retryMiniAppLogin(): void {
   }
 }
 
+/** Тихий рефетч профиля (после экипировки косметики и т.п.). */
+export function refreshSessionProfile(): void {
+  if (!getAccessToken() || snapshot.phase !== "authenticated") return;
+  const gen = generation;
+  void (async () => {
+    try {
+      const profile = await fetchProfile();
+      if (gen !== generation) return;
+      setSnapshot({
+        phase: "authenticated",
+        profile,
+        fallbackUrl: null,
+        message: null,
+        hasToken: true,
+      });
+    } catch {
+      // оставляем текущий профиль
+    }
+  })();
+}
+
 async function runBootstrap(): Promise<void> {
   const gen = generation;
   if (getAccessToken()) {

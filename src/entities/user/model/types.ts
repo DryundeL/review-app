@@ -12,6 +12,10 @@ export type SessionProfile = {
   isMe: boolean;
   /** HTTPS-аватар; omitempty — поля может не быть. */
   photoUrl?: string;
+  /** Ключи косметики с бэка (файлы на фронте по code). */
+  background?: string;
+  avatarFrame?: string;
+  backdrop?: string;
 };
 
 /** Карточка профиля из GET /v1/profiles/:id (и свой /v1/profile). */
@@ -29,6 +33,9 @@ export type PublicProfile = {
   isPremium?: boolean;
   /** HTTPS-аватар; omitempty — поля может не быть. */
   photoUrl?: string;
+  background?: string;
+  avatarFrame?: string;
+  backdrop?: string;
 };
 
 export type User = {
@@ -39,6 +46,9 @@ export type User = {
   popularityScore: number;
   followersCount: number;
   followingCount: number;
+  background?: string;
+  avatarFrame?: string;
+  backdrop?: string;
 };
 
 /** Элемент GET /v1/profiles/:id/followers|following. */
