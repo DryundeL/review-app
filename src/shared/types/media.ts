@@ -11,7 +11,8 @@ export type MediaType =
   | "anime_series"
   | "anime_movie"
   | "cartoon_series"
-  | "cartoon_movie";
+  | "cartoon_movie"
+  | "game";
 
 export type ReleaseStatus = "released" | "ongoing" | "announced";
 
@@ -54,4 +55,5 @@ export const MEDIA_TYPE_LABELS: Record<MediaType, string> = {
   anime_movie: "Аниме-фильм",
   cartoon_series: "Мультсериал",
   cartoon_movie: "Мультфильм",
+  game: "Игра",
 };
