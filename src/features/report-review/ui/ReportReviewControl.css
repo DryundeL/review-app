@@ -1,0 +1,77 @@
+.report-review__trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  color: var(--color-muted);
+  flex-shrink: 0;
+}
+
+.report-review__trigger:hover,
+.report-review__trigger:focus-visible {
+  color: var(--color-danger);
+}
+
+.report-review__hint {
+  margin: 0 0 var(--space-3);
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.report-review__select {
+  position: relative;
+  display: block;
+  margin-bottom: var(--space-3);
+}
+
+.report-review__select select {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.report-review__select select:disabled {
+  cursor: not-allowed;
+}
+
+.report-review__select-face {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-surface) 80%, #000);
+  color: var(--color-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.report-review__select:focus-within .report-review__select-face {
+  border-color: var(--color-accent);
+}
+
+.report-review__error {
+  margin: 0 0 var(--space-3);
+  color: var(--color-danger);
+  font-size: 0.875rem;
+}
+
+.report-review__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}

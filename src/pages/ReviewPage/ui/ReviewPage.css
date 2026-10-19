@@ -40,6 +40,13 @@
   color: var(--color-accent);
 }
 
+.review-page__author-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
 .review-page__follow {
   flex-shrink: 0;
   min-height: 32px;

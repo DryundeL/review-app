@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { getReview, viewReview, voteReview } from "@/entities/review";
 import { useAuthSession } from "@/features/auth";
 import { useFollowToggle } from "@/features/follow-user";
+import { ReportReviewControl } from "@/features/report-review";
 import { ApiError } from "@/shared/api";
 import { usePageMeta } from "@/shared/hooks";
 import { truncateMeta, type PageMeta } from "@/shared/lib/pageMeta";
@@ -137,22 +138,25 @@ export function ReviewPage() {
           <span className="review-page__author-name">{authorLabel}</span>
         </Link>
         {!isOwn ? (
-          <Button
-            type="button"
-            className="review-page__follow"
-            variant={isFollowing ? "secondary" : "primary"}
-            disabled={followMutation.isPending}
-            aria-pressed={isFollowing}
-            onClick={() => {
-              const next = !isFollowing;
-              followMutation.mutate(
-                { userId: authorId, nextFollowing: next },
-                { onSuccess: () => setFollowOverride(next) },
-              );
-            }}
-          >
-            {isFollowing ? "Отписаться" : "Подписаться"}
-          </Button>
+          <div className="review-page__author-actions">
+            <ReportReviewControl reviewId={review.id} />
+            <Button
+              type="button"
+              className="review-page__follow"
+              variant={isFollowing ? "secondary" : "primary"}
+              disabled={followMutation.isPending}
+              aria-pressed={isFollowing}
+              onClick={() => {
+                const next = !isFollowing;
+                followMutation.mutate(
+                  { userId: authorId, nextFollowing: next },
+                  { onSuccess: () => setFollowOverride(next) },
+                );
+              }}
+            >
+              {isFollowing ? "Отписаться" : "Подписаться"}
+            </Button>
+          </div>
         ) : null}
       </div>
       <header className="review-page__head">

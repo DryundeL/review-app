@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { RemoteReviewSummary } from "@/entities/review";
+import { useAuthSession } from "@/features/auth";
+import { ReportReviewControl } from "@/features/report-review";
 import { MEDIA_TYPE_LABELS } from "@/shared/types";
 import { Button, MediaPoster, Modal, VoteCounts } from "@/shared/ui";
 import "./RemoteReviewCard.css";
@@ -21,65 +23,77 @@ export function RemoteReviewCard({
   onDelete,
   deleting = false,
 }: RemoteReviewCardProps) {
+  const { profile } = useAuthSession();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const media = review.mediaObject;
   const mediaTitle = media.title.trim() || "Произведение";
   const typeLabel = media.type ? MEDIA_TYPE_LABELS[media.type] : null;
   const reviewHref = `/reviews/${review.id}`;
+  const authorId = review.author?.id ?? review.authorId;
+  const canReport =
+    review.status === "published" && profile != null && profile.id !== authorId;
 
   return (
     <article className="remote-review">
-      <Link
-        className="remote-review__main"
-        to={reviewHref}
-        aria-label={`Обзор: ${review.title}`}
-      >
-        <span className="remote-review__poster">
-          <MediaPoster title={mediaTitle} posterUrl={media.posterUrl} />
-        </span>
+      <div className="remote-review__row">
+        <Link
+          className="remote-review__main"
+          to={reviewHref}
+          aria-label={`Обзор: ${review.title}`}
+        >
+          <span className="remote-review__poster">
+            <MediaPoster title={mediaTitle} posterUrl={media.posterUrl} />
+          </span>
 
-        <span className="remote-review__body">
-          <span className="remote-review__meta">
-            {typeLabel ? (
-              <span className="remote-review__badge remote-review__badge--live">{typeLabel}</span>
-            ) : null}
-            {review.hasSpoilers ? (
-              <span className="remote-review__spoiler-flag">есть спойлеры</span>
-            ) : null}
-            {!hideStatus ? (
-              <span
-                className={
-                  review.status === "draft"
-                    ? "remote-review__status remote-review__status--draft"
-                    : "remote-review__status remote-review__status--live"
-                }
-                title={review.status === "draft" ? "Черновик" : "Опубликован"}
-                aria-label={review.status === "draft" ? "Черновик" : "Опубликован"}
-              >
-                {review.status === "draft" ? <DraftIcon /> : <PublishedIcon />}
+          <span className="remote-review__body">
+            <span className="remote-review__meta">
+              {typeLabel ? (
+                <span className="remote-review__badge remote-review__badge--live">{typeLabel}</span>
+              ) : null}
+              {review.hasSpoilers ? (
+                <span className="remote-review__spoiler-flag">есть спойлеры</span>
+              ) : null}
+              {!hideStatus ? (
+                <span
+                  className={
+                    review.status === "draft"
+                      ? "remote-review__status remote-review__status--draft"
+                      : "remote-review__status remote-review__status--live"
+                  }
+                  title={review.status === "draft" ? "Черновик" : "Опубликован"}
+                  aria-label={review.status === "draft" ? "Черновик" : "Опубликован"}
+                >
+                  {review.status === "draft" ? <DraftIcon /> : <PublishedIcon />}
+                </span>
+              ) : null}
+            </span>
+
+            <span className="remote-review__title">{review.title}</span>
+
+            <span className="remote-review__media">{mediaTitle}</span>
+
+            <span className="remote-review__stats">
+              <span className="remote-review__stats-left">
+                <VoteCounts
+                  likes={review.likesCount}
+                  dislikes={review.dislikesCount}
+                  views={review.viewsCount}
+                />
               </span>
-            ) : null}
-          </span>
-
-          <span className="remote-review__title">{review.title}</span>
-
-          <span className="remote-review__media">{mediaTitle}</span>
-
-          <span className="remote-review__stats">
-            <span className="remote-review__stats-left">
-              <VoteCounts
-                likes={review.likesCount}
-                dislikes={review.dislikesCount}
-                views={review.viewsCount}
-              />
-            </span>
-            <span className="remote-review__rating" aria-label={`Оценка ${review.rating} из 10`}>
-              {review.rating}
-              <small>/10</small>
+              <span className="remote-review__rating" aria-label={`Оценка ${review.rating} из 10`}>
+                {review.rating}
+                <small>/10</small>
+              </span>
             </span>
           </span>
-        </span>
-      </Link>
+        </Link>
+
+        {canReport ? (
+          <div className="remote-review__report">
+            <ReportReviewControl reviewId={review.id} />
+          </div>
+        ) : null}
+      </div>
 
       {canEdit ? (
         <div className="remote-review__actions">
