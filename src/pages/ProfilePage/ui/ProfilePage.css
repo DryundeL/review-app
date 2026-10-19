@@ -2,16 +2,45 @@
   gap: var(--space-3);
 }
 
-.profile-page__header-actions {
+/* Тот же вертикальный ритм, что у .app-shell__back на чужих профилях. */
+.profile-page__topbar {
   display: flex;
-  gap: var(--space-1);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin: calc(-1 * var(--space-2)) 0 var(--space-1);
+  margin-left: calc(-1 * var(--space-2));
+  margin-right: calc(-1 * var(--space-2));
+}
+
+.profile-page__shop-btn {
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  gap: var(--space-2);
+  font-size: 0.875rem;
+  font-weight: 650;
+  color: var(--color-text);
+  border-radius: 12px;
+}
+
+.profile-page__shop-btn:hover,
+.profile-page__shop-btn:focus-visible {
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-surface) 70%, var(--color-gold) 8%);
 }
 
 .profile-page__settings-btn {
-  min-width: 40px;
-  min-height: 40px;
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
   padding: 0;
   border-radius: 12px;
+}
+
+.profile-page__settings-btn:hover,
+.profile-page__settings-btn:focus-visible {
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-surface) 70%, transparent);
 }
 
 .profile-page__reviews--backdrop {
@@ -21,12 +50,6 @@
   background-image: var(--profile-backdrop);
   background-size: auto;
   background-repeat: repeat;
-}
-
-.profile-page__settings-btn:hover,
-.profile-page__settings-btn:focus-visible {
-  color: var(--color-text);
-  background: color-mix(in srgb, var(--color-surface) 70%, transparent);
 }
 
 .profile-page__follow {

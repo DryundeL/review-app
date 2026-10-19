@@ -80,23 +80,23 @@ function OwnProfileView({ profile }: { profile: SessionProfile }) {
 
   return (
     <section className="profile-page screen">
+      <div className="profile-page__topbar">
+        <Button asChild variant="ghost" className="profile-page__shop-btn">
+          <Link to="/shop">
+            <ShopBagIcon />
+            Магазин очков
+          </Link>
+        </Button>
+        <Button asChild variant="ghost" className="profile-page__settings-btn">
+          <Link to="/settings" aria-label="Настройки">
+            <SettingsGearIcon />
+          </Link>
+        </Button>
+      </div>
+
       <UserHeader
         user={toUser(profile)}
         note={profile.isPremium ? "Premium" : null}
-        actions={
-          <div className="profile-page__header-actions">
-            <Button asChild variant="ghost" className="profile-page__settings-btn">
-              <Link to="/shop" aria-label="Магазин">
-                <ShopBagIcon />
-              </Link>
-            </Button>
-            <Button asChild variant="ghost" className="profile-page__settings-btn">
-              <Link to="/settings" aria-label="Настройки">
-                <SettingsGearIcon />
-              </Link>
-            </Button>
-          </div>
-        }
         onFollowersClick={() => setFollowList("followers")}
         onFollowingClick={() => setFollowList("following")}
       />
@@ -652,10 +652,10 @@ function SettingsGearIcon() {
 
 function ShopBagIcon() {
   return (
-    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden focusable="false">
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden focusable="false">
       <path
         fill="currentColor"
-        d="M7 4h10l1.2 3H21v2h-1l-1.5 11H5.5L4 9H3V7h2.8L7 4Zm1.3 3h7.4l-.6-1.6H8.9L8.3 7ZM6.6 9l1.2 9h8.4l1.2-9H6.6Z"
+        d="M12 2.5 14.6 8l5.9.5-4.5 3.9 1.4 5.8L12 15.6 6.6 18.2l1.4-5.8L3.5 8.5 9.4 8 12 2.5Z"
       />
     </svg>
   );

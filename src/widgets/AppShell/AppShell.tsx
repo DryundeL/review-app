@@ -10,6 +10,7 @@ import "./AppShell.css";
 function showBackButton(pathname: string): boolean {
   return (
     pathname === "/settings" ||
+    pathname === "/shop" ||
     pathname === "/create" ||
     pathname === "/achievements" ||
     pathname.startsWith("/reviews/") ||
@@ -44,7 +45,9 @@ export function AppShell() {
       navigate(-1);
       return;
     }
-    navigate(pathname === "/settings" ? "/profile" : "/", { replace: true });
+    navigate(pathname === "/settings" || pathname === "/shop" ? "/profile" : "/", {
+      replace: true,
+    });
   }
 
   return (
