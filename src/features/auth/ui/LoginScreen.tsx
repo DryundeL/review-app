@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import authBgUrl from "@/assets/auth-background.webp";
 import logoUrl from "@/assets/review-hub-logo.png";
 import { Button } from "@/shared/ui";
 import { useAuthSession } from "../model/useAuthSession";
@@ -7,6 +8,9 @@ import "./LoginScreen.css";
 
 const REOPEN_MINI_APP =
   "Не удалось подтвердить сессию Telegram. Закройте Mini App и откройте его снова: Telegram выдаст новые данные для входа.";
+
+const TAGLINE = "Твои истории\nо том, что вдохновляет";
+const CAPTION = "Делись. Читай. Оценивай. Открывай новое.";
 
 export function LoginScreen() {
   const session = useAuthSession();
@@ -20,6 +24,8 @@ export function LoginScreen() {
       (session.phase === "failed" && !session.hasToken));
   const showRetry = session.phase === "failed" && (session.isMiniApp || session.hasToken);
   const busy = session.phase === "booting" || session.phase === "authenticating";
+  const status = messageFor(session.phase, session.message);
+  const showCaption = showBrowserLogin && session.phase === "anonymous";
 
   useEffect(() => {
     if (!showBrowserLogin && !showRetry) return;
@@ -28,30 +34,67 @@ export function LoginScreen() {
 
   return (
     <main className="login-screen">
-      <div className="login-screen__panel">
-        <h1 className="login-screen__title">
-          <img className="login-screen__logo" src={logoUrl} alt="Review Hub" width={2172} height={724} />
-        </h1>
-        <p className="login-screen__text" role="status" aria-live="polite" aria-busy={busy}>
-          {messageFor(session.phase, session.message)}
-        </p>
-        {session.phase === "awaiting_confirmation" && fallbackUrl ? (
-          <a className="login-screen__link" href={fallbackUrl} target="_blank" rel="noopener noreferrer">
-            Открыть Telegram
-          </a>
-        ) : null}
-        {showBrowserLogin ? (
-          <Button id="login-action" className="login-screen__action" onClick={session.startBrowserLogin}>
-            Войти через Telegram
-          </Button>
-        ) : null}
-        {showRetry ? (
-          <Button id="login-action" className="login-screen__action" onClick={session.retryMiniAppLogin}>
-            Повторить
-          </Button>
-        ) : null}
+      <div
+        className="login-screen__bg"
+        style={{ backgroundImage: `url(${authBgUrl})` }}
+        aria-hidden
+      />
+      <div className="login-screen__content">
+        <header className="login-screen__brand">
+          <h1 className="login-screen__title">
+            <img
+              className="login-screen__logo"
+              src={logoUrl}
+              alt="Review Hub"
+              width={2172}
+              height={724}
+            />
+          </h1>
+          <p className="login-screen__tagline">{TAGLINE}</p>
+        </header>
+
+        <div className="login-screen__footer">
+          {status ? (
+            <p className="login-screen__text" role="status" aria-live="polite" aria-busy={busy}>
+              {status}
+            </p>
+          ) : null}
+          {session.phase === "awaiting_confirmation" && fallbackUrl ? (
+            <a
+              className="login-screen__link"
+              href={fallbackUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Открыть Telegram
+            </a>
+          ) : null}
+          {showBrowserLogin ? (
+            <Button id="login-action" className="login-screen__action" onClick={session.startBrowserLogin}>
+              <TelegramIcon />
+              Войти через Telegram
+            </Button>
+          ) : null}
+          {showRetry ? (
+            <Button id="login-action" className="login-screen__action" onClick={session.retryMiniAppLogin}>
+              Повторить
+            </Button>
+          ) : null}
+          {showCaption ? <p className="login-screen__caption">{CAPTION}</p> : null}
+        </div>
       </div>
     </main>
+  );
+}
+
+function TelegramIcon() {
+  return (
+    <svg className="login-screen__tg-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden>
+      <path
+        fill="currentColor"
+        d="M21.8 4.3c.3-.9-.5-1.6-1.3-1.3L2.9 9.6c-.9.3-.9 1.6.1 1.9l4.4 1.4 1.7 5.3c.3.9 1.5 1.1 2.1.4l2.5-2.8 4.7 3.5c.8.6 1.9.1 2.1-.8l2.3-14.2ZM9.2 13.1l8.3-5.2c.2-.1.4.2.2.3l-6.9 6.4-.3 3.3-1.3-4.8Z"
+      />
+    </svg>
   );
 }
 
@@ -71,7 +114,6 @@ function messageFor(phase: ReturnType<typeof useAuthSession>["phase"], failure: 
     case "miniapp_reopen":
       return REOPEN_MINI_APP;
     case "anonymous":
-      return "Войдите через Telegram, чтобы открыть отзывы.";
     case "authenticated":
       return "";
   }

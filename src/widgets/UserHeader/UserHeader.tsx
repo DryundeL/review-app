@@ -41,10 +41,12 @@ export function UserHeader({
       </div>
       <div className="user-header__info">
         <div className="user-header__title-row">
-          <h1 className="user-header__name">{user.displayName}</h1>
+          <h1 className="user-header__name">
+            {user.username ? `@${user.username}` : user.displayName}
+          </h1>
           {note ? <span className="user-header__note">{note}</span> : null}
         </div>
-        {user.username ? <p className="user-header__meta">@{user.username}</p> : null}
+        {user.username ? <p className="user-header__meta">{user.displayName}</p> : null}
         <div className="user-header__stats">
           <StatControl
             count={user.followersCount}
