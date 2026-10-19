@@ -4,7 +4,6 @@
   gap: var(--space-3);
 }
 
-/* Twitter-like mode tabs */
 .feed__tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -14,7 +13,7 @@
 
 .feed__tab {
   position: relative;
-  min-height: 44px;
+  min-height: var(--control-h);
   padding: 0 var(--space-3);
   border: 0;
   background: transparent;
@@ -89,8 +88,8 @@
   min-height: 32px;
   padding: 0 var(--space-3);
   border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  background: transparent;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-2);
   color: var(--color-muted);
   font-size: 0.8125rem;
   font-weight: 600;
@@ -100,13 +99,11 @@
 .feed__filter-btn:hover,
 .feed__filter-btn:focus-visible {
   color: var(--color-text);
-  border-color: var(--color-border);
 }
 
 .feed__filter-btn--active {
-  border-color: color-mix(in srgb, var(--color-accent) 50%, var(--color-border));
-  color: var(--color-accent);
-  background: rgb(61 139 253 / 10%);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
 }
 
 .feed__filter-grid {
@@ -119,17 +116,17 @@
   flex: 0 0 auto;
   min-height: 36px;
   padding: 0 var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--color-muted);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  font-weight: 600;
   cursor: pointer;
 }
 
 .feed__chip--active {
-  border-color: var(--color-accent);
-  color: var(--color-text);
-  background: rgb(61 139 253 / 14%);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
 }
 
 .feed__filter-clear {

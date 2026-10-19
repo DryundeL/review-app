@@ -49,8 +49,8 @@
 .app-shell__main {
   flex: 1;
   padding: var(--space-4);
-  /* nav + вынос «+» + небольшой зазор */
-  padding-bottom: calc(78px + var(--safe-bottom));
+  /* nav + вынос FAB + зазор */
+  padding-bottom: calc(var(--nav-height) + 28px + var(--safe-bottom));
 }
 
 .app-shell__main--solo {

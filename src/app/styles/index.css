@@ -1,25 +1,40 @@
+/*
+  Design system (концепты Review Hub)
+  ----------------------------------------
+  bg / surface / border — почти чёрный стек
+  accent — mint; on-accent — текст/иконки на mint
+  radius: sm controls, md cards, lg media, pill chips/CTA
+  tabs — underline accent; chips — filled accent + on-accent
+  controls min-height 44px; FAB 56px + ring color-bg
+*/
 :root {
   color-scheme: dark;
-  --color-bg: #101413;
-  --color-surface: #1b2220;
-  --color-border: #303b35;
-  --color-text: #f2f4f0;
-  --color-muted: #929f99;
-  --color-accent: #a4c8ac;
+  --color-bg: #0a0c0b;
+  --color-surface: #161a18;
+  --color-surface-2: #1e2421;
+  --color-border: #2a322e;
+  --color-text: #f4f6f4;
+  --color-muted: #8b968f;
+  --color-accent: #b7e4c7;
+  --color-on-accent: #0a0c0b;
   --color-gold: #d3ac76;
   --color-danger: #e35d6a;
-  --radius-sm: 10px;
+  --radius-sm: 12px;
   --radius-md: 16px;
   --radius-lg: 20px;
+  --radius-pill: 999px;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
   --space-5: 24px;
+  --control-h: 44px;
   --font-sans: "Manrope", "Segoe UI", sans-serif;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --shell: 480px;
+  --nav-height: 56px;
+  --fab-size: 56px;
 }
 
 *,
@@ -37,7 +52,7 @@ body,
 body {
   margin: 0;
   font-family: var(--font-sans);
-  background: #0c0f0e;
+  background: var(--color-bg);
   color: var(--color-text);
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
@@ -84,7 +99,7 @@ textarea:focus-visible {
 
 ::selection {
   background: var(--color-accent);
-  color: var(--color-bg);
+  color: var(--color-on-accent);
 }
 
 h1,
@@ -134,10 +149,10 @@ p {
   flex: 0 0 auto;
   min-height: 36px;
   padding: 0 var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--color-muted);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-2);
+  color: var(--color-text);
   font-size: 0.875rem;
   font-weight: 600;
 }
@@ -145,7 +160,48 @@ p {
 .chip[aria-pressed="true"] {
   background: var(--color-accent);
   border-color: var(--color-accent);
-  color: var(--color-bg);
+  color: var(--color-on-accent);
+}
+
+/* underline tabs — feed / profile / legacy */
+.ds-tabs {
+  display: flex;
+  margin: 0 calc(var(--space-4) * -1);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.ds-tab {
+  position: relative;
+  flex: 1;
+  min-height: var(--control-h);
+  padding: 0 var(--space-3);
+  border: 0;
+  background: transparent;
+  color: var(--color-muted);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ds-tab:hover,
+.ds-tab:focus-visible {
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+}
+
+.ds-tab--active {
+  color: var(--color-text);
+}
+
+.ds-tab--active::after {
+  content: "";
+  position: absolute;
+  right: 18%;
+  bottom: 0;
+  left: 18%;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--color-accent);
 }
 
 .topbar {

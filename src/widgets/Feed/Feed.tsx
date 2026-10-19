@@ -87,7 +87,7 @@ export function Feed() {
           className={mode === "all" ? "feed__tab feed__tab--active" : "feed__tab"}
           onClick={() => setMode("all")}
         >
-          Все
+          Для тебя
         </button>
         <button
           type="button"

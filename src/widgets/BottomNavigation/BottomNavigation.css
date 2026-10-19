@@ -1,8 +1,5 @@
 .bottom-nav {
-  --nav-height: 56px;
-  --create-size: 56px;
   --create-lift: 20px;
-  /* home-indicator: чуть меньше полного inset, но с запасом снизу */
   --nav-safe-bottom: max(10px, calc(var(--safe-bottom) - 5px));
 
   position: fixed;
@@ -41,7 +38,7 @@
   min-width: 0;
   min-height: 44px;
   padding: var(--space-1);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   color: var(--color-muted);
 }
 
@@ -51,7 +48,7 @@
 }
 
 .bottom-nav__link--active {
-  color: var(--color-text);
+  color: var(--color-accent);
 }
 
 .bottom-nav__link--active .bottom-nav__icon {
@@ -64,15 +61,14 @@
 }
 
 .bottom-nav__create {
-  width: var(--create-size);
-  height: var(--create-size);
-  min-height: var(--create-size);
+  width: var(--fab-size);
+  height: var(--fab-size);
+  min-height: var(--fab-size);
   margin: 0 auto;
   padding: 0;
   border-radius: 50%;
   background: var(--color-accent);
-  color: var(--color-bg);
-  /* тонкая тёмная обводка вместо выреза в баре */
+  color: var(--color-on-accent);
   box-shadow:
     0 0 0 3px var(--color-bg),
     0 4px 14px rgb(0 0 0 / 40%);
@@ -80,7 +76,7 @@
 }
 
 .bottom-nav__create.bottom-nav__link--active {
-  color: var(--color-bg);
+  color: var(--color-on-accent);
   box-shadow:
     0 0 0 3px var(--color-bg),
     0 4px 14px rgb(0 0 0 / 40%);
@@ -127,7 +123,7 @@
   min-width: 18px;
   height: 18px;
   padding: 0 4px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--color-danger);
   color: #fff;
   font-size: 0.625rem;

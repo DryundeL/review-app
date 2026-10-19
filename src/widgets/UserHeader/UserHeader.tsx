@@ -30,44 +30,47 @@ export function UserHeader({
       className={backgroundUrl ? "user-header user-header--has-bg" : "user-header"}
       style={headerStyle}
     >
-      <div className="user-header__aside">
-        <UserAvatar
-          className="user-header__avatar"
-          label={user.displayName}
-          photoUrl={user.photoUrl}
-          frameCode={user.avatarFrame}
-        />
-        {actions ? <div className="user-header__actions">{actions}</div> : null}
-      </div>
-      <div className="user-header__info">
-        <div className="user-header__title-row">
-          <h1 className="user-header__name">
-            {user.username ? `@${user.username}` : user.displayName}
-          </h1>
-          {note ? <span className="user-header__note">{note}</span> : null}
+      {backgroundUrl ? <div className="user-header__banner" aria-hidden /> : null}
+      <div className="user-header__body">
+        <div className="user-header__row">
+          <UserAvatar
+            className="user-header__avatar"
+            label={user.displayName}
+            photoUrl={user.photoUrl}
+            frameCode={user.avatarFrame}
+          />
+          {actions ? <div className="user-header__actions">{actions}</div> : null}
         </div>
-        {user.username ? <p className="user-header__meta">{user.displayName}</p> : null}
-        <div className="user-header__stats">
-          <StatControl
-            count={user.followersCount}
-            label={ruPlural(
-              user.followersCount,
-              "подписчик",
-              "подписчика",
-              "подписчиков",
-            )}
-            onClick={onFollowersClick}
-          />
-          <StatControl
-            count={user.followingCount}
-            label={ruPlural(user.followingCount, "подписка", "подписки", "подписок")}
-            onClick={onFollowingClick}
-          />
-          {user.popularityScore > 0 ? (
-            <span className="user-header__stat-chip user-header__stat-chip--muted">
-              Поп. {user.popularityScore}
-            </span>
-          ) : null}
+        <div className="user-header__info">
+          <div className="user-header__title-row">
+            <h1 className="user-header__name">
+              {user.username ? `@${user.username}` : user.displayName}
+            </h1>
+            {note ? <span className="user-header__note">{note}</span> : null}
+          </div>
+          {user.username ? <p className="user-header__meta">{user.displayName}</p> : null}
+          <div className="user-header__stats">
+            <StatControl
+              count={user.followersCount}
+              label={ruPlural(
+                user.followersCount,
+                "подписчик",
+                "подписчика",
+                "подписчиков",
+              )}
+              onClick={onFollowersClick}
+            />
+            <StatControl
+              count={user.followingCount}
+              label={ruPlural(user.followingCount, "подписка", "подписки", "подписок")}
+              onClick={onFollowingClick}
+            />
+            {user.popularityScore > 0 ? (
+              <span className="user-header__stat-chip user-header__stat-chip--rank">
+                Поп. {user.popularityScore}
+              </span>
+            ) : null}
+          </div>
         </div>
       </div>
     </header>
