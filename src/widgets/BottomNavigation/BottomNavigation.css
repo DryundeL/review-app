@@ -1,7 +1,6 @@
 .bottom-nav {
   --nav-height: 56px;
   --create-size: 56px;
-  --notch-size: 72px;
   --create-lift: 20px;
   /* home-indicator: чуть меньше полного inset, но с запасом снизу */
   --nav-safe-bottom: max(10px, calc(var(--safe-bottom) - 5px));
@@ -18,25 +17,11 @@
 }
 
 .bottom-nav__bar {
-  /* радиус выреза = половина notch; центр на верхнем крае бара */
-  --notch-r: calc(var(--notch-size) / 2);
-
   position: absolute;
   inset: 0;
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   pointer-events: none;
-  /* настоящая «дырка» вместо залитого круга — контент виден под FAB */
-  -webkit-mask-image: radial-gradient(
-    circle var(--notch-r) at 50% 0,
-    transparent calc(var(--notch-r) - 0.5px),
-    #000 var(--notch-r)
-  );
-  mask-image: radial-gradient(
-    circle var(--notch-r) at 50% 0,
-    transparent calc(var(--notch-r) - 0.5px),
-    #000 var(--notch-r)
-  );
 }
 
 .bottom-nav__items {
@@ -87,15 +72,18 @@
   border-radius: 50%;
   background: var(--color-accent);
   color: var(--color-bg);
-  box-shadow: 0 4px 14px rgb(0 0 0 / 40%);
+  /* тонкая тёмная обводка вместо выреза в баре */
+  box-shadow:
+    0 0 0 3px var(--color-bg),
+    0 4px 14px rgb(0 0 0 / 40%);
   transform: translateY(calc(-1 * var(--create-lift)));
 }
 
 .bottom-nav__create.bottom-nav__link--active {
   color: var(--color-bg);
   box-shadow:
-    0 4px 14px rgb(0 0 0 / 40%),
-    0 0 0 2px var(--color-accent);
+    0 0 0 3px var(--color-bg),
+    0 4px 14px rgb(0 0 0 / 40%);
 }
 
 .bottom-nav__create:focus-visible {
