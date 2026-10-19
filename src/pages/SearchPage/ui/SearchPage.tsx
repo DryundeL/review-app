@@ -17,6 +17,7 @@ import { useAuthSession } from "@/features/auth";
 import { useFilterFeedStore } from "@/features/filter-feed";
 import { useFollowToggle } from "@/features/follow-user";
 import { useDebouncedValue } from "@/shared/hooks";
+import { ruPlural } from "@/shared/lib/ruPlural";
 import { Button, Input, MediaPoster, UserAvatar } from "@/shared/ui";
 import "./SearchPage.css";
 
@@ -348,7 +349,13 @@ function AuthorRow({
           <span className="search-page__row-title">{display}</span>
           <span className="search-page__row-meta">
             {item.username ? `@${item.username} · ` : null}
-            {item.followersCount} подп.
+            {item.followersCount}{" "}
+            {ruPlural(
+              item.followersCount,
+              "подписчик",
+              "подписчика",
+              "подписчиков",
+            )}
           </span>
         </span>
       </Link>
