@@ -39,26 +39,28 @@ function SpoilerPlaque({ text, lockedOpen }: { text: string; lockedOpen: boolean
     );
   }
 
+  // span + role=button: <button> часто ломает inline-перенос и выглядит плашкой.
   return (
-    <button
-      type="button"
+    <span
+      role="button"
+      tabIndex={0}
       className={isOpen ? "spoiler-plaque spoiler-plaque--open" : "spoiler-plaque"}
       aria-expanded={isOpen}
       aria-describedby={labelId}
       onClick={() => setRevealed((current) => !current)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          setRevealed((current) => !current);
+        }
+      }}
     >
       <span id={labelId} className="sr-only">
         {isOpen
           ? "Спойлер открыт. Нажмите, чтобы скрыть."
           : "Скрытый спойлер. Нажмите, чтобы показать."}
       </span>
-      {isOpen ? (
-        <span>{text}</span>
-      ) : (
-        <span aria-hidden className="spoiler-plaque__label">
-          Спойлер
-        </span>
-      )}
-    </button>
+      {isOpen ? text : <span aria-hidden className="spoiler-plaque__label">Спойлер</span>}
+    </span>
   );
 }

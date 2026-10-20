@@ -3,17 +3,18 @@
   word-break: break-word;
 }
 
+/* Inline-маркер в потоке текста, не отдельная плашка. */
 .spoiler-plaque {
   display: inline;
-  margin: 0 0.1em;
-  padding: 0.12em 0.45em;
+  margin: 0;
+  padding: 0.08em 0.12em;
   border: 0;
-  border-radius: 3px;
-  background: color-mix(in srgb, var(--color-text) 88%, var(--color-gold));
+  border-radius: 0;
+  background: color-mix(in srgb, var(--color-text) 82%, var(--color-gold));
   color: transparent;
   font: inherit;
   line-height: inherit;
-  letter-spacing: 0.02em;
+  letter-spacing: inherit;
   cursor: pointer;
   vertical-align: baseline;
   box-decoration-break: clone;
@@ -23,23 +24,25 @@
 
 .spoiler-plaque:hover,
 .spoiler-plaque:focus-visible {
-  background: color-mix(in srgb, var(--color-text) 72%, var(--color-gold));
+  background: color-mix(in srgb, var(--color-text) 70%, var(--color-gold));
 }
 
 .spoiler-plaque__label {
   color: var(--color-bg);
-  font-size: 0.72em;
-  font-weight: 800;
-  letter-spacing: 0.14em;
+  font-size: 0.78em;
+  font-weight: 750;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .spoiler-plaque--open {
-  background: color-mix(in srgb, var(--color-gold) 28%, transparent);
-  color: var(--color-text);
+  /* Как в редакторе: лёгкий фон-маркер, текст читается в общем потоке. */
+  background: color-mix(in srgb, var(--color-gold) 26%, transparent);
+  color: inherit;
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--color-gold) 55%, transparent);
 }
 
 .spoiler-plaque--open:hover,
 .spoiler-plaque--open:focus-visible {
-  background: color-mix(in srgb, var(--color-gold) 40%, transparent);
+  background: color-mix(in srgb, var(--color-gold) 36%, transparent);
 }
