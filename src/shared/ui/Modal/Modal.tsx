@@ -1,6 +1,10 @@
-import * as Dialog from "@radix-ui/react-dialog";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { Drawer } from "vaul";
 import { cn } from "@/shared/lib/cn";
+
+const SNAP_COMPACT = 0.52;
+const SNAP_EXPANDED = 0.92;
+const SNAP_POINTS = [SNAP_COMPACT, SNAP_EXPANDED] as const;
 
 type ModalProps = {
   open: boolean;
@@ -11,21 +15,37 @@ type ModalProps = {
 };
 
 export function Modal({ open, onOpenChange, title, children, className }: ModalProps) {
+  const [snap, setSnap] = useState<number | string | null>(SNAP_COMPACT);
+
+  useEffect(() => {
+    if (open) setSnap(SNAP_COMPACT);
+  }, [open]);
+
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Overlay className="ui-modal__overlay" />
-        <Dialog.Content className={cn("ui-modal__content", className)}>
+    <Drawer.Root
+      open={open}
+      onOpenChange={onOpenChange}
+      snapPoints={[...SNAP_POINTS]}
+      activeSnapPoint={snap}
+      setActiveSnapPoint={setSnap}
+      fadeFromIndex={0}
+      repositionInputs={false}
+    >
+      <Drawer.Portal>
+        <Drawer.Overlay className="ui-modal__overlay" />
+        <Drawer.Content className={cn("ui-modal__content", className)}>
           <div className="ui-modal__handle" aria-hidden />
           <div className="ui-modal__head">
-            <Dialog.Title className="ui-modal__title">{title}</Dialog.Title>
-            <Dialog.Close className="ui-modal__close" aria-label="Закрыть">
+            <Drawer.Title className="ui-modal__title">{title}</Drawer.Title>
+            <Drawer.Close className="ui-modal__close" aria-label="Закрыть">
               ×
-            </Dialog.Close>
+            </Drawer.Close>
           </div>
-          <div className="ui-modal__body">{children}</div>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+          <div className="ui-modal__body" data-vaul-no-drag="">
+            {children}
+          </div>
+        </Drawer.Content>
+      </Drawer.Portal>
+    </Drawer.Root>
   );
 }
