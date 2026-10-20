@@ -30,7 +30,6 @@ export function UserHeader({
       className={backgroundUrl ? "user-header user-header--has-bg" : "user-header"}
       style={headerStyle}
     >
-      {backgroundUrl ? <div className="user-header__banner" aria-hidden /> : null}
       <div className="user-header__body">
         <div className="user-header__row">
           <UserAvatar

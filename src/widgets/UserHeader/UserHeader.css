@@ -4,27 +4,37 @@
   margin: 0 calc(var(--space-4) * -1);
 }
 
-.user-header__banner {
-  height: 132px;
+/* Фон (shop background) — под всем блоком профиля, не отдельной полосой сверху. */
+.user-header--has-bg {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+
+.user-header--has-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
   background-color: var(--color-surface);
   background-image: linear-gradient(
       to bottom,
-      rgb(0 0 0 / 15%),
-      rgb(0 0 0 / 55%)
+      rgb(0 0 0 / 25%),
+      rgb(0 0 0 / 62%)
     ),
     var(--user-header-bg);
   background-size: cover;
   background-position: center;
 }
 
-.user-header:not(.user-header--has-bg) .user-header__body {
-  margin-top: 0;
-  padding-top: 0;
+.user-header__body {
+  padding: var(--space-3) var(--space-4) var(--space-3);
 }
 
-.user-header__body {
-  margin-top: -36px;
-  padding: 0 var(--space-4) var(--space-2);
+.user-header:not(.user-header--has-bg) .user-header__body {
+  padding-top: 0;
+  padding-bottom: var(--space-2);
 }
 
 .user-header__row {
@@ -39,6 +49,10 @@
   flex-shrink: 0;
   font-size: 1.25rem;
   box-shadow: 0 0 0 3px var(--color-bg);
+}
+
+.user-header--has-bg .user-header__avatar {
+  box-shadow: 0 0 0 3px rgb(255 255 255 / 18%);
 }
 
 .user-header__avatar.user-avatar-frame {
@@ -92,6 +106,10 @@
   text-transform: uppercase;
 }
 
+.user-header--has-bg .user-header__note {
+  color: rgb(255 255 255 / 72%);
+}
+
 .user-header__meta {
   margin: 0;
   color: var(--color-muted);
@@ -103,13 +121,16 @@
   white-space: nowrap;
 }
 
+.user-header--has-bg .user-header__meta {
+  color: rgb(255 255 255 / 78%);
+}
+
 .user-header__stats {
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
   gap: var(--space-4);
   margin: var(--space-2) 0 0;
-  /* Полная ширина под рядом с кнопкой — иначе счётчики ломаются в столбик. */
   min-width: 0;
 }
 
@@ -129,6 +150,11 @@
   white-space: nowrap;
 }
 
+.user-header--has-bg .user-header__stat-btn,
+.user-header--has-bg .user-header__stat-chip {
+  color: rgb(255 255 255 / 78%);
+}
+
 .user-header__stat-btn {
   cursor: pointer;
   text-align: left;
@@ -137,6 +163,11 @@
 .user-header__stat-btn:hover,
 .user-header__stat-btn:focus-visible {
   color: var(--color-text);
+}
+
+.user-header--has-bg .user-header__stat-btn:hover,
+.user-header--has-bg .user-header__stat-btn:focus-visible {
+  color: #fff;
 }
 
 .user-header__stat-chip--rank {
@@ -154,4 +185,10 @@
   font-weight: 750;
   font-variant-numeric: tabular-nums;
   color: var(--color-text);
+}
+
+.user-header--has-bg .user-header__stat-count,
+.user-header--has-bg .user-header__name {
+  color: #fff;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 45%);
 }
