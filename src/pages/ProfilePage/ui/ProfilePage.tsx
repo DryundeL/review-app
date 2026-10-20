@@ -5,7 +5,7 @@ import {
   useQueryClient,
   type InfiniteData,
 } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   deleteReview,
@@ -78,28 +78,33 @@ function OwnProfileView({ profile }: { profile: SessionProfile }) {
   const reviews = reviewsQuery.data?.items ?? [];
   const { published, drafts, visible } = splitReviews(reviews, tab);
 
+  const backgroundCode = profile.background;
+
   return (
     <section className="profile-page screen">
-      <div className="profile-page__topbar">
-        <Button asChild variant="ghost" className="profile-page__shop-btn">
-          <Link to="/shop">
-            <ShopBagIcon />
-            Магазин очков
-          </Link>
-        </Button>
-        <Button asChild variant="ghost" className="profile-page__settings-btn">
-          <Link to="/settings" aria-label="Настройки">
-            <SettingsGearIcon />
-          </Link>
-        </Button>
-      </div>
+      <ProfileHero backgroundCode={backgroundCode}>
+        <div className="profile-page__topbar">
+          <Button asChild variant="ghost" className="profile-page__shop-btn">
+            <Link to="/shop">
+              <ShopBagIcon />
+              Магазин очков
+            </Link>
+          </Button>
+          <Button asChild variant="ghost" className="profile-page__settings-btn">
+            <Link to="/settings" aria-label="Настройки">
+              <SettingsGearIcon />
+            </Link>
+          </Button>
+        </div>
 
-      <UserHeader
-        user={toUser(profile)}
-        note={profile.isPremium ? "Premium" : null}
-        onFollowersClick={() => setFollowList("followers")}
-        onFollowingClick={() => setFollowList("following")}
-      />
+        <UserHeader
+          user={toUser(profile)}
+          note={profile.isPremium ? "Premium" : null}
+          onDarkSurface={Boolean(backgroundCode)}
+          onFollowersClick={() => setFollowList("followers")}
+          onFollowingClick={() => setFollowList("following")}
+        />
+      </ProfileHero>
 
       <ReviewTabs
         tab={tab}
@@ -225,38 +230,43 @@ function PublicProfileView({
   const { published, drafts, visible } = splitReviews(reviews, isMe ? tab : "published");
   const list = isMe ? visible : published;
 
+  const backgroundCode = profile.background;
+
   return (
     <section className="profile-page screen">
-      <UserHeader
-        user={toUser(profile)}
-        note={isMe && profile.isPremium ? "Premium" : null}
-        onFollowersClick={() => setFollowList("followers")}
-        onFollowingClick={() => setFollowList("following")}
-        actions={
-          isMe ? null : (
-            <Button
-              type="button"
-              className="profile-page__follow"
-              variant={profile.isFollowing ? "secondary" : "primary"}
-              disabled={followMutation.isPending}
-              aria-pressed={profile.isFollowing}
-              onClick={() => {
-                setFollowError(null);
-                followMutation.mutate(
-                  { userId: profile.id, nextFollowing: !profile.isFollowing },
-                  {
-                    onError: (error) => {
-                      setFollowError(messageFromError(error, "Не удалось изменить подписку."));
+      <ProfileHero backgroundCode={backgroundCode}>
+        <UserHeader
+          user={toUser(profile)}
+          note={isMe && profile.isPremium ? "Premium" : null}
+          onDarkSurface={Boolean(backgroundCode)}
+          onFollowersClick={() => setFollowList("followers")}
+          onFollowingClick={() => setFollowList("following")}
+          actions={
+            isMe ? null : (
+              <Button
+                type="button"
+                className="profile-page__follow"
+                variant={profile.isFollowing ? "secondary" : "primary"}
+                disabled={followMutation.isPending}
+                aria-pressed={profile.isFollowing}
+                onClick={() => {
+                  setFollowError(null);
+                  followMutation.mutate(
+                    { userId: profile.id, nextFollowing: !profile.isFollowing },
+                    {
+                      onError: (error) => {
+                        setFollowError(messageFromError(error, "Не удалось изменить подписку."));
+                      },
                     },
-                  },
-                );
-              }}
-            >
-              {profile.isFollowing ? "Отписаться" : "Подписаться"}
-            </Button>
-          )
-        }
-      />
+                  );
+                }}
+              >
+                {profile.isFollowing ? "Отписаться" : "Подписаться"}
+              </Button>
+            )
+          }
+        />
+      </ProfileHero>
 
       {followError ? (
         <p className="profile-page__error" role="alert">
@@ -628,15 +638,39 @@ function splitReviews(reviews: RemoteReviewSummary[], tab: ReviewTab) {
   };
 }
 
+function ProfileHero({
+  backgroundCode,
+  children,
+}: {
+  backgroundCode?: string;
+  children: ReactNode;
+}) {
+  const backgroundUrl = backgroundCode ? shopAssetUrl(backgroundCode) : undefined;
+  const style: CSSProperties | undefined = backgroundUrl
+    ? { ["--profile-hero-bg" as string]: `url("${backgroundUrl}")` }
+    : undefined;
+
+  return (
+    <div
+      className={
+        backgroundUrl
+          ? "profile-page__hero profile-page__hero--has-bg"
+          : "profile-page__hero"
+      }
+      style={style}
+    >
+      {children}
+    </div>
+  );
+}
+
 function toUser(profile: SessionProfile | PublicProfile): User {
   return {
     id: profile.id,
     username: profile.username.trim(),
     displayName: displayName(profile),
     ...(profile.photoUrl ? { photoUrl: profile.photoUrl } : {}),
-    ...(profile.background ? { background: profile.background } : {}),
     ...(profile.avatarFrame ? { avatarFrame: profile.avatarFrame } : {}),
-    ...(profile.backdrop ? { backdrop: profile.backdrop } : {}),
     popularityScore: 0,
     followersCount: profile.followersCount,
     followingCount: profile.followingCount,

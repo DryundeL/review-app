@@ -2,15 +2,46 @@
   gap: var(--space-3);
 }
 
-/* Тот же вертикальный ритм, что у .app-shell__back на чужих профилях. */
+/*
+  Hero: магазин + профиль под одним фоном, до вкладок.
+  По горизонтали — на всю ширину шелла (screen + main padding).
+  Поверху только screen, чтобы не наехать на кнопку «Назад».
+*/
+.profile-page__hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: calc(-1 * var(--space-3)) calc(-1 * (var(--space-4) + var(--space-4))) 0;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+
+.profile-page__hero--has-bg {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.profile-page__hero--has-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--color-surface);
+  background-image: linear-gradient(
+      to bottom,
+      rgb(0 0 0 / 28%),
+      rgb(0 0 0 / 68%)
+    ),
+    var(--profile-hero-bg);
+  background-size: cover;
+  background-position: center;
+}
+
 .profile-page__topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  margin: calc(-1 * var(--space-2)) 0 var(--space-1);
-  margin-left: calc(-1 * var(--space-2));
-  margin-right: calc(-1 * var(--space-2));
 }
 
 .profile-page__shop-btn {
@@ -25,11 +56,25 @@
   font-weight: 650;
 }
 
+.profile-page__hero--has-bg .profile-page__shop-btn {
+  border-color: rgb(255 255 255 / 28%);
+  background: rgb(0 0 0 / 35%);
+  color: #fff;
+  backdrop-filter: blur(8px);
+}
+
 .profile-page__shop-btn:hover,
 .profile-page__shop-btn:focus-visible {
   border-color: color-mix(in srgb, var(--color-gold) 45%, var(--color-border));
   background: color-mix(in srgb, var(--color-surface) 70%, var(--color-gold) 8%);
   color: var(--color-text);
+}
+
+.profile-page__hero--has-bg .profile-page__shop-btn:hover,
+.profile-page__hero--has-bg .profile-page__shop-btn:focus-visible {
+  border-color: color-mix(in srgb, var(--color-gold) 55%, transparent);
+  background: rgb(0 0 0 / 48%);
+  color: #fff;
 }
 
 .profile-page__settings-btn {
@@ -38,12 +83,23 @@
   min-height: 44px;
   padding: 0;
   border-radius: 12px;
+  color: var(--color-text);
+}
+
+.profile-page__hero--has-bg .profile-page__settings-btn {
+  color: #fff;
 }
 
 .profile-page__settings-btn:hover,
 .profile-page__settings-btn:focus-visible {
   color: var(--color-text);
   background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+}
+
+.profile-page__hero--has-bg .profile-page__settings-btn:hover,
+.profile-page__hero--has-bg .profile-page__settings-btn:focus-visible {
+  color: #fff;
+  background: rgb(255 255 255 / 12%);
 }
 
 .profile-page__reviews--backdrop {
@@ -72,7 +128,8 @@
 .profile-page__tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  margin: 0 calc(var(--space-4) * -1);
+  margin: 0 calc(-1 * (var(--space-4) + var(--space-4)));
+  padding: 0 var(--space-4);
   border-bottom: 1px solid var(--color-border);
 }
 
