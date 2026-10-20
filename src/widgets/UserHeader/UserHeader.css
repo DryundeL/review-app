@@ -19,13 +19,16 @@
   box-shadow: 0 0 0 3px var(--color-bg);
 }
 
-.user-header--on-dark .user-header__avatar {
+.user-header--on-dark .user-header__avatar:not(.user-avatar-frame) {
   box-shadow: 0 0 0 3px rgb(255 255 255 / 18%);
 }
 
+/* Рамка — отдельный декор; тень на квадратном wrapper давала «квадрат» под кольцом. */
 .user-header__avatar.user-avatar-frame {
   width: 72px;
   height: 72px;
+  box-shadow: none;
+  background: transparent;
 }
 
 .user-header__avatar.user-avatar-frame .user-avatar {
