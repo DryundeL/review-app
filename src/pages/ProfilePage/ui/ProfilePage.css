@@ -7,8 +7,8 @@
 }
 
 /*
-  Hero: магазин + профиль под одним фоном до вкладок.
-  Во всю ширину шелла. Свой профиль — вплотную к шапке приложения.
+  Hero: магазин/follow + профиль под одним фоном.
+  Во всю ширину шелла, flush к шапке — одинаково на своём и чужом профиле.
 */
 .profile-page__hero {
   display: flex;
@@ -18,9 +18,14 @@
   padding: var(--space-3) var(--space-4) var(--space-3);
 }
 
-.profile-page--own .profile-page__hero {
+.profile-page--flush-hero .profile-page__hero {
   margin-top: calc(-1 * (var(--space-4) + var(--space-3)));
   padding-top: var(--space-4);
+}
+
+/* Чужой профиль: место под overlay-кнопку «Назад», без сдвига всего hero. */
+.profile-page--flush-hero.profile-page--hero-bg .profile-page__hero:not(:has(.profile-page__topbar)) {
+  padding-top: calc(var(--space-4) + 28px);
 }
 
 .profile-page__hero--has-bg {
@@ -166,6 +171,20 @@
   padding: 0 var(--space-4);
   border-radius: var(--radius-pill);
   font-size: 0.875rem;
+}
+
+.profile-page__hero--has-bg .profile-page__follow {
+  border-color: rgb(255 255 255 / 28%);
+  background: rgb(0 0 0 / 35%);
+  color: #fff;
+  backdrop-filter: blur(8px);
+}
+
+.profile-page__hero--has-bg .profile-page__follow:hover,
+.profile-page__hero--has-bg .profile-page__follow:focus-visible {
+  border-color: rgb(255 255 255 / 40%);
+  background: rgb(0 0 0 / 48%);
+  color: #fff;
 }
 
 .profile-page__tabs {

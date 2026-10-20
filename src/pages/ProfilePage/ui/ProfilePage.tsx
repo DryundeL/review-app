@@ -84,8 +84,8 @@ function OwnProfileView({ profile }: { profile: SessionProfile }) {
     <section
       className={
         backgroundCode
-          ? "profile-page screen profile-page--own profile-page--hero-bg"
-          : "profile-page screen profile-page--own"
+          ? "profile-page screen profile-page--flush-hero profile-page--hero-bg"
+          : "profile-page screen profile-page--flush-hero"
       }
     >
       <ProfileHero backgroundCode={backgroundCode}>
@@ -242,14 +242,14 @@ function PublicProfileView({
     <section
       className={
         backgroundCode
-          ? "profile-page screen profile-page--hero-bg"
-          : "profile-page screen"
+          ? "profile-page screen profile-page--flush-hero profile-page--hero-bg"
+          : "profile-page screen profile-page--flush-hero"
       }
     >
       <ProfileHero backgroundCode={backgroundCode}>
         <UserHeader
           user={toUser(profile)}
-          note={isMe && profile.isPremium ? "Premium" : null}
+          note={profile.isPremium ? "Premium" : null}
           onDarkSurface={Boolean(backgroundCode)}
           onFollowersClick={() => setFollowList("followers")}
           onFollowingClick={() => setFollowList("following")}
