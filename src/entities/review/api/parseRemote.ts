@@ -1,10 +1,12 @@
 import { z } from "zod";
 import { unexpectedResponseError } from "../../../shared/api/errors.ts";
+import { parseShopCode } from "../../../shared/lib/shopCode.ts";
 import { safeHttpsUrl } from "../../../shared/lib/safeHttpsUrl.ts";
 import { MEDIA_TYPE_LABELS, type MediaType } from "../../../shared/types/media.ts";
 import type {
   MediaObjectSummary,
   RemoteReview,
+  RemoteReviewAuthor,
   RemoteReviewList,
 } from "../model/remote.ts";
 
@@ -35,6 +37,8 @@ const authorSchema = z.object({
   username: z.string().nullish().transform((value) => value ?? ""),
   isFollowing: z.boolean().nullish().transform((value) => value ?? false),
   photoUrl: z.string().optional().nullable(),
+  avatarFrame: z.string().optional().nullable(),
+  backdrop: z.string().optional().nullable(),
 });
 
 /**
@@ -141,18 +145,17 @@ function toCatalogMediaSummary(raw: z.infer<typeof catalogMediaSchema>): MediaOb
 function mapAuthor(
   author: z.infer<typeof authorSchema>,
   itemIsFollowing?: boolean | null,
-): {
-  id: string;
-  username: string;
-  isFollowing: boolean;
-  photoUrl?: string;
-} {
+): RemoteReviewAuthor {
   const photoUrl = safeHttpsUrl(author.photoUrl ?? undefined);
+  const avatarFrame = parseShopCode(author.avatarFrame ?? undefined);
+  const backdrop = parseShopCode(author.backdrop ?? undefined);
   return {
     id: author.id,
     username: author.username,
     isFollowing: itemIsFollowing ?? author.isFollowing,
     ...(photoUrl ? { photoUrl } : {}),
+    ...(avatarFrame ? { avatarFrame } : {}),
+    ...(backdrop ? { backdrop } : {}),
   };
 }
 

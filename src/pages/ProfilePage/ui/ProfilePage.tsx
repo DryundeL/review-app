@@ -617,6 +617,7 @@ function ReviewsBlock({
                 review={review}
                 canEdit={canEdit}
                 hideStatus={!canEdit}
+                hideBackdrop={Boolean(backdropCode)}
                 deleting={deletingId === review.id}
                 onDelete={canEdit ? onDelete : undefined}
               />

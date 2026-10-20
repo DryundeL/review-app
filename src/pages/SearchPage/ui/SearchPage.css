@@ -115,6 +115,23 @@
   cursor: pointer;
 }
 
+.search-page__row--backdrop {
+  margin-inline: calc(var(--space-4) * -1);
+  padding-inline: var(--space-4);
+  border-bottom-color: transparent;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg);
+  background-image: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-bg) 35%, transparent),
+      color-mix(in srgb, var(--color-bg) 60%, transparent)
+    ),
+    var(--search-row-backdrop);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
 a.search-page__row {
   text-decoration: none;
 }

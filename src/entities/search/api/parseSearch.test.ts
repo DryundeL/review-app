@@ -65,3 +65,35 @@ test("parses unified search; empty sections default to []", () => {
   assert.equal(result.reviews[0]?.photoUrl, undefined);
   assert.deepEqual(result.mediaObjects, []);
 });
+
+test("search review hit maps nested author cosmetics", () => {
+  const result = parseSearchText(
+    JSON.stringify({
+      reviews: [
+        {
+          id: "22222222-2222-4222-8222-222222222222",
+          title: "Обзор",
+          authorId: "11111111-1111-4111-8111-111111111111",
+          author: {
+            id: "11111111-1111-4111-8111-111111111111",
+            username: "ann",
+            photoUrl: "https://cdn.example/a.jpg",
+            avatarFrame: "frame_gold",
+            backdrop: "list_dark",
+          },
+          mediaObject: {
+            id: "33333333-3333-4333-8333-333333333333",
+            title: "Title",
+            type: "manga",
+          },
+          rating: 8,
+        },
+      ],
+    }),
+  );
+
+  assert.equal(result.reviews[0]?.username, "ann");
+  assert.equal(result.reviews[0]?.photoUrl, "https://cdn.example/a.jpg");
+  assert.equal(result.reviews[0]?.avatarFrame, "frame_gold");
+  assert.equal(result.reviews[0]?.backdrop, "list_dark");
+});

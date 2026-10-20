@@ -3,6 +3,22 @@
   padding-bottom: calc(var(--space-5) + var(--safe-bottom));
 }
 
+.review-page--backdrop {
+  margin-inline: calc(var(--space-4) * -1);
+  padding-inline: var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg);
+  background-image: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-bg) 25%, transparent),
+      color-mix(in srgb, var(--color-bg) 55%, transparent)
+    ),
+    var(--review-page-backdrop);
+  background-size: cover;
+  background-position: top center;
+  background-repeat: no-repeat;
+}
+
 .review-page__author {
   display: flex;
   align-items: center;

@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import type { RemoteReviewSummary } from "@/entities/review";
 import { useAuthSession } from "@/features/auth";
 import { ReportReviewControl } from "@/features/report-review";
+import { shopAssetUrl } from "@/shared/lib/shopCode";
 import { MEDIA_TYPE_LABELS } from "@/shared/types";
 import { Button, MediaPoster, Modal, VoteCounts } from "@/shared/ui";
 import "./RemoteReviewCard.css";
@@ -12,6 +13,8 @@ type RemoteReviewCardProps = {
   canEdit?: boolean;
   /** Лента: только published — иконку статуса не показываем. */
   hideStatus?: boolean;
+  /** Лента уже рисует author.backdrop на feed-item. */
+  hideBackdrop?: boolean;
   onDelete?: (reviewId: string) => Promise<void> | void;
   deleting?: boolean;
 };
@@ -20,6 +23,7 @@ export function RemoteReviewCard({
   review,
   canEdit = false,
   hideStatus = false,
+  hideBackdrop = false,
   onDelete,
   deleting = false,
 }: RemoteReviewCardProps) {
@@ -32,9 +36,19 @@ export function RemoteReviewCard({
   const authorId = review.author?.id ?? review.authorId;
   const canReport =
     review.status === "published" && profile != null && profile.id !== authorId;
+  const backdropUrl =
+    !hideBackdrop && review.author?.backdrop
+      ? shopAssetUrl(review.author.backdrop)
+      : undefined;
+  const cardStyle: CSSProperties | undefined = backdropUrl
+    ? { ["--remote-review-backdrop" as string]: `url("${backdropUrl}")` }
+    : undefined;
 
   return (
-    <article className="remote-review">
+    <article
+      className={backdropUrl ? "remote-review remote-review--backdrop" : "remote-review"}
+      style={cardStyle}
+    >
       <div className="remote-review__row">
         <Link
           className="remote-review__main"

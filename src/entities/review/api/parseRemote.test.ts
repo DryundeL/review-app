@@ -83,7 +83,7 @@ test("parseRemoteReview rejects payload without author", () => {
   assert.throws(() => parseRemoteReview({ ...detailBase }));
 });
 
-test("feed list maps author.isFollowing and photoUrl", () => {
+test("feed list maps author.isFollowing, photoUrl and cosmetics", () => {
   const list = parseRemoteReviewListText(
     JSON.stringify({
       items: [
@@ -95,6 +95,8 @@ test("feed list maps author.isFollowing and photoUrl", () => {
             username: "ann",
             isFollowing: false,
             photoUrl: "https://cdn.example/a.jpg",
+            avatarFrame: "frame_gold",
+            backdrop: "list_dark",
           },
           mediaObject,
           title: "Обзор",
@@ -114,5 +116,22 @@ test("feed list maps author.isFollowing and photoUrl", () => {
     username: "ann",
     isFollowing: false,
     photoUrl: "https://cdn.example/a.jpg",
+    avatarFrame: "frame_gold",
+    backdrop: "list_dark",
   });
+});
+
+test("parseRemoteReview strips invalid author cosmetics", () => {
+  const review = parseRemoteReview({
+    ...detailBase,
+    author: {
+      id: authorId,
+      username: "ann",
+      avatarFrame: "../evil",
+      backdrop: "NOT_VALID",
+    },
+  });
+
+  assert.equal(review.author.avatarFrame, undefined);
+  assert.equal(review.author.backdrop, undefined);
 });

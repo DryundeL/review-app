@@ -36,8 +36,10 @@ export type SearchReviewHit = {
   title: string;
   authorId: string;
   username: string;
-  /** Аватар автора в выдаче поиска (плоское поле на hit). */
+  /** Аватар автора в выдаче поиска (плоское поле или author.photoUrl). */
   photoUrl?: string;
+  avatarFrame?: string;
+  backdrop?: string;
   mediaObject: {
     id: string;
     title: string;

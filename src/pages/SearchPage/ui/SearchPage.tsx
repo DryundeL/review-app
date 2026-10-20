@@ -18,6 +18,7 @@ import { useFilterFeedStore } from "@/features/filter-feed";
 import { useFollowToggle } from "@/features/follow-user";
 import { useDebouncedValue } from "@/shared/hooks";
 import { ruPlural } from "@/shared/lib/ruPlural";
+import { shopAssetUrl } from "@/shared/lib/shopCode";
 import { Button, Input, MediaPoster, UserAvatar } from "@/shared/ui";
 import "./SearchPage.css";
 
@@ -442,13 +443,27 @@ function TypeTrendRow({
 
 function ReviewRow({ item }: { item: SearchReviewHit }) {
   const authorLabel = item.username ? `@${item.username}` : "Автор";
+  const backdropUrl = item.backdrop ? shopAssetUrl(item.backdrop) : undefined;
 
   return (
-    <Link className="search-page__row" to={`/reviews/${item.id}`}>
+    <Link
+      className={
+        backdropUrl
+          ? "search-page__row search-page__row--backdrop"
+          : "search-page__row"
+      }
+      to={`/reviews/${item.id}`}
+      style={
+        backdropUrl
+          ? { ["--search-row-backdrop" as string]: `url("${backdropUrl}")` }
+          : undefined
+      }
+    >
       <UserAvatar
         className="search-page__avatar search-page__avatar--review"
         label={authorLabel}
         photoUrl={item.photoUrl}
+        frameCode={item.avatarFrame}
       />
       <MediaPoster
         className="search-page__poster"

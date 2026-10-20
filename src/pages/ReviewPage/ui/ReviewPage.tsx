@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getReview, viewReview, voteReview } from "@/entities/review";
 import { useAuthSession } from "@/features/auth";
@@ -9,6 +9,7 @@ import { ApiError } from "@/shared/api";
 import { usePageMeta } from "@/shared/hooks";
 import { truncateMeta, type PageMeta } from "@/shared/lib/pageMeta";
 import { safeHttpsUrl } from "@/shared/lib/safeHttpsUrl";
+import { shopAssetUrl } from "@/shared/lib/shopCode";
 import { MEDIA_TYPE_LABELS } from "@/shared/types";
 import {
   Button,
@@ -125,15 +126,27 @@ export function ReviewPage() {
   const media = review.mediaObject;
   const mediaTitle = media.title.trim() || "Произведение";
   const typeLabel = MEDIA_TYPE_LABELS[media.type];
+  const backdropUrl = review.author.backdrop
+    ? shopAssetUrl(review.author.backdrop)
+    : undefined;
+  const pageStyle: CSSProperties | undefined = backdropUrl
+    ? { ["--review-page-backdrop" as string]: `url("${backdropUrl}")` }
+    : undefined;
 
   return (
-    <article className="review-page screen">
+    <article
+      className={
+        backdropUrl ? "review-page screen review-page--backdrop" : "review-page screen"
+      }
+      style={pageStyle}
+    >
       <div className="review-page__author">
         <Link className="review-page__author-link" to={`/profiles/${authorId}`}>
           <UserAvatar
             className="review-page__avatar"
             label={authorLabel}
             photoUrl={review.author.photoUrl}
+            frameCode={review.author.avatarFrame}
           />
           <span className="review-page__author-name">{authorLabel}</span>
         </Link>

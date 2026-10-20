@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { unexpectedResponseError } from "../../../shared/api/errors.ts";
+import { parseShopCode } from "../../../shared/lib/shopCode.ts";
 import { safeHttpsUrl } from "../../../shared/lib/safeHttpsUrl.ts";
 import { MEDIA_TYPE_LABELS, type MediaType } from "../../../shared/types/media.ts";
 import type {
@@ -42,12 +43,23 @@ const typeTrendSchema = z.object({
   reviewsCount: z.number().nonnegative().optional().default(0),
 });
 
+const reviewAuthorSchema = z.object({
+  id: uuid.optional(),
+  username: z.string().nullish().transform((value) => value ?? ""),
+  photoUrl: z.string().optional().nullable(),
+  avatarFrame: z.string().optional().nullable(),
+  backdrop: z.string().optional().nullable(),
+});
+
 const reviewHitSchema = z.object({
   id: uuid,
   title: z.string().min(1).max(256),
   authorId: uuid,
   username: z.string().nullish().transform((value) => value ?? ""),
   photoUrl: z.string().optional().nullable(),
+  avatarFrame: z.string().optional().nullable(),
+  backdrop: z.string().optional().nullable(),
+  author: reviewAuthorSchema.optional(),
   mediaObject: z.object({
     id: uuid,
     title: z.string().min(1).max(256),
@@ -114,12 +126,18 @@ function toTypeTrend(raw: z.infer<typeof typeTrendSchema>): SearchTypeTrend {
 }
 
 function toReviewHit(raw: z.infer<typeof reviewHitSchema>): SearchReviewHit {
+  const nested = raw.author;
+  const username = nested?.username || raw.username;
+  const avatarFrame = parseShopCode(nested?.avatarFrame ?? raw.avatarFrame ?? undefined);
+  const backdrop = parseShopCode(nested?.backdrop ?? raw.backdrop ?? undefined);
   return {
     id: raw.id,
     title: raw.title,
     authorId: raw.authorId,
-    username: raw.username,
-    ...optionalPhoto(raw.photoUrl),
+    username,
+    ...optionalPhoto(nested?.photoUrl ?? raw.photoUrl),
+    ...(avatarFrame ? { avatarFrame } : {}),
+    ...(backdrop ? { backdrop } : {}),
     mediaObject: {
       id: raw.mediaObject.id,
       title: raw.mediaObject.title,
