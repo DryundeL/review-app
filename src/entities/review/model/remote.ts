@@ -50,6 +50,11 @@ export type RemoteReviewSummary = {
   viewsCount: number;
   /** Алиас author.isFollowing, если бэкенд кладёт флаг на item. */
   isFollowing?: boolean;
+  /**
+   * Голос текущего viewer'а: true = like, false = dislike.
+   * Если поля нет — UI опирается на локальный кэш после PUT /vote.
+   */
+  viewerIsLike?: boolean;
 };
 
 /** GET /reviews/:id и ответы create/update — полные блоки + author как в feed. */

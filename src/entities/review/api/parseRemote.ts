@@ -58,6 +58,7 @@ const reviewSummarySchema = z.object({
   dislikesCount: z.number().int().nonnegative(),
   viewsCount: z.number().int().nonnegative(),
   isFollowing: z.boolean().nullish(),
+  viewerIsLike: z.boolean().nullish(),
 });
 
 /**
@@ -78,6 +79,7 @@ const reviewListItemSchema = z.object({
   dislikesCount: z.number().nonnegative().optional().default(0),
   viewsCount: z.number().nonnegative().optional().default(0),
   isFollowing: z.boolean().nullish(),
+  viewerIsLike: z.boolean().nullish(),
 });
 
 const reviewDetailSchema = reviewSummarySchema.extend({
@@ -183,6 +185,7 @@ function mapSummary(
       : item.isFollowing != null
         ? { isFollowing: item.isFollowing }
         : {}),
+    ...(typeof item.viewerIsLike === "boolean" ? { viewerIsLike: item.viewerIsLike } : {}),
   };
 }
 

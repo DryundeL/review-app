@@ -28,8 +28,8 @@ export function ReviewPage() {
   const queryClient = useQueryClient();
   const followMutation = useFollowToggle();
   const [followOverride, setFollowOverride] = useState<boolean | null>(null);
-  /** Локальный выбор голоса: API не отдаёт текущий vote viewer'а. */
-  const [myVote, setMyVote] = useState<boolean | null>(null);
+  /** Optimistic override; источник правды — review.viewerIsLike с бэка. */
+  const [myVoteOverride, setMyVoteOverride] = useState<boolean | null>(null);
 
   const reviewQuery = useQuery({
     queryKey: ["review", reviewId],
@@ -40,7 +40,7 @@ export function ReviewPage() {
 
   useEffect(() => {
     setFollowOverride(null);
-    setMyVote(null);
+    setMyVoteOverride(null);
   }, [reviewId]);
 
   const pageMeta = useMemo((): PageMeta => {
@@ -74,14 +74,15 @@ export function ReviewPage() {
   const voteMutation = useMutation({
     mutationFn: (isLike: boolean) => voteReview(reviewId!, isLike),
     onMutate: (isLike) => {
-      const previous = myVote;
-      setMyVote(isLike);
+      const previous = myVoteOverride;
+      setMyVoteOverride(isLike);
       return { previous };
     },
     onError: (_error, _isLike, context) => {
-      setMyVote(context?.previous ?? null);
+      setMyVoteOverride(context?.previous ?? null);
     },
     onSuccess: async () => {
+      setMyVoteOverride(null);
       await queryClient.invalidateQueries({ queryKey: ["review", reviewId] });
     },
   });
@@ -123,6 +124,9 @@ export function ReviewPage() {
   const authorLabel = username ? `@${username}` : "Автор";
   const isFollowing =
     followOverride ?? review.author.isFollowing ?? review.isFollowing ?? false;
+  const myVote =
+    myVoteOverride ??
+    (typeof review.viewerIsLike === "boolean" ? review.viewerIsLike : null);
   const media = review.mediaObject;
   const mediaTitle = media.title.trim() || "Произведение";
   const typeLabel = MEDIA_TYPE_LABELS[media.type];

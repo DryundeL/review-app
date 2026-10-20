@@ -135,3 +135,12 @@ test("parseRemoteReview strips invalid author cosmetics", () => {
   assert.equal(review.author.avatarFrame, undefined);
   assert.equal(review.author.backdrop, undefined);
 });
+
+test("parseRemoteReview maps viewerIsLike", () => {
+  const review = parseRemoteReview({
+    ...detailBase,
+    author: { id: authorId, username: "ann" },
+    viewerIsLike: true,
+  });
+  assert.equal(review.viewerIsLike, true);
+});
