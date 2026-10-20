@@ -16,8 +16,14 @@ export function Modal({ open, onOpenChange, title, children, className }: ModalP
       <Dialog.Portal>
         <Dialog.Overlay className="ui-modal__overlay" />
         <Dialog.Content className={cn("ui-modal__content", className)}>
-          <Dialog.Title className="ui-modal__title">{title}</Dialog.Title>
-          {children}
+          <div className="ui-modal__handle" aria-hidden />
+          <div className="ui-modal__head">
+            <Dialog.Title className="ui-modal__title">{title}</Dialog.Title>
+            <Dialog.Close className="ui-modal__close" aria-label="Закрыть">
+              ×
+            </Dialog.Close>
+          </div>
+          <div className="ui-modal__body">{children}</div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

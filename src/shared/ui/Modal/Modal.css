@@ -1,28 +1,106 @@
 .ui-modal__overlay {
   position: fixed;
   inset: 0;
+  z-index: 40;
   background: rgb(0 0 0 / 55%);
+  animation: ui-modal-fade-in 160ms ease-out;
 }
 
 .ui-modal__content {
   position: fixed;
-  top: 50%;
   left: 50%;
-  width: min(100% - 32px, 420px);
-  max-height: min(85dvh, 640px);
-  overflow: auto;
-  transform: translate(-50%, -50%);
-  padding: var(--space-4);
+  bottom: 0;
+  z-index: 41;
+  display: flex;
+  flex-direction: column;
+  width: min(100%, var(--shell));
+  max-height: min(78dvh, 560px);
+  transform: translateX(-50%);
+  padding: var(--space-2) var(--space-4) calc(var(--space-4) + var(--safe-bottom));
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-bottom: 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   background: var(--color-surface);
   outline: none;
+  animation: ui-modal-slide-up 200ms ease-out;
+}
+
+.ui-modal__handle {
+  width: 36px;
+  height: 4px;
+  margin: var(--space-1) auto var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-border);
+  flex-shrink: 0;
+}
+
+.ui-modal__head {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  flex-shrink: 0;
 }
 
 .ui-modal__title {
-  margin: 0 0 var(--space-3);
-  font-size: 1.125rem;
+  margin: 0;
+  grid-column: 2;
+  font-size: 1.0625rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   text-align: center;
+}
+
+.ui-modal__close {
+  grid-column: 3;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-pill);
+  color: var(--color-muted);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.ui-modal__close:hover,
+.ui-modal__close:focus-visible {
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-border) 45%, transparent);
+}
+
+.ui-modal__body {
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+@keyframes ui-modal-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ui-modal-slide-up {
+  from {
+    transform: translateX(-50%) translateY(16px);
+    opacity: 0.96;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-modal__overlay,
+  .ui-modal__content {
+    animation: none;
+  }
 }

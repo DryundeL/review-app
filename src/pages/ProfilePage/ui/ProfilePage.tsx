@@ -339,7 +339,6 @@ function FollowConnectionsModal({
         if (!next) onClose();
       }}
       title={title}
-      className="profile-page__follow-modal"
     >
       {listQuery.isLoading ? (
         <div

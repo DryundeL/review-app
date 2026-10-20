@@ -187,12 +187,6 @@
   }
 }
 
-.profile-page__follow-modal {
-  display: flex;
-  max-height: min(72vh, 560px);
-  flex-direction: column;
-}
-
 .profile-page__follow-list {
   display: flex;
   flex: 1;
