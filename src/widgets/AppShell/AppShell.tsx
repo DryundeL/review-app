@@ -15,8 +15,8 @@ function showBackButton(pathname: string): boolean {
     pathname === "/shop" ||
     pathname === "/create" ||
     pathname === "/achievements" ||
-    pathname.startsWith("/reviews/") ||
-    pathname.startsWith("/profiles/")
+    pathname.startsWith("/reviews/")
+    // /profiles/:id — «Назад» в topbar профиля (как «Магазин» на своём).
   );
 }
 
@@ -39,8 +39,6 @@ export function AppShell() {
     pathname === "/create" ||
     pathname.startsWith("/reviews/");
   const showBack = showBackButton(pathname);
-  /** На чужом профиле «Назад» поверх hero — иначе ломает flush к шапке. */
-  const backOverlay = showBack && pathname.startsWith("/profiles/");
 
   useEffect(() => {
     if (!refreshAfterBackRef.current) return;
@@ -81,22 +79,9 @@ export function AppShell() {
           </NavLink>
         </div>
       </header>
-      <main
-        className={[
-          "app-shell__main",
-          hideNav ? "app-shell__main--solo" : "",
-          backOverlay ? "app-shell__main--back-overlay" : "",
-        ]
-          .filter(Boolean)
-          .join(" ")}
-      >
+      <main className={hideNav ? "app-shell__main app-shell__main--solo" : "app-shell__main"}>
         {showBack ? (
-          <button
-            type="button"
-            className={backOverlay ? "app-shell__back app-shell__back--overlay" : "app-shell__back"}
-            aria-label="Назад"
-            onClick={handleBack}
-          >
+          <button type="button" className="app-shell__back" aria-label="Назад" onClick={handleBack}>
             <BackArrowIcon />
           </button>
         ) : null}

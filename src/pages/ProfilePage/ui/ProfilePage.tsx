@@ -6,7 +6,7 @@ import {
   type InfiniteData,
 } from "@tanstack/react-query";
 import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   deleteReview,
   listMyReviews,
@@ -152,6 +152,7 @@ function PublicProfileView({
   userId: string;
   sessionProfile: SessionProfile | null;
 }) {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [followError, setFollowError] = useState<string | null>(null);
@@ -238,6 +239,16 @@ function PublicProfileView({
 
   const backgroundCode = profile.background;
 
+  function handleBack() {
+    void queryClient.invalidateQueries({ refetchType: "active" });
+    const idx = (window.history.state as { idx?: number } | null)?.idx;
+    if (typeof idx === "number" ? idx > 0 : window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+    navigate("/", { replace: true });
+  }
+
   return (
     <section
       className={
@@ -247,6 +258,17 @@ function PublicProfileView({
       }
     >
       <ProfileHero backgroundCode={backgroundCode}>
+        <div className="profile-page__topbar">
+          <button
+            type="button"
+            className="profile-page__back-btn"
+            aria-label="Назад"
+            onClick={handleBack}
+          >
+            <BackArrowIcon />
+          </button>
+        </div>
+
         <UserHeader
           user={toUser(profile)}
           note={profile.isPremium ? "Premium" : null}
@@ -705,6 +727,17 @@ function messageFromError(error: unknown, fallback = "Не удалось уда
   if (error instanceof ApiError) return error.message;
   if (error instanceof Error && error.message) return error.message;
   return fallback;
+}
+
+function BackArrowIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden focusable="false">
+      <path
+        fill="currentColor"
+        d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"
+      />
+    </svg>
+  );
 }
 
 function SettingsGearIcon() {

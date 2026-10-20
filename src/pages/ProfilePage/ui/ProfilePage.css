@@ -18,14 +18,10 @@
   padding: var(--space-3) var(--space-4) var(--space-3);
 }
 
+/* Одинаковый flush к шапке: свой и чужой профиль. */
 .profile-page--flush-hero .profile-page__hero {
   margin-top: calc(-1 * (var(--space-4) + var(--space-3)));
   padding-top: var(--space-4);
-}
-
-/* Чужой профиль: место под overlay-кнопку «Назад», без сдвига всего hero. */
-.profile-page--flush-hero.profile-page--hero-bg .profile-page__hero:not(:has(.profile-page__topbar)) {
-  padding-top: calc(var(--space-4) + 28px);
 }
 
 .profile-page__hero--has-bg {
@@ -83,13 +79,44 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  /* Как раньше: воздух между магазином и аватаркой. */
+  min-height: 44px;
+  /* Как раньше: воздух между topbar и аватаркой — одинаково везде. */
   margin-bottom: var(--space-5);
 }
 
 .profile-page__hero--has-bg .profile-page__topbar {
-  /* Ближе к прежнему ритму «магазин → полоса фона → аватар». */
   margin-bottom: 40px;
+}
+
+/* Тот же слот/ритм, что у app-shell__back — просто внутри hero. */
+.profile-page__back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  min-height: 44px;
+  margin: calc(-1 * var(--space-2)) 0;
+  margin-left: calc(-1 * var(--space-2));
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.profile-page__hero--has-bg .profile-page__back-btn {
+  color: #fff;
+}
+
+.profile-page__back-btn:hover,
+.profile-page__back-btn:focus-visible {
+  background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+}
+
+.profile-page__hero--has-bg .profile-page__back-btn:hover,
+.profile-page__hero--has-bg .profile-page__back-btn:focus-visible {
+  background: rgb(255 255 255 / 12%);
 }
 
 .profile-page__shop-btn {

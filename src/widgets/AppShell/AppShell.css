@@ -57,10 +57,6 @@
   padding-bottom: calc(var(--space-4) + var(--safe-bottom));
 }
 
-.app-shell__main--back-overlay {
-  position: relative;
-}
-
 .app-shell__back {
   display: inline-flex;
   align-items: center;
@@ -75,21 +71,4 @@
   background: transparent;
   color: var(--color-text);
   cursor: pointer;
-}
-
-.app-shell__back--overlay {
-  position: absolute;
-  top: var(--space-2);
-  left: var(--space-2);
-  z-index: 6;
-  margin: 0;
-  border-radius: 12px;
-  color: #fff;
-  background: rgb(0 0 0 / 35%);
-  backdrop-filter: blur(8px);
-}
-
-.app-shell__back--overlay:hover,
-.app-shell__back--overlay:focus-visible {
-  background: rgb(0 0 0 / 48%);
 }
