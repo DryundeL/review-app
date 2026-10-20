@@ -267,6 +267,28 @@ function PublicProfileView({
           >
             <BackArrowIcon />
           </button>
+          {!isMe ? (
+            <Button
+              type="button"
+              className="profile-page__follow"
+              variant={profile.isFollowing ? "secondary" : "primary"}
+              disabled={followMutation.isPending}
+              aria-pressed={profile.isFollowing}
+              onClick={() => {
+                setFollowError(null);
+                followMutation.mutate(
+                  { userId: profile.id, nextFollowing: !profile.isFollowing },
+                  {
+                    onError: (error) => {
+                      setFollowError(messageFromError(error, "Не удалось изменить подписку."));
+                    },
+                  },
+                );
+              }}
+            >
+              {profile.isFollowing ? "Отписаться" : "Подписаться"}
+            </Button>
+          ) : null}
         </div>
 
         <UserHeader
@@ -275,30 +297,6 @@ function PublicProfileView({
           onDarkSurface={Boolean(backgroundCode)}
           onFollowersClick={() => setFollowList("followers")}
           onFollowingClick={() => setFollowList("following")}
-          actions={
-            isMe ? null : (
-              <Button
-                type="button"
-                className="profile-page__follow"
-                variant={profile.isFollowing ? "secondary" : "primary"}
-                disabled={followMutation.isPending}
-                aria-pressed={profile.isFollowing}
-                onClick={() => {
-                  setFollowError(null);
-                  followMutation.mutate(
-                    { userId: profile.id, nextFollowing: !profile.isFollowing },
-                    {
-                      onError: (error) => {
-                        setFollowError(messageFromError(error, "Не удалось изменить подписку."));
-                      },
-                    },
-                  );
-                }}
-              >
-                {profile.isFollowing ? "Отписаться" : "Подписаться"}
-              </Button>
-            )
-          }
         />
       </ProfileHero>
 

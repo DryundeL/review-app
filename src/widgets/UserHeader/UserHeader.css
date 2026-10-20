@@ -1,7 +1,4 @@
 .user-header {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
   min-width: 0;
 }
 
@@ -42,13 +39,6 @@
   flex-direction: column;
   gap: var(--space-1);
   padding-top: 2px;
-}
-
-.user-header__actions {
-  display: flex;
-  flex-shrink: 0;
-  align-items: flex-start;
-  padding-top: 4px;
 }
 
 .user-header__title-row {
@@ -98,10 +88,11 @@
 
 .user-header__stats {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-3);
   min-width: 0;
+  margin-top: 2px;
 }
 
 .user-header__stat-btn,
