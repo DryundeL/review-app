@@ -606,6 +606,7 @@ function ReviewsBlock({
               <RemoteReviewCard
                 review={review}
                 canEdit={canEdit}
+                hideStatus={!canEdit}
                 deleting={deletingId === review.id}
                 onDelete={canEdit ? onDelete : undefined}
               />

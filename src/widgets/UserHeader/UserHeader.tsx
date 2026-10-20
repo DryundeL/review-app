@@ -47,30 +47,31 @@ export function UserHeader({
               {note ? <span className="user-header__note">{note}</span> : null}
             </div>
             {user.username ? <p className="user-header__meta">{user.displayName}</p> : null}
-            <div className="user-header__stats">
-              <StatControl
-                count={user.followersCount}
-                label={ruPlural(
-                  user.followersCount,
-                  "подписчик",
-                  "подписчика",
-                  "подписчиков",
-                )}
-                onClick={onFollowersClick}
-              />
-              <StatControl
-                count={user.followingCount}
-                label={ruPlural(user.followingCount, "подписка", "подписки", "подписок")}
-                onClick={onFollowingClick}
-              />
-              {user.popularityScore > 0 ? (
-                <span className="user-header__stat-chip user-header__stat-chip--rank">
-                  Поп. {user.popularityScore}
-                </span>
-              ) : null}
-            </div>
           </div>
           {actions ? <div className="user-header__actions">{actions}</div> : null}
+        </div>
+
+        <div className="user-header__stats">
+          <StatControl
+            count={user.followersCount}
+            label={ruPlural(
+              user.followersCount,
+              "подписчик",
+              "подписчика",
+              "подписчиков",
+            )}
+            onClick={onFollowersClick}
+          />
+          <StatControl
+            count={user.followingCount}
+            label={ruPlural(user.followingCount, "подписка", "подписки", "подписок")}
+            onClick={onFollowingClick}
+          />
+          {user.popularityScore > 0 ? (
+            <span className="user-header__stat-chip user-header__stat-chip--rank">
+              Поп. {user.popularityScore}
+            </span>
+          ) : null}
         </div>
       </div>
     </header>

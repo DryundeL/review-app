@@ -105,10 +105,12 @@
 
 .user-header__stats {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: var(--space-3);
-  margin: var(--space-1) 0 0;
+  gap: var(--space-4);
+  margin: var(--space-2) 0 0;
+  /* Полная ширина под рядом с кнопкой — иначе счётчики ломаются в столбик. */
+  min-width: 0;
 }
 
 .user-header__stat-btn,
