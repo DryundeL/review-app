@@ -1,16 +1,21 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink, useLocation } from "react-router-dom";
 import { fetchUnreadNotificationsCount } from "@/entities/settings";
-import { refreshHomeFeed } from "@/shared/lib/refreshHome";
+import { refreshSessionProfile } from "@/features/auth";
+import { refreshQueriesForPath } from "@/shared/lib/refreshHome";
 import "./BottomNavigation.css";
 
 const links = [
   { to: "/", label: "Главная", end: true, icon: "home" },
-  { to: "/search", label: "Поиск", icon: "search" },
-  { to: "/create", label: "Создать", icon: "plus", create: true },
-  { to: "/notifications", label: "Уведомления", icon: "bell" },
-  { to: "/profile", label: "Профиль", icon: "user" },
+  { to: "/search", label: "Поиск", end: true, icon: "search" },
+  { to: "/create", label: "Создать", end: true, icon: "plus", create: true },
+  { to: "/notifications", label: "Уведомления", end: true, icon: "bell" },
+  { to: "/profile", label: "Профиль", end: true, icon: "user" },
 ] as const;
+
+function isExactTab(pathname: string, to: string): boolean {
+  return pathname === to;
+}
 
 export function BottomNavigation() {
   const location = useLocation();
@@ -36,7 +41,7 @@ export function BottomNavigation() {
             <NavLink
               key={link.to}
               to={link.to}
-              end={"end" in link ? link.end : false}
+              end={link.end}
               aria-label={
                 showBadge ? `${link.label}, непрочитанных: ${unreadCount}` : link.label
               }
@@ -51,10 +56,14 @@ export function BottomNavigation() {
                   .join(" ")
               }
               onClick={(event) => {
-                if (link.to !== "/") return;
-                if (location.pathname !== "/") return;
+                // Повторный тап по активной вкладке — перезапросить данные экрана.
+                if ("create" in link) return;
+                if (!isExactTab(location.pathname, link.to)) return;
                 event.preventDefault();
-                refreshHomeFeed(queryClient);
+                refreshQueriesForPath(queryClient, link.to);
+                if (link.to === "/profile") {
+                  refreshSessionProfile();
+                }
               }}
             >
               <span className="bottom-nav__icon-wrap">

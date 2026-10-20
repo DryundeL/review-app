@@ -375,8 +375,17 @@ function FollowConnectionsModal({
                 viewerId={viewerId}
                 onOpenProfile={onClose}
                 onFollowChange={(userId, nextFollowing) => {
+                  const listKey = ["profile-connections", profileId, kind] as const;
+                  const prevList =
+                    queryClient.getQueryData<InfiniteData<FollowConnectionList, number>>(listKey);
+                  const prevRow = prevList?.pages
+                    .flatMap((page) => page.items)
+                    .find((row) => row.userId === userId);
+                  const flipped =
+                    prevRow !== undefined && prevRow.isFollowing !== nextFollowing;
+
                   queryClient.setQueryData<InfiniteData<FollowConnectionList, number>>(
-                    ["profile-connections", profileId, kind],
+                    listKey,
                     (prev) => {
                       if (!prev) return prev;
                       return {
@@ -392,6 +401,18 @@ function FollowConnectionsModal({
                       };
                     },
                   );
+
+                  // Свой профиль: сдвигаем followingCount в кэше публичного профиля.
+                  if (flipped && viewerId !== null && viewerId === profileId) {
+                    const delta = nextFollowing ? 1 : -1;
+                    queryClient.setQueryData<PublicProfile>(["profile", profileId], (prev) => {
+                      if (!prev) return prev;
+                      return {
+                        ...prev,
+                        followingCount: Math.max(0, prev.followingCount + delta),
+                      };
+                    });
+                  }
                 }}
               />
             </li>

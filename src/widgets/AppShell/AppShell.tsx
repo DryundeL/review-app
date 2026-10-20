@@ -1,6 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import logoUrl from "@/assets/review-hub-logo.png";
+import { refreshSessionProfile } from "@/features/auth";
 import { usePageMeta } from "@/shared/hooks";
 import { metaForPath } from "@/shared/lib/pageMeta";
 import { refreshHomeFeed } from "@/shared/lib/refreshHome";
@@ -28,6 +30,7 @@ export function AppShell() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const refreshAfterBackRef = useRef(false);
   // Обзор и публичный профиль ставят meta сами — иначе shell перетрёт после их effect.
   const pageOwnsMeta =
     /^\/reviews\/[^/]+$/.test(pathname) || pathname.startsWith("/profiles/");
@@ -37,10 +40,18 @@ export function AppShell() {
     pathname.startsWith("/reviews/");
   const showBack = showBackButton(pathname);
 
+  useEffect(() => {
+    if (!refreshAfterBackRef.current) return;
+    refreshAfterBackRef.current = false;
+    // После перехода «назад» активные запросы целевой страницы перезапрашиваем сразу.
+    void queryClient.invalidateQueries({ refetchType: "active" });
+    if (pathname === "/profile" || pathname.startsWith("/profiles/")) {
+      refreshSessionProfile();
+    }
+  }, [pathname, queryClient]);
+
   function handleBack() {
-    // Помечаем кэш устаревшим без рефетча текущей страницы —
-    // предыдущий экран подтянет свежие данные при монтировании.
-    void queryClient.invalidateQueries({ refetchType: "none" });
+    refreshAfterBackRef.current = true;
     if (canNavigateBack()) {
       navigate(-1);
       return;

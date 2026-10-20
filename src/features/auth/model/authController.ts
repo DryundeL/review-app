@@ -124,6 +124,18 @@ export function refreshSessionProfile(): void {
   })();
 }
 
+/** Локально сдвинуть followingCount сессии (follow/unfollow другого пользователя). */
+export function adjustSessionFollowingCount(delta: number): void {
+  if (snapshot.phase !== "authenticated" || !snapshot.profile) return;
+  if (!Number.isFinite(delta) || delta === 0) return;
+  const followingCount = Math.max(0, snapshot.profile.followingCount + Math.trunc(delta));
+  if (followingCount === snapshot.profile.followingCount) return;
+  setSnapshot({
+    ...snapshot,
+    profile: { ...snapshot.profile, followingCount },
+  });
+}
+
 async function runBootstrap(): Promise<void> {
   const gen = generation;
   if (getAccessToken()) {
