@@ -81,7 +81,13 @@ function OwnProfileView({ profile }: { profile: SessionProfile }) {
   const backgroundCode = profile.background;
 
   return (
-    <section className="profile-page screen">
+    <section
+      className={
+        backgroundCode
+          ? "profile-page screen profile-page--own profile-page--hero-bg"
+          : "profile-page screen profile-page--own"
+      }
+    >
       <ProfileHero backgroundCode={backgroundCode}>
         <div className="profile-page__topbar">
           <Button asChild variant="ghost" className="profile-page__shop-btn">
@@ -233,7 +239,13 @@ function PublicProfileView({
   const backgroundCode = profile.background;
 
   return (
-    <section className="profile-page screen">
+    <section
+      className={
+        backgroundCode
+          ? "profile-page screen profile-page--hero-bg"
+          : "profile-page screen"
+      }
+    >
       <ProfileHero backgroundCode={backgroundCode}>
         <UserHeader
           user={toUser(profile)}
