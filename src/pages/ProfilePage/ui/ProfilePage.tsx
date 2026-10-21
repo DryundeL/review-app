@@ -31,6 +31,7 @@ import { truncateMeta, type PageMeta } from "@/shared/lib/pageMeta";
 import { safeHttpsUrl } from "@/shared/lib/safeHttpsUrl";
 import { shopAssetUrl } from "@/shared/lib/shopCode";
 import { Button, Modal, UserAvatar } from "@/shared/ui";
+import { AchievementsStrip } from "@/widgets/AchievementsStrip";
 import { RemoteReviewCard } from "@/widgets/RemoteReviewCard";
 import { UserHeader } from "@/widgets/UserHeader";
 import "./ProfilePage.css";
@@ -111,6 +112,8 @@ function OwnProfileView({ profile }: { profile: SessionProfile }) {
           onFollowingClick={() => setFollowList("following")}
         />
       </ProfileHero>
+
+      <AchievementsStrip profileId={profile.id} />
 
       <ReviewTabs
         tab={tab}
@@ -299,6 +302,8 @@ function PublicProfileView({
           onFollowingClick={() => setFollowList("following")}
         />
       </ProfileHero>
+
+      <AchievementsStrip profileId={profile.id} />
 
       {followError ? (
         <p className="profile-page__error" role="alert">

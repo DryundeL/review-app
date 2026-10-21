@@ -1,7 +1,13 @@
 export type Achievement = {
-  id: string;
   code: string;
   title: string;
   description: string;
-  unlocked: boolean;
+  progress: number;
+  current: number;
+  target: number;
+  unlockedAt?: string;
+};
+
+export type ProfileAchievements = {
+  achievements: Achievement[];
 };
