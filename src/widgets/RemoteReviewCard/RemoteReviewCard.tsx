@@ -13,7 +13,7 @@ type RemoteReviewCardProps = {
   canEdit?: boolean;
   /** Лента: только published — иконку статуса не показываем. */
   hideStatus?: boolean;
-  /** Лента уже рисует author.backdrop на feed-item. */
+  /** Профиль уже рисует profile.backdrop на контейнере списка. */
   hideBackdrop?: boolean;
   onDelete?: (reviewId: string) => Promise<void> | void;
   deleting?: boolean;
