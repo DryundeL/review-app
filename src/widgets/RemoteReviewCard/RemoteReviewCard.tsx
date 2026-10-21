@@ -60,7 +60,13 @@ export function RemoteReviewCard({
           </span>
 
           <span className="remote-review__body">
-            <span className="remote-review__meta">
+            <span
+              className={
+                canReport
+                  ? "remote-review__meta remote-review__meta--reportable"
+                  : "remote-review__meta"
+              }
+            >
               {typeLabel ? (
                 <span className="remote-review__badge remote-review__badge--live">{typeLabel}</span>
               ) : null}
