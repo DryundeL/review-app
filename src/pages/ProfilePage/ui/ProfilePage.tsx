@@ -595,16 +595,12 @@ function ReviewsBlock({
   backdropCode?: string;
 }) {
   const backdropUrl = backdropCode ? shopAssetUrl(backdropCode) : undefined;
+  const backdropStyle: CSSProperties | undefined = backdropUrl
+    ? { ["--shop-list-backdrop" as string]: `url("${backdropUrl}")` }
+    : undefined;
 
   return (
-    <div
-      className={backdropUrl ? "profile-page__reviews profile-page__reviews--backdrop" : "profile-page__reviews"}
-      style={
-        backdropUrl
-          ? { ["--profile-backdrop" as string]: `url("${backdropUrl}")` }
-          : undefined
-      }
-    >
+    <div className="profile-page__reviews">
       {reviewsQuery.isLoading ? (
         <div className="profile-page__skeleton" aria-busy="true" aria-label="Загрузка обзоров">
           <div />
@@ -645,14 +641,19 @@ function ReviewsBlock({
         <ul className="profile-page__list">
           {reviews.map((review) => (
             <li key={review.id}>
-              <RemoteReviewCard
-                review={review}
-                canEdit={canEdit}
-                hideStatus={!canEdit}
-                hideBackdrop={Boolean(backdropCode)}
-                deleting={deletingId === review.id}
-                onDelete={canEdit ? onDelete : undefined}
-              />
+              <div
+                className={backdropUrl ? "shop-list-backdrop" : undefined}
+                style={backdropStyle}
+              >
+                <RemoteReviewCard
+                  review={review}
+                  canEdit={canEdit}
+                  hideStatus={!canEdit}
+                  hideBackdrop={Boolean(backdropUrl)}
+                  deleting={deletingId === review.id}
+                  onDelete={canEdit ? onDelete : undefined}
+                />
+              </div>
             </li>
           ))}
         </ul>

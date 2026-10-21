@@ -6,7 +6,7 @@
   border-bottom: 1px solid var(--color-border);
 }
 
-/* Как profile-page__reviews--backdrop: top center + тот же градиент. */
+/* Fallback: тот же паттерн, что .shop-list-backdrop. */
 .remote-review--backdrop {
   margin-inline: calc(var(--space-4) * -1);
   padding: var(--space-4);

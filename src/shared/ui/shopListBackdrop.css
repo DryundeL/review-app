@@ -1,0 +1,24 @@
+/**
+ * Подложка списка (list_*): один паттерн для профиля и ленты.
+ * Картинка через --shop-list-backdrop: url("...");
+ */
+.shop-list-backdrop {
+  margin-inline: calc(var(--space-4) * -1);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg);
+  background-image: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-bg) 25%, transparent),
+      color-mix(in srgb, var(--color-bg) 55%, transparent)
+    ),
+    var(--shop-list-backdrop);
+  background-size: cover;
+  background-position: top center;
+  background-repeat: no-repeat;
+}
+
+.shop-list-backdrop .remote-review {
+  padding-block: var(--space-3);
+  border-bottom-color: transparent;
+}
