@@ -1,7 +1,13 @@
 import { z } from "zod";
+import { normalizeEmail } from "../lib/email.ts";
 import { safeHttpsUrl } from "../lib/safeHttpsUrl.ts";
 import { parseShopCode } from "../lib/shopCode.ts";
-import { ApiError, readErrorCode, toPublicMessage, unexpectedResponseError } from "./errors.ts";
+import {
+  ApiError,
+  readErrorCode,
+  toPublicMessage,
+  unexpectedResponseError,
+} from "./errors.ts";
 import { isJwt } from "./jwt.ts";
 
 const MAX_LOGIN_TTL_SECONDS = 300;
@@ -13,7 +19,11 @@ const tokenSchema = z.object({
 const loginSchema = z.object({
   loginId: z.string().regex(/^[0-9a-f]{32}$/i),
   url: z.string(),
-  expiresIn: z.number().int().positive().max(24 * 60 * 60),
+  expiresIn: z
+    .number()
+    .int()
+    .positive()
+    .max(24 * 60 * 60),
 });
 
 const pollSchema = z.object({
@@ -37,6 +47,7 @@ const profileSchema = z.object({
   background: z.string().optional().nullable(),
   avatarFrame: z.string().optional().nullable(),
   backdrop: z.string().optional().nullable(),
+  email: z.string().nullish(),
 });
 
 export type LoginChallenge = {
@@ -46,9 +57,7 @@ export type LoginChallenge = {
 };
 
 export type PollResult =
-  | { status: "pending" }
-  | { status: "denied" }
-  | { status: "confirmed"; token: string };
+  { status: "pending" } | { status: "denied" } | { status: "confirmed"; token: string };
 
 export type AuthProfile = {
   id: string;
@@ -66,6 +75,8 @@ export type AuthProfile = {
   background?: string;
   avatarFrame?: string;
   backdrop?: string;
+  /** Свой профиль. Нет поля — почта не привязана. */
+  email?: string;
 };
 
 export function parseTokenPayload(payload: unknown): string {
@@ -76,7 +87,10 @@ export function parseTokenPayload(payload: unknown): string {
   return parsed.data.token;
 }
 
-export function parseLoginPayload(payload: unknown, isAllowedUrl: (url: string) => boolean): LoginChallenge {
+export function parseLoginPayload(
+  payload: unknown,
+  isAllowedUrl: (url: string) => boolean,
+): LoginChallenge {
   const parsed = loginSchema.safeParse(payload);
   if (!parsed.success || !isAllowedUrl(parsed.data.url)) {
     throw unexpectedResponseError();
@@ -128,6 +142,7 @@ export function parseProfileText(text: string): AuthProfile {
   const background = parseShopCode(parsed.data.background ?? undefined);
   const avatarFrame = parseShopCode(parsed.data.avatarFrame ?? undefined);
   const backdrop = parseShopCode(parsed.data.backdrop ?? undefined);
+  const email = normalizeEmail(parsed.data.email ?? "");
   return {
     id: parsed.data.id,
     telegramId,
@@ -144,6 +159,7 @@ export function parseProfileText(text: string): AuthProfile {
     ...(background ? { background } : {}),
     ...(avatarFrame ? { avatarFrame } : {}),
     ...(backdrop ? { backdrop } : {}),
+    ...(email ? { email } : {}),
   };
 }
 

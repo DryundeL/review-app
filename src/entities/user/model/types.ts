@@ -16,6 +16,8 @@ export type SessionProfile = {
   background?: string;
   avatarFrame?: string;
   backdrop?: string;
+  /** Свой профиль. Нет поля — почта не привязана. */
+  email?: string;
 };
 
 /** Карточка профиля из GET /v1/profiles/:id (и свой /v1/profile). */

@@ -118,3 +118,42 @@
   font-size: 0.8125rem;
   line-height: 1.4;
 }
+
+.login-screen__form {
+  width: 100%;
+  text-align: left;
+}
+
+.login-screen__form form,
+.login-screen__form-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.login-screen__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.login-screen__status,
+.login-screen__error {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.login-screen__status {
+  color: var(--color-muted);
+}
+
+.login-screen__error {
+  color: var(--color-danger);
+}

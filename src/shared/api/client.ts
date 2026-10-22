@@ -16,9 +16,14 @@ type RequestOptions<T> = {
   auth?: boolean;
   query?: ApiQuery;
   parse?: (text: string) => T;
+  /** Неверный код почты тоже 401, но bearer при этом ещё живой. */
+  keepSessionOn401?: boolean;
 };
 
-export async function apiClient<T>(path: string, options: RequestOptions<T> = {}): Promise<T> {
+export async function apiClient<T>(
+  path: string,
+  options: RequestOptions<T> = {},
+): Promise<T> {
   const url = buildApiUrl(appConfig.apiBaseUrl, path, options.query);
   const headers = new Headers(options.headers);
   headers.set("Accept", "application/json");
@@ -50,7 +55,12 @@ export async function apiClient<T>(path: string, options: RequestOptions<T> = {}
   }
 
   const response = await fetchWithRateLimit(url, requestInit, options.signal);
-  return readBody(response, attachedToken, options.parse);
+  return readBody(
+    response,
+    attachedToken,
+    options.parse,
+    options.keepSessionOn401 === true,
+  );
 }
 
 async function fetchWithRateLimit(
@@ -104,12 +114,14 @@ async function readBody<T>(
   response: Response,
   attachedToken: string | null,
   parse?: (text: string) => T,
+  keepSessionOn401 = false,
 ): Promise<T> {
   const text = await response.text();
 
   if (!response.ok) {
     if (
       response.status === 401 &&
+      !keepSessionOn401 &&
       attachedToken !== null &&
       getAccessToken() === attachedToken
     ) {

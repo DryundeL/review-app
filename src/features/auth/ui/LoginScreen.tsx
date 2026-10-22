@@ -1,9 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import authBgUrl from "@/assets/auth-background.webp";
 import logoUrl from "@/assets/review-hub-logo.png";
 import { Button } from "@/shared/ui";
 import { useAuthSession } from "../model/useAuthSession";
 import { isTelegramLoginUrl } from "../model/telegramLoginUrl";
+import { EmailLogin } from "./EmailLogin";
 import "./LoginScreen.css";
 
 const REOPEN_MINI_APP =
@@ -14,8 +15,11 @@ const CAPTION = "Делись. Читай. Оценивай. Открывай н
 
 export function LoginScreen() {
   const session = useAuthSession();
+  const [emailLogin, setEmailLogin] = useState(false);
   const fallbackUrl =
-    session.fallbackUrl && isTelegramLoginUrl(session.fallbackUrl) ? session.fallbackUrl : null;
+    session.fallbackUrl && isTelegramLoginUrl(session.fallbackUrl)
+      ? session.fallbackUrl
+      : null;
   const showBrowserLogin =
     !session.isMiniApp &&
     (session.phase === "anonymous" ||
@@ -28,9 +32,9 @@ export function LoginScreen() {
   const showCaption = showBrowserLogin && session.phase === "anonymous";
 
   useEffect(() => {
-    if (!showBrowserLogin && !showRetry) return;
+    if (emailLogin || (!showBrowserLogin && !showRetry)) return;
     document.getElementById("login-action")?.focus();
-  }, [showBrowserLogin, showRetry, session.phase]);
+  }, [emailLogin, showBrowserLogin, showRetry, session.phase]);
 
   return (
     <main className="login-screen">
@@ -50,12 +54,17 @@ export function LoginScreen() {
               height={724}
             />
           </h1>
-          <p className="login-screen__tagline">{TAGLINE}</p>
+          {emailLogin ? null : <p className="login-screen__tagline">{TAGLINE}</p>}
         </header>
 
         <div className="login-screen__footer">
-          {status ? (
-            <p className="login-screen__text" role="status" aria-live="polite" aria-busy={busy}>
+          {status && !emailLogin ? (
+            <p
+              className="login-screen__text"
+              role="status"
+              aria-live="polite"
+              aria-busy={busy}
+            >
               {status}
             </p>
           ) : null}
@@ -69,18 +78,41 @@ export function LoginScreen() {
               Открыть Telegram
             </a>
           ) : null}
-          {showBrowserLogin ? (
-            <Button id="login-action" className="login-screen__action" onClick={session.startBrowserLogin}>
-              <TelegramIcon />
-              Войти через Telegram
-            </Button>
+          {showBrowserLogin && emailLogin ? (
+            <EmailLogin onClose={() => setEmailLogin(false)} />
+          ) : null}
+          {showBrowserLogin && !emailLogin ? (
+            <>
+              <Button
+                id="login-action"
+                className="login-screen__action"
+                onClick={session.startBrowserLogin}
+              >
+                <TelegramIcon />
+                Войти через Telegram
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                className="login-screen__action"
+                onClick={() => setEmailLogin(true)}
+              >
+                Войти по почте
+              </Button>
+            </>
           ) : null}
           {showRetry ? (
-            <Button id="login-action" className="login-screen__action" onClick={session.retryMiniAppLogin}>
+            <Button
+              id="login-action"
+              className="login-screen__action"
+              onClick={session.retryMiniAppLogin}
+            >
               Повторить
             </Button>
           ) : null}
-          {showCaption ? <p className="login-screen__caption">{CAPTION}</p> : null}
+          {showCaption && !emailLogin ? (
+            <p className="login-screen__caption">{CAPTION}</p>
+          ) : null}
         </div>
       </div>
     </main>
@@ -89,7 +121,13 @@ export function LoginScreen() {
 
 function TelegramIcon() {
   return (
-    <svg className="login-screen__tg-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden>
+    <svg
+      className="login-screen__tg-icon"
+      viewBox="0 0 24 24"
+      width="20"
+      height="20"
+      aria-hidden
+    >
       <path
         fill="currentColor"
         d="M21.8 4.3c.3-.9-.5-1.6-1.3-1.3L2.9 9.6c-.9.3-.9 1.6.1 1.9l4.4 1.4 1.7 5.3c.3.9 1.5 1.1 2.1.4l2.5-2.8 4.7 3.5c.8.6 1.9.1 2.1-.8l2.3-14.2ZM9.2 13.1l8.3-5.2c.2-.1.4.2.2.3l-6.9 6.4-.3 3.3-1.3-4.8Z"
@@ -98,7 +136,10 @@ function TelegramIcon() {
   );
 }
 
-function messageFor(phase: ReturnType<typeof useAuthSession>["phase"], failure: string | null): string {
+function messageFor(
+  phase: ReturnType<typeof useAuthSession>["phase"],
+  failure: string | null,
+): string {
   switch (phase) {
     case "booting":
     case "authenticating":

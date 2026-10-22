@@ -13,7 +13,12 @@ import {
 } from "@/shared/api/session";
 import { wait } from "@/shared/lib/wait";
 import { readTelegramInitData } from "@/shared/platform";
-import { classifyPollStatus, LOGIN_POLL_INTERVAL_MS, MIN_POLL_GAP_MS, nextPollWait } from "./poll";
+import {
+  classifyPollStatus,
+  LOGIN_POLL_INTERVAL_MS,
+  MIN_POLL_GAP_MS,
+  nextPollWait,
+} from "./poll";
 import { isTelegramLoginUrl } from "./telegramLoginUrl";
 
 const RATE_LIMIT_BACKOFF_MS = 5_000;
@@ -78,7 +83,8 @@ export function bootstrapAuth(): void {
 
 export function startBrowserLogin(): void {
   if (readTelegramInitData() || browserLoginInFlight) return;
-  if (snapshot.phase === "authenticating" || snapshot.phase === "awaiting_confirmation") return;
+  if (snapshot.phase === "authenticating" || snapshot.phase === "awaiting_confirmation")
+    return;
 
   browserLoginInFlight = true;
   const gen = ++generation;
@@ -87,6 +93,19 @@ export function startBrowserLogin(): void {
   void runBrowserLogin(gen, popup).finally(() => {
     browserLoginInFlight = false;
   });
+}
+
+/** Токен после входа по почте кладётся так же, как после Telegram. */
+export function acceptAccessToken(token: string): void {
+  const gen = ++generation;
+  abortPoll();
+  abortProfile();
+  browserLoginInFlight = false;
+  if (!setAccessToken(token)) {
+    setSnapshot(phaseSnapshot("failed", "Сервер вернул неожиданный ответ."));
+    return;
+  }
+  void loadProfile(gen);
 }
 
 export function retryMiniAppLogin(): void {
@@ -245,7 +264,9 @@ async function runBrowserLogin(gen: number, popup: Window | null): Promise<void>
     }
 
     navigated = movePopup(popup, login.url);
-    setSnapshot(phaseSnapshot("awaiting_confirmation", null, navigated ? null : login.url));
+    setSnapshot(
+      phaseSnapshot("awaiting_confirmation", null, navigated ? null : login.url),
+    );
     await pollUntilConfirmed(login.loginId, login.expiresIn, gen, controller);
   } catch (error) {
     if (!navigated) closePopup(popup);
@@ -324,12 +345,17 @@ async function pollUntilConfirmed(
           return;
         }
         if (failure === "invalid" || failure === "unauthorized") {
-          setSnapshot(phaseSnapshot("failed", "Не удалось проверить вход. Начните заново."));
+          setSnapshot(
+            phaseSnapshot("failed", "Не удалось проверить вход. Начните заново."),
+          );
           return;
         }
         if (failure === "rate_limited") {
           rateLimitStrikes += 1;
-          if (rateLimitStrikes > MAX_RATE_LIMIT_STRIKES || Date.now() + RATE_LIMIT_BACKOFF_MS >= deadline) {
+          if (
+            rateLimitStrikes > MAX_RATE_LIMIT_STRIKES ||
+            Date.now() + RATE_LIMIT_BACKOFF_MS >= deadline
+          ) {
             setSnapshot(phaseSnapshot("failed", error.message));
             return;
           }

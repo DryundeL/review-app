@@ -1,0 +1,71 @@
+.email-bind {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.email-bind h2 {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.email-bind__copy,
+.email-bind__form,
+.email-bind__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.email-bind__hint,
+.email-bind__status {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.email-bind__current {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.email-bind__value {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.email-bind__field {
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.email-bind__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.email-bind__actions .ui-button {
+  flex: 1 1 8rem;
+}
+
+.email-bind__error {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
