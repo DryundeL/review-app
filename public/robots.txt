@@ -4,7 +4,9 @@ Disallow: /create
 Disallow: /notifications
 Disallow: /settings
 Disallow: /achievements
-Disallow: /profile
+Disallow: /profile$
+Disallow: /profile/
+Disallow: /shop
 Disallow: /*/edit
 
 Sitemap: https://review-hub.ru/sitemap.xml

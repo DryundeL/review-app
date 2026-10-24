@@ -87,6 +87,13 @@
   padding-top: var(--space-5);
 }
 
+.login-screen__description {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--color-text);
+}
+
 .login-screen__text {
   margin: 0;
   max-width: 22rem;

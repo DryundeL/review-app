@@ -10,7 +10,7 @@ export type PageMeta = {
 
 const SITE_NAME = "Review Hub";
 const DEFAULT_DESCRIPTION =
-  "Review Hub — обзоры аниме, манги, фильмов и сериалов. Читайте и публикуйте рецензии с оценками.";
+  "Review Hub (Ревью Хаб) — обзоры аниме, манги, фильмов и сериалов. Делитесь рецензиями, ставьте оценки и находите, что посмотреть или почитать.";
 
 function upsertMeta(
   attr: "name" | "property",
@@ -43,7 +43,7 @@ export function applyPageMeta(meta: PageMeta): void {
     ? meta.title.includes(SITE_NAME)
       ? meta.title
       : `${meta.title} · ${SITE_NAME}`
-    : `${SITE_NAME} — обзоры аниме, манги и фильмов`;
+    : `${SITE_NAME} — обзоры аниме, манги, фильмов и сериалов`;
   const description = meta.description?.trim() || DEFAULT_DESCRIPTION;
   const path = meta.path ?? "/";
   const canonical = new URL(path, appConfig.siteUrl).toString();

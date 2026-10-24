@@ -26,9 +26,8 @@ function isSafeTelegramBotUrl(value: string): boolean {
 }
 
 function isMobileBrowser(): boolean {
-  const uaData = (
-    navigator as Navigator & { userAgentData?: { mobile?: boolean } }
-  ).userAgentData;
+  const uaData = (navigator as Navigator & { userAgentData?: { mobile?: boolean } })
+    .userAgentData;
   if (typeof uaData?.mobile === "boolean") return uaData.mobile;
 
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(
@@ -45,11 +44,12 @@ export function isSearchCrawler(userAgent: string): boolean {
 
 /**
  * Пока нет десктопной версии: десктопный браузер → редирект в Telegram-бота.
- * Мобильный браузер, Mini App, краулеры и localhost — открываем сайт как есть.
+ * Главная, мобильный браузер, Mini App, краулеры и localhost — открываем сайт как есть.
  * @returns true, если уходим в Telegram (приложение не монтировать).
  */
 export function redirectBrowserToTelegramIfNeeded(): boolean {
   if (typeof window === "undefined") return false;
+  if (window.location.pathname === "/") return false;
   if (import.meta.env.DEV || isLocalDevHost(window.location.hostname)) return false;
   if (readTelegramInitData()) return false;
   if (isSearchCrawler(navigator.userAgent)) return false;

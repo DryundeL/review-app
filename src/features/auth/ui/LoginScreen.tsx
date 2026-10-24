@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import authBgUrl from "@/assets/auth-background.webp";
 import logoUrl from "@/assets/review-hub-logo.png";
 import { Button } from "@/shared/ui";
+import { usePageMeta } from "@/shared/hooks";
+import { metaForPath } from "@/shared/lib/pageMeta";
 import { useAuthSession } from "../model/useAuthSession";
 import { isTelegramLoginUrl } from "../model/telegramLoginUrl";
 import { EmailLogin } from "./EmailLogin";
@@ -14,6 +16,7 @@ const TAGLINE = "Твои истории\nо том, что вдохновляе
 const CAPTION = "Делись. Читай. Оценивай. Открывай новое.";
 
 export function LoginScreen() {
+  usePageMeta(metaForPath(window.location.pathname));
   const session = useAuthSession();
   const [emailLogin, setEmailLogin] = useState(false);
   const fallbackUrl =
@@ -55,9 +58,14 @@ export function LoginScreen() {
             />
           </h1>
           {emailLogin ? null : <p className="login-screen__tagline">{TAGLINE}</p>}
+          <p className="login-screen__description">
+            Review Hub (Ревью Хаб) — сообщество с обзорами аниме, манги, фильмов и
+            сериалов. Делитесь рецензиями, ставьте оценки и находите, что посмотреть или
+            почитать.
+          </p>
         </header>
 
-        <div className="login-screen__footer">
+        <div className="login-screen__footer" data-nosnippet>
           {status && !emailLogin ? (
             <p
               className="login-screen__text"
