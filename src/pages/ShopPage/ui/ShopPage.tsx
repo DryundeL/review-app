@@ -111,6 +111,17 @@ export function ShopPage() {
         <p className="shop-page__balance" aria-live="polite">
           Баланс: <strong>{me.pointsBalance}</strong>
         </p>
+        <details className="shop-page__help">
+          <summary className="shop-page__help-trigger">
+            <span className="shop-page__help-icon" aria-hidden="true">?</span>
+            Как заработать очки
+          </summary>
+          <p className="shop-page__help-text">
+            Публикуйте обзоры, ставьте лайки другим авторам, получайте лайки
+            и новых подписчиков. За публикацию обзора очки начисляются за каждый
+            блок. Лайки своим обзорам очков не дают.
+          </p>
+        </details>
       </header>
 
       {actionError ? (
