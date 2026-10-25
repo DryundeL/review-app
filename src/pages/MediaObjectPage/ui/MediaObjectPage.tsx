@@ -6,7 +6,7 @@ import { usePageMeta } from "@/shared/hooks";
 import { ApiError } from "@/shared/api";
 import { MEDIA_TYPE_LABELS } from "@/shared/types";
 import { Button, MediaPoster } from "@/shared/ui";
-import { RemoteReviewCard } from "@/widgets/RemoteReviewCard";
+import { FeedReviewItem } from "@/widgets/Feed";
 import "./MediaObjectPage.css";
 
 const STATUS_LABELS = {
@@ -96,7 +96,7 @@ export function MediaObjectPage() {
               <ul className="media-page__reviews">
                 {topQuery.data.items.slice(0, 5).map((review) => (
                   <li key={review.id}>
-                    <RemoteReviewCard review={review} hideStatus />
+                    <FeedReviewItem review={review} viewerId={profile?.id ?? null} />
                   </li>
                 ))}
               </ul>

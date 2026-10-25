@@ -5,6 +5,7 @@ import type { RemoteReviewSummary } from "@/entities/review";
 import { shopAssetUrl } from "@/shared/lib/shopCode";
 import { UserAvatar } from "@/shared/ui";
 import { RemoteReviewCard } from "@/widgets/RemoteReviewCard";
+import "./Feed.css";
 
 type FeedReviewItemProps = {
   review: RemoteReviewSummary;
