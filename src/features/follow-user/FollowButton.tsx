@@ -20,7 +20,7 @@ export function FollowButton({ userId }: { userId: string }) {
       <Button
         className="follow-control__button"
         type="button"
-        variant={state?.followStatus === "pending" ? "secondary" : "primary"}
+        variant={state?.followStatus === "none" ? "primary" : "secondary"}
         disabled={!state || stateQuery.isError || mutation.isPending}
         onClick={() =>
           mutation.mutate({ userId, nextFollowing: state?.followStatus === "none" })

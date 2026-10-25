@@ -189,7 +189,7 @@ export function ReviewPage() {
               <small>/10</small>
             </span>
           </p>
-          <Button asChild variant="ghost" className="review-page__media-button">
+          <Button asChild variant="secondary" className="review-page__media-button">
             <Link to={`/media-objects/${media.id}`}>О произведении →</Link>
           </Button>
           {isOwn ? (

@@ -76,6 +76,11 @@ export function MediaObjectPage() {
               </dl>
             </div>
           </header>
+          <Button asChild variant="secondary" className="media-page__search-button">
+            <Link to="/search">
+              <span aria-hidden>←</span> К поиску
+            </Link>
+          </Button>
           <h2>Популярные обзоры</h2>
           {topQuery.isLoading ? <p role="status">Загрузка обзоров…</p> : null}
           {topQuery.isError ? (
@@ -101,7 +106,6 @@ export function MediaObjectPage() {
           ) : null}
         </>
       ) : null}
-      <Link to="/search">К поиску</Link>
     </section>
   );
 }
