@@ -3,6 +3,7 @@ import { fetchFollowState } from "@/entities/user";
 import { useAuthSession } from "@/features/auth";
 import { Button } from "@/shared/ui";
 import { useFollowToggle } from "./model/useFollowUser";
+import "./FollowButton.css";
 
 export function FollowButton({ userId }: { userId: string }) {
   const { profile } = useAuthSession();
@@ -15,8 +16,9 @@ export function FollowButton({ userId }: { userId: string }) {
   if (!profile || profile.id === userId) return null;
   const state = stateQuery.data;
   return (
-    <div>
+    <div className="follow-control">
       <Button
+        className="follow-control__button"
         type="button"
         variant={state?.followStatus === "none" ? "primary" : "secondary"}
         disabled={!state || stateQuery.isError || mutation.isPending}

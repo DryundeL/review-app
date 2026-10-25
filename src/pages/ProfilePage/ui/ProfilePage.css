@@ -202,7 +202,8 @@
 
 .profile-page__tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   margin: 0 calc(-1 * (var(--space-4) + var(--space-4)));
   padding: 0 var(--space-4);
   border-bottom: 1px solid var(--color-border);
@@ -393,4 +394,10 @@
 
 .profile-page__follow-skeleton > div {
   height: 56px;
+}
+
+.profile-page__tabs--with-requests .profile-page__tab {
+  gap: var(--space-1);
+  padding-inline: var(--space-1);
+  font-size: 0.8125rem;
 }

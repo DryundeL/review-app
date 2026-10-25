@@ -1,0 +1,22 @@
+.follow-control {
+  flex-shrink: 0;
+}
+
+.follow-control__button.ui-button {
+  min-height: 32px;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.follow-control__button.ui-button--secondary {
+  background: transparent;
+  color: var(--color-muted);
+}
+
+.follow-control__button.ui-button--secondary:hover,
+.follow-control__button.ui-button--secondary:focus-visible {
+  background: var(--color-surface);
+  color: var(--color-text);
+}

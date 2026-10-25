@@ -189,6 +189,9 @@ export function ReviewPage() {
               <small>/10</small>
             </span>
           </p>
+          <Button asChild variant="secondary" className="review-page__media-button">
+            <Link to={`/media-objects/${media.id}`}>О произведении →</Link>
+          </Button>
           {isOwn ? (
             <Link className="review-page__edit" to={`/reviews/${review.id}/edit`}>
               Изменить

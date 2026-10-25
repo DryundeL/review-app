@@ -348,7 +348,7 @@ function NotificationRow({ item }: { item: InboxNotification }) {
 }
 
 function notificationHref(item: InboxNotification): string | null {
-  if (item.type === "follow_request") return "/settings#follow-requests-heading";
+  if (item.type === "follow_request") return "/profile?tab=requests";
   if (item.reviewId) return `/reviews/${item.reviewId}`;
   if (item.actorId) return `/profiles/${item.actorId}`;
   return null;

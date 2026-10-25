@@ -6,7 +6,6 @@ import {
   type PatchSettingsInput,
 } from "@/entities/settings";
 import { EmailBind, refreshSessionProfile, useAuthSession } from "@/features/auth";
-import { FollowRequests } from "@/features/follow-user";
 import { ApiError } from "@/shared/api";
 import { Button } from "@/shared/ui";
 import "./SettingsPage.css";
@@ -152,8 +151,6 @@ export function SettingsPage() {
           </li>
         </ul>
       ) : null}
-
-      <FollowRequests />
 
       {saveError ? (
         <p className="settings-page__error" role="alert">
