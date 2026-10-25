@@ -226,3 +226,19 @@
   border-color: transparent;
   color: #fff;
 }
+
+.review-page__media-button.ui-button {
+  align-self: flex-start;
+  min-height: 28px;
+  padding: 0.25rem 0;
+  border: 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.review-page__media-button:hover,
+.review-page__media-button:focus-visible {
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
