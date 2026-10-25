@@ -1,14 +1,15 @@
 import { apiClient, ApiError } from "@/shared/api";
 import type {
+  CatalogMediaObject,
   CreateReviewInput,
   ListFeedParams,
   ListMediaObjectsParams,
-  MediaObjectSummary,
   RemoteReview,
   RemoteReviewList,
   UpdateReviewInput,
 } from "../model/remote";
 import {
+  parseTopReviewsText,
   parseMediaObjectText,
   parseMediaObjectsText,
   parseRemoteReviewListText,
@@ -31,7 +32,10 @@ function clampLimit(limit?: number): number {
   return rounded;
 }
 
-export function createReview(input: CreateReviewInput, signal?: AbortSignal): Promise<RemoteReview> {
+export function createReview(
+  input: CreateReviewInput,
+  signal?: AbortSignal,
+): Promise<RemoteReview> {
   return apiClient("/v1/reviews", {
     method: "POST",
     body: input,
@@ -71,7 +75,10 @@ export function deleteReview(id: string, signal?: AbortSignal): Promise<void> {
   });
 }
 
-export function listMyReviews(limit?: number, signal?: AbortSignal): Promise<RemoteReviewList> {
+export function listMyReviews(
+  limit?: number,
+  signal?: AbortSignal,
+): Promise<RemoteReviewList> {
   return apiClient("/v1/profile/reviews", {
     method: "GET",
     query: { limit: clampLimit(limit) },
@@ -94,7 +101,10 @@ export function listUserReviews(
   });
 }
 
-export function listFeed(params: ListFeedParams = {}, signal?: AbortSignal): Promise<RemoteReviewList> {
+export function listFeed(
+  params: ListFeedParams = {},
+  signal?: AbortSignal,
+): Promise<RemoteReviewList> {
   const sort = params.sort ?? "new";
   const mode = params.mode ?? "all";
   return apiClient("/v1/feed", {
@@ -111,7 +121,11 @@ export function listFeed(params: ListFeedParams = {}, signal?: AbortSignal): Pro
   });
 }
 
-export function voteReview(id: string, isLike: boolean, signal?: AbortSignal): Promise<void> {
+export function voteReview(
+  id: string,
+  isLike: boolean,
+  signal?: AbortSignal,
+): Promise<void> {
   const reviewId = assertUuid(id);
   return apiClient(`/v1/reviews/${reviewId}/vote`, {
     method: "PUT",
@@ -139,7 +153,7 @@ function sanitizeMediaQuery(q?: string): string | undefined {
 export function listMediaObjects(
   params: ListMediaObjectsParams = {},
   signal?: AbortSignal,
-): Promise<MediaObjectSummary[]> {
+): Promise<CatalogMediaObject[]> {
   return apiClient("/v1/media-objects", {
     method: "GET",
     auth: false,
@@ -153,12 +167,26 @@ export function listMediaObjects(
   });
 }
 
-export function getMediaObject(id: string, signal?: AbortSignal): Promise<MediaObjectSummary> {
+export function getMediaObject(
+  id: string,
+  signal?: AbortSignal,
+): Promise<CatalogMediaObject> {
   const mediaId = assertUuid(id);
   return apiClient(`/v1/media-objects/${mediaId}`, {
     method: "GET",
     auth: false,
     signal,
     parse: parseMediaObjectText,
+  });
+}
+
+/** Размер и порядок топа определяет сервер; пагинация не применяется. */
+export function getMediaTopReviews(
+  id: string,
+  signal?: AbortSignal,
+): Promise<RemoteReviewList> {
+  return apiClient(`/v1/media-objects/${assertUuid(id)}/top-reviews`, {
+    signal,
+    parse: parseTopReviewsText,
   });
 }

@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink, useLocation } from "react-router-dom";
 import { fetchUnreadNotificationsCount } from "@/entities/settings";
-import { refreshSessionProfile } from "@/features/auth";
+import { useAuthSession, refreshSessionProfile } from "@/features/auth";
 import { refreshQueriesForPath } from "@/shared/lib/refreshHome";
 import "./BottomNavigation.css";
 
@@ -19,12 +19,14 @@ function isExactTab(pathname: string, to: string): boolean {
 
 export function BottomNavigation() {
   const location = useLocation();
+  const { profile } = useAuthSession();
   const queryClient = useQueryClient();
 
   const unreadQuery = useQuery({
     queryKey: ["notifications-unread"],
     queryFn: ({ signal }) => fetchUnreadNotificationsCount(signal),
     refetchInterval: 60_000,
+    enabled: Boolean(profile),
   });
 
   const unreadCount = unreadQuery.data?.count ?? 0;
@@ -100,7 +102,9 @@ function NavIcon({ name }: { name: (typeof links)[number]["icon"] }) {
           <path d="M5 12h14" />
         </>
       ) : null}
-      {name === "bell" ? <path d="M6 9a6 6 0 1 1 12 0c0 7 2 7 2 7H4s2 0 2-7ZM10 19a2 2 0 0 0 4 0" /> : null}
+      {name === "bell" ? (
+        <path d="M6 9a6 6 0 1 1 12 0c0 7 2 7 2 7H4s2 0 2-7ZM10 19a2 2 0 0 0 4 0" />
+      ) : null}
       {name === "user" ? (
         <>
           <circle cx="12" cy="8" r="3.5" />

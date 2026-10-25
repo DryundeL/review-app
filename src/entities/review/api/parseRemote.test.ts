@@ -144,3 +144,59 @@ test("parseRemoteReview maps viewerIsLike", () => {
   });
   assert.equal(review.viewerIsLike, true);
 });
+
+test("catalog reads metadata from info and strips unsafe poster URLs", async () => {
+  const { parseMediaObjectText } = await import("./parseRemote.ts");
+  const media = parseMediaObjectText(
+    JSON.stringify({
+      ...mediaObject,
+      releaseYear: 2001,
+      info: { genre: "sci-fi", releaseYear: 1999, releaseStatus: "completed" },
+      posterUrl: "javascript:alert(1)",
+    }),
+  );
+  assert.deepEqual(media.info, {
+    genre: "sci-fi",
+    releaseYear: 1999,
+    releaseStatus: "completed",
+  });
+  assert.equal(media.releaseYear, 1999);
+  assert.equal(media.posterUrl, undefined);
+});
+
+test("catalog requires info and validates its bounds", async () => {
+  const { parseMediaObjectText, parseMediaObjectsText } =
+    await import("./parseRemote.ts");
+  assert.throws(() => parseMediaObjectText(JSON.stringify(mediaObject)));
+  for (const info of [
+    { releaseStatus: "unknown" },
+    { releaseStatus: "completed", releaseYear: 2101 },
+    { releaseStatus: "completed", releaseYear: 1999.5 },
+    { releaseStatus: "completed", genre: "x".repeat(101) },
+  ])
+    assert.throws(() => parseMediaObjectText(JSON.stringify({ ...mediaObject, info })));
+  const items = parseMediaObjectsText(
+    JSON.stringify({ items: [{ ...mediaObject, info: { releaseStatus: "announced" } }] }),
+  );
+  assert.equal(items[0]?.info.releaseStatus, "announced");
+  assert.equal(items[0]?.releaseYear, undefined);
+});
+
+test("top reviews preserves server order and viewer dislikes without blocks", async () => {
+  const { parseTopReviewsText } = await import("./parseRemote.ts");
+  const item = {
+    ...detailBase,
+    author: { id: authorId, username: "ann" },
+    viewerIsLike: false,
+  };
+  const result = parseTopReviewsText(JSON.stringify({ items: [item] }));
+  assert.equal(result.items[0]?.viewerIsLike, false);
+  assert.equal("blocks" in result.items[0]!, false);
+  assert.deepEqual(parseTopReviewsText('{"items":[]}').items, []);
+  assert.throws(() =>
+    parseTopReviewsText(JSON.stringify({ items: [{ ...item, status: "draft" }] })),
+  );
+  assert.throws(() =>
+    parseTopReviewsText(JSON.stringify({ items: Array(6).fill(item) })),
+  );
+});

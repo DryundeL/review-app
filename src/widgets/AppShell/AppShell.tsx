@@ -15,6 +15,7 @@ function showBackButton(pathname: string): boolean {
     pathname === "/shop" ||
     pathname === "/create" ||
     pathname === "/achievements" ||
+    pathname.startsWith("/media-objects/") ||
     pathname.startsWith("/reviews/")
     // /profiles/:id — «Назад» в topbar профиля (как «Магазин» на своём).
   );
@@ -33,10 +34,13 @@ export function AppShell() {
   const refreshAfterBackRef = useRef(false);
   // Обзор и публичный профиль ставят meta сами — иначе shell перетрёт после их effect.
   const pageOwnsMeta =
-    /^\/reviews\/[^/]+$/.test(pathname) || pathname.startsWith("/profiles/");
+    /^\/reviews\/[^/]+$/.test(pathname) ||
+    pathname.startsWith("/profiles/") ||
+    pathname.startsWith("/media-objects/");
   usePageMeta(pageOwnsMeta ? null : metaForPath(pathname));
   const hideNav =
     pathname === "/create" ||
+    pathname.startsWith("/media-objects/") ||
     pathname.startsWith("/reviews/");
   const showBack = showBackButton(pathname);
 
@@ -75,13 +79,26 @@ export function AppShell() {
               refreshHomeFeed(queryClient);
             }}
           >
-            <img className="app-shell__logo" src={logoUrl} alt="Review Hub" width={2172} height={724} />
+            <img
+              className="app-shell__logo"
+              src={logoUrl}
+              alt="Review Hub"
+              width={2172}
+              height={724}
+            />
           </NavLink>
         </div>
       </header>
-      <main className={hideNav ? "app-shell__main app-shell__main--solo" : "app-shell__main"}>
+      <main
+        className={hideNav ? "app-shell__main app-shell__main--solo" : "app-shell__main"}
+      >
         {showBack ? (
-          <button type="button" className="app-shell__back" aria-label="Назад" onClick={handleBack}>
+          <button
+            type="button"
+            className="app-shell__back"
+            aria-label="Назад"
+            onClick={handleBack}
+          >
             <BackArrowIcon />
           </button>
         ) : null}
@@ -95,10 +112,7 @@ export function AppShell() {
 function BackArrowIcon() {
   return (
     <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden focusable="false">
-      <path
-        fill="currentColor"
-        d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"
-      />
+      <path fill="currentColor" d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
     </svg>
   );
 }

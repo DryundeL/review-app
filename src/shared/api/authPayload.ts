@@ -42,6 +42,8 @@ const profileSchema = z.object({
   followersCount: z.number().int().nonnegative().optional(),
   followingCount: z.number().int().nonnegative().optional(),
   isFollowing: z.boolean().optional(),
+  isProfilePrivate: z.boolean().optional().default(false),
+  followStatus: z.enum(["none", "pending", "following"]).optional(),
   isMe: z.boolean().optional(),
   photoUrl: z.string().optional().nullable(),
   background: z.string().optional().nullable(),
@@ -70,6 +72,8 @@ export type AuthProfile = {
   followersCount: number;
   followingCount: number;
   isFollowing: boolean;
+  isProfilePrivate: boolean;
+  followStatus: "none" | "pending" | "following";
   isMe: boolean;
   photoUrl?: string;
   background?: string;
@@ -154,6 +158,9 @@ export function parseProfileText(text: string): AuthProfile {
     followersCount: parsed.data.followersCount ?? 0,
     followingCount: parsed.data.followingCount ?? 0,
     isFollowing: parsed.data.isFollowing ?? false,
+    isProfilePrivate: parsed.data.isProfilePrivate,
+    followStatus:
+      parsed.data.followStatus ?? (parsed.data.isFollowing ? "following" : "none"),
     isMe: parsed.data.isMe ?? true,
     ...(photoUrl ? { photoUrl } : {}),
     ...(background ? { background } : {}),

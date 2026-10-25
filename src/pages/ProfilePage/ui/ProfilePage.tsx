@@ -1,9 +1,9 @@
+import { FollowButton } from "@/features/follow-user";
 import {
   useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
-  type InfiniteData,
 } from "@tanstack/react-query";
 import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -18,13 +18,11 @@ import {
   listProfileFollowing,
   fetchPublicProfile,
   type FollowConnection,
-  type FollowConnectionList,
   type PublicProfile,
   type SessionProfile,
   type User,
 } from "@/entities/user";
 import { useAuthSession } from "@/features/auth";
-import { useFollowToggle, useFollowUser } from "@/features/follow-user";
 import { ApiError } from "@/shared/api";
 import { usePageMeta } from "@/shared/hooks";
 import { truncateMeta, type PageMeta } from "@/shared/lib/pageMeta";
@@ -158,7 +156,6 @@ function PublicProfileView({
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [followError, setFollowError] = useState<string | null>(null);
   const [tab, setTab] = useState<ReviewTab>("published");
   const [followList, setFollowList] = useState<FollowListKind | null>(null);
   const profileKey = ["profile", userId] as const;
@@ -170,8 +167,7 @@ function PublicProfileView({
 
   const profile = profileQuery.data;
   const isMe =
-    profile?.isMe === true ||
-    (sessionProfile !== null && sessionProfile.id === userId);
+    profile?.isMe === true || (sessionProfile !== null && sessionProfile.id === userId);
 
   const pageMeta = useMemo((): PageMeta => {
     const path = `/profiles/${userId}`;
@@ -196,8 +192,6 @@ function PublicProfileView({
     enabled: Boolean(profile) || isMe,
   });
 
-  const followMutation = useFollowUser(profileKey);
-
   const deleteMutation = useMutation({
     mutationFn: (reviewId: string) => deleteReview(reviewId),
     onSuccess: async () => {
@@ -213,7 +207,11 @@ function PublicProfileView({
   if (profileQuery.isLoading) {
     return (
       <section className="profile-page screen">
-        <div className="profile-page__skeleton" aria-busy="true" aria-label="Загрузка профиля">
+        <div
+          className="profile-page__skeleton"
+          aria-busy="true"
+          aria-label="Загрузка профиля"
+        >
           <div />
           <div />
         </div>
@@ -226,10 +224,15 @@ function PublicProfileView({
       <section className="profile-page screen">
         <p className="profile-page__error" role="alert">
           {profileQuery.error instanceof ApiError && profileQuery.error.status === 404
-            ? "Профиль не найден."
+            ? "Профиль недоступен или не существует."
             : "Не удалось загрузить профиль."}
         </p>
-        <Button type="button" variant="secondary" onClick={() => void profileQuery.refetch()}>
+        <FollowButton userId={userId} />
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => void profileQuery.refetch()}
+        >
           Повторить
         </Button>
       </section>
@@ -270,28 +273,7 @@ function PublicProfileView({
           >
             <BackArrowIcon />
           </button>
-          {!isMe ? (
-            <Button
-              type="button"
-              className="profile-page__follow"
-              variant={profile.isFollowing ? "secondary" : "primary"}
-              disabled={followMutation.isPending}
-              aria-pressed={profile.isFollowing}
-              onClick={() => {
-                setFollowError(null);
-                followMutation.mutate(
-                  { userId: profile.id, nextFollowing: !profile.isFollowing },
-                  {
-                    onError: (error) => {
-                      setFollowError(messageFromError(error, "Не удалось изменить подписку."));
-                    },
-                  },
-                );
-              }}
-            >
-              {profile.isFollowing ? "Отписаться" : "Подписаться"}
-            </Button>
-          ) : null}
+          {!isMe ? <FollowButton userId={profile.id} /> : null}
         </div>
 
         <UserHeader
@@ -304,12 +286,6 @@ function PublicProfileView({
       </ProfileHero>
 
       <AchievementsStrip profileId={profile.id} />
-
-      {followError ? (
-        <p className="profile-page__error" role="alert">
-          {followError}
-        </p>
-      ) : null}
 
       {isMe ? (
         <ReviewTabs
@@ -358,7 +334,6 @@ function FollowConnectionsModal({
   onClose: () => void;
 }) {
   const open = kind !== null;
-  const queryClient = useQueryClient();
   const title = kind === "following" ? "Подписки" : "Подписчики";
 
   const listQuery = useInfiniteQuery({
@@ -401,7 +376,11 @@ function FollowConnectionsModal({
       {listQuery.isError ? (
         <div className="profile-page__follow-error" role="alert">
           <p>Не удалось загрузить список.</p>
-          <Button type="button" variant="secondary" onClick={() => void listQuery.refetch()}>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => void listQuery.refetch()}
+          >
             Повторить
           </Button>
         </div>
@@ -421,46 +400,6 @@ function FollowConnectionsModal({
                 item={item}
                 viewerId={viewerId}
                 onOpenProfile={onClose}
-                onFollowChange={(userId, nextFollowing) => {
-                  const listKey = ["profile-connections", profileId, kind] as const;
-                  const prevList =
-                    queryClient.getQueryData<InfiniteData<FollowConnectionList, number>>(listKey);
-                  const prevRow = prevList?.pages
-                    .flatMap((page) => page.items)
-                    .find((row) => row.userId === userId);
-                  const flipped =
-                    prevRow !== undefined && prevRow.isFollowing !== nextFollowing;
-
-                  queryClient.setQueryData<InfiniteData<FollowConnectionList, number>>(
-                    listKey,
-                    (prev) => {
-                      if (!prev) return prev;
-                      return {
-                        ...prev,
-                        pages: prev.pages.map((page) => ({
-                          ...page,
-                          items: page.items.map((row) =>
-                            row.userId === userId
-                              ? { ...row, isFollowing: nextFollowing }
-                              : row,
-                          ),
-                        })),
-                      };
-                    },
-                  );
-
-                  // Свой профиль: сдвигаем followingCount в кэше публичного профиля.
-                  if (flipped && viewerId !== null && viewerId === profileId) {
-                    const delta = nextFollowing ? 1 : -1;
-                    queryClient.setQueryData<PublicProfile>(["profile", profileId], (prev) => {
-                      if (!prev) return prev;
-                      return {
-                        ...prev,
-                        followingCount: Math.max(0, prev.followingCount + delta),
-                      };
-                    });
-                  }
-                }}
               />
             </li>
           ))}
@@ -486,14 +425,11 @@ function FollowConnectionRow({
   item,
   viewerId,
   onOpenProfile,
-  onFollowChange,
 }: {
   item: FollowConnection;
   viewerId: string | null;
   onOpenProfile: () => void;
-  onFollowChange: (userId: string, nextFollowing: boolean) => void;
 }) {
-  const followMutation = useFollowToggle();
   const isMe = viewerId !== null && viewerId === item.userId;
   const label = item.username ? `@${item.username}` : "Пользователь";
 
@@ -511,24 +447,7 @@ function FollowConnectionRow({
         />
         <span className="profile-page__follow-name">{label}</span>
       </Link>
-      {!isMe ? (
-        <Button
-          type="button"
-          className="profile-page__follow"
-          variant={item.isFollowing ? "secondary" : "primary"}
-          disabled={followMutation.isPending}
-          aria-pressed={item.isFollowing}
-          onClick={() => {
-            const next = !item.isFollowing;
-            followMutation.mutate(
-              { userId: item.userId, nextFollowing: next },
-              { onSuccess: () => onFollowChange(item.userId, next) },
-            );
-          }}
-        >
-          {item.isFollowing ? "Отписаться" : "Подписаться"}
-        </Button>
-      ) : null}
+      {!isMe ? <FollowButton userId={item.userId} /> : null}
     </div>
   );
 }
@@ -607,7 +526,11 @@ function ReviewsBlock({
   return (
     <div className="profile-page__reviews">
       {reviewsQuery.isLoading ? (
-        <div className="profile-page__skeleton" aria-busy="true" aria-label="Загрузка обзоров">
+        <div
+          className="profile-page__skeleton"
+          aria-busy="true"
+          aria-label="Загрузка обзоров"
+        >
           <div />
           <div />
         </div>
@@ -716,7 +639,9 @@ function toUser(profile: SessionProfile | PublicProfile): User {
   };
 }
 
-function displayName(profile: Pick<PublicProfile, "firstName" | "lastName" | "username">): string {
+function displayName(
+  profile: Pick<PublicProfile, "firstName" | "lastName" | "username">,
+): string {
   const fullName = [profile.firstName, profile.lastName]
     .map((part) => part.trim())
     .filter((part) => part.length > 0)
@@ -727,7 +652,10 @@ function displayName(profile: Pick<PublicProfile, "firstName" | "lastName" | "us
   return "Пользователь";
 }
 
-function messageFromError(error: unknown, fallback = "Не удалось удалить обзор."): string {
+function messageFromError(
+  error: unknown,
+  fallback = "Не удалось удалить обзор.",
+): string {
   if (error instanceof ApiError) return error.message;
   if (error instanceof Error && error.message) return error.message;
   return fallback;
@@ -736,10 +664,7 @@ function messageFromError(error: unknown, fallback = "Не удалось уда
 function BackArrowIcon() {
   return (
     <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden focusable="false">
-      <path
-        fill="currentColor"
-        d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"
-      />
+      <path fill="currentColor" d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
     </svg>
   );
 }

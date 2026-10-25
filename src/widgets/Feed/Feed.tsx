@@ -19,17 +19,13 @@ const SORT_OPTIONS: { value: FeedSort; label: string }[] = [
 
 export function Feed() {
   const { profile } = useAuthSession();
-  const { sort, mode, type, setSort, setMode, toggleType, clearType } = useFilterFeedStore();
-  const [followByAuthor, setFollowByAuthor] = useState<Record<string, boolean>>({});
+  const { sort, mode, type, setSort, setMode, toggleType, clearType } =
+    useFilterFeedStore();
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {
     setFeedFilterOwner(profile?.id);
   }, [profile?.id]);
-
-  useEffect(() => {
-    setFollowByAuthor({});
-  }, [sort, mode, type]);
 
   const feedQuery = useInfiniteQuery({
     queryKey: ["feed", sort, mode, type],
@@ -74,7 +70,8 @@ export function Feed() {
     return () => observer.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const sortLabel = SORT_OPTIONS.find((option) => option.value === sort)?.label ?? "Новые";
+  const sortLabel =
+    SORT_OPTIONS.find((option) => option.value === sort)?.label ?? "Новые";
   const typeLabel = type ? MEDIA_TYPE_LABELS[type] : null;
 
   return (
@@ -93,9 +90,8 @@ export function Feed() {
           type="button"
           role="tab"
           aria-selected={mode === "following"}
-          className={
-            mode === "following" ? "feed__tab feed__tab--active" : "feed__tab"
-          }
+          className={mode === "following" ? "feed__tab feed__tab--active" : "feed__tab"}
+          disabled={!profile}
           onClick={() => setMode("following")}
         >
           Подписки
@@ -125,9 +121,7 @@ export function Feed() {
         <button
           type="button"
           className={
-            type
-              ? "feed__filter-btn feed__filter-btn--active"
-              : "feed__filter-btn"
+            type ? "feed__filter-btn feed__filter-btn--active" : "feed__filter-btn"
           }
           aria-haspopup="dialog"
           aria-expanded={filtersOpen}
@@ -189,7 +183,11 @@ export function Feed() {
       {feedQuery.isError ? (
         <div className="feed__error" role="alert">
           <p>Не удалось загрузить ленту.</p>
-          <Button type="button" variant="secondary" onClick={() => void feedQuery.refetch()}>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => void feedQuery.refetch()}
+          >
             Повторить
           </Button>
         </div>
@@ -206,21 +204,9 @@ export function Feed() {
       {items.length > 0 ? (
         <ul className="feed__list">
           {items.map((review) => {
-            const authorId = review.author?.id ?? review.authorId;
-            const fromApi =
-              review.author?.isFollowing ?? review.isFollowing ?? false;
-            const isFollowing =
-              authorId in followByAuthor ? followByAuthor[authorId] : fromApi;
             return (
               <li key={review.id}>
-                <FeedReviewItem
-                  review={review}
-                  viewerId={profile?.id ?? null}
-                  isFollowing={isFollowing}
-                  onFollowChange={(id, next) =>
-                    setFollowByAuthor((prev) => ({ ...prev, [id]: next }))
-                  }
-                />
+                <FeedReviewItem review={review} viewerId={profile?.id ?? null} />
               </li>
             );
           })}

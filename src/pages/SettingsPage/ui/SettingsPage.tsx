@@ -5,7 +5,8 @@ import {
   patchSettings,
   type PatchSettingsInput,
 } from "@/entities/settings";
-import { EmailBind, useAuthSession } from "@/features/auth";
+import { EmailBind, refreshSessionProfile, useAuthSession } from "@/features/auth";
+import { FollowRequests } from "@/features/follow-user";
 import { ApiError } from "@/shared/api";
 import { Button } from "@/shared/ui";
 import "./SettingsPage.css";
@@ -27,9 +28,13 @@ export function SettingsPage() {
 
   const saveMutation = useMutation({
     mutationFn: (input: PatchSettingsInput) => patchSettings(input),
-    onSuccess: (data) => {
+    onSuccess: (data, input) => {
       setSaveError(null);
       queryClient.setQueryData(["settings"], data);
+      if (input.isProfilePrivate !== undefined) {
+        refreshSessionProfile();
+        void queryClient.invalidateQueries({ queryKey: ["profile"] });
+      }
     },
     onError: (error) => {
       setSaveError(messageFromError(error));
@@ -69,6 +74,30 @@ export function SettingsPage() {
 
       {settings ? (
         <ul className="settings-page__list">
+          <li className="settings-page__row">
+            <div className="settings-page__copy">
+              <span className="settings-page__label" id="settings-private-label">
+                Приватный профиль
+              </span>
+              <span className="settings-page__hint">
+                Профиль доступен только одобренным подписчикам. Опубликованные обзоры
+                остаются публичными.
+              </span>
+            </div>
+            <button
+              type="button"
+              className="ui-switch"
+              role="switch"
+              aria-checked={settings.isProfilePrivate}
+              aria-labelledby="settings-private-label"
+              disabled={saveMutation.isPending}
+              onClick={() =>
+                saveMutation.mutate({ isProfilePrivate: !settings.isProfilePrivate })
+              }
+            >
+              <span className="ui-switch__thumb" aria-hidden />
+            </button>
+          </li>
           <li className="settings-page__row">
             <div className="settings-page__copy">
               <span className="settings-page__label">Язык</span>
@@ -123,6 +152,8 @@ export function SettingsPage() {
           </li>
         </ul>
       ) : null}
+
+      <FollowRequests />
 
       {saveError ? (
         <p className="settings-page__error" role="alert">

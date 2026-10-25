@@ -9,13 +9,20 @@ import {
 
 test("parseSettingsText accepts valid payload", () => {
   const settings = parseSettingsText(
-    JSON.stringify({ language: "ru", allowNotifications: true }),
+    JSON.stringify({ language: "ru", allowNotifications: true, isProfilePrivate: false }),
   );
-  assert.deepEqual(settings, { language: "ru", allowNotifications: true });
+  assert.deepEqual(settings, {
+    language: "ru",
+    allowNotifications: true,
+    isProfilePrivate: false,
+  });
 });
 
 test("parseSettingsText rejects broken json", () => {
-  assert.throws(() => parseSettingsText("{"), (error: Error) => error.name === "ApiError");
+  assert.throws(
+    () => parseSettingsText("{"),
+    (error: Error) => error.name === "ApiError",
+  );
 });
 
 test("parseNotificationSettingsText accepts items", () => {
@@ -67,4 +74,34 @@ test("parseInboxNotificationsText accepts list", () => {
 
 test("parseUnreadCountText accepts count", () => {
   assert.deepEqual(parseUnreadCountText(JSON.stringify({ count: 3 })), { count: 3 });
+});
+
+test("settings preserves privacy and rejects unsafe boolean coercion", () => {
+  const settings = { language: "ru", allowNotifications: false, isProfilePrivate: true };
+  assert.deepEqual(parseSettingsText(JSON.stringify(settings)), settings);
+  for (const isProfilePrivate of ["false", 1, null, undefined]) {
+    assert.throws(() =>
+      parseSettingsText(JSON.stringify({ ...settings, isProfilePrivate })),
+    );
+  }
+});
+
+test("follow request notifications have actorId and no review", () => {
+  const result = parseInboxNotificationsText(
+    JSON.stringify({
+      items: [
+        {
+          id: "11111111-1111-4111-8111-111111111111",
+          type: "follow_request",
+          title: "Запрос на подписку",
+          body: "Новый запрос",
+          actorId: "22222222-2222-4222-8222-222222222222",
+          isRead: false,
+          createdAt: "2026-10-25T14:00:00Z",
+        },
+      ],
+    }),
+  );
+  assert.equal(result.items[0]?.reviewId, null);
+  assert.equal(result.items[0]?.type, "follow_request");
 });

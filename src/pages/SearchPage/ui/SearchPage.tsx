@@ -1,5 +1,6 @@
+import { FollowButton } from "@/features/follow-user";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MEDIA_TYPE_LABELS, isMediaType } from "@/shared/types";
 import {
@@ -15,7 +16,6 @@ import {
 } from "@/entities/search";
 import { useAuthSession } from "@/features/auth";
 import { useFilterFeedStore } from "@/features/filter-feed";
-import { useFollowToggle } from "@/features/follow-user";
 import { useDebouncedValue } from "@/shared/hooks";
 import { ruPlural } from "@/shared/lib/ruPlural";
 import { shopAssetUrl } from "@/shared/lib/shopCode";
@@ -35,16 +35,11 @@ export function SearchPage() {
 
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<SearchTrendsTab>("media");
-  const [followById, setFollowById] = useState<Record<string, boolean>>({});
 
   const debouncedQuery = useDebouncedValue(query, 300);
   const activeQuery = sanitizeSearchQuery(debouncedQuery);
   const searching = activeQuery !== null;
   const pending = query.trim() !== debouncedQuery.trim();
-
-  useEffect(() => {
-    setFollowById({});
-  }, [tab, activeQuery]);
 
   const trendsQuery = useQuery({
     queryKey: ["search-trends", tab],
@@ -116,7 +111,11 @@ export function SearchPage() {
           </div>
 
           {trendsQuery.isLoading ? (
-            <div className="search-page__skeleton" aria-busy="true" aria-label="Загрузка трендов">
+            <div
+              className="search-page__skeleton"
+              aria-busy="true"
+              aria-label="Загрузка трендов"
+            >
               <div />
               <div />
               <div />
@@ -126,7 +125,11 @@ export function SearchPage() {
           {trendsQuery.isError ? (
             <div className="search-page__error" role="alert">
               <p>Не удалось загрузить тренды.</p>
-              <Button type="button" variant="secondary" onClick={() => void trendsQuery.refetch()}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => void trendsQuery.refetch()}
+              >
                 Повторить
               </Button>
             </div>
@@ -136,11 +139,7 @@ export function SearchPage() {
             <TrendsList
               data={trendsQuery.data}
               viewerId={profile?.id ?? null}
-              followById={followById}
-              onFollowChange={(id, next) =>
-                setFollowById((prev) => ({ ...prev, [id]: next }))
-              }
-              onPickMedia={(title) => setQuery(title)}
+              onPickMedia={(id) => navigate(`/media-objects/${id}`)}
               onPickType={openTypeInFeed}
             />
           ) : null}
@@ -160,7 +159,11 @@ export function SearchPage() {
           {searchQuery.isError && !pending ? (
             <div className="search-page__error" role="alert">
               <p>Не удалось выполнить поиск.</p>
-              <Button type="button" variant="secondary" onClick={() => void searchQuery.refetch()}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => void searchQuery.refetch()}
+              >
                 Повторить
               </Button>
             </div>
@@ -172,11 +175,7 @@ export function SearchPage() {
               reviews={searchQuery.data.reviews}
               mediaObjects={searchQuery.data.mediaObjects}
               viewerId={profile?.id ?? null}
-              followById={followById}
-              onFollowChange={(id, next) =>
-                setFollowById((prev) => ({ ...prev, [id]: next }))
-              }
-              onPickMedia={(title) => setQuery(title)}
+              onPickMedia={(id) => navigate(`/media-objects/${id}`)}
             />
           ) : null}
         </>
@@ -188,16 +187,12 @@ export function SearchPage() {
 function TrendsList({
   data,
   viewerId,
-  followById,
-  onFollowChange,
   onPickMedia,
   onPickType,
 }: {
   data: Awaited<ReturnType<typeof fetchSearchTrends>>;
   viewerId: string | null;
-  followById: Record<string, boolean>;
-  onFollowChange: (id: string, next: boolean) => void;
-  onPickMedia: (title: string) => void;
+  onPickMedia: (id: string) => void;
   onPickType: (code: string) => void;
 }) {
   if (data.items.length === 0) {
@@ -213,7 +208,11 @@ function TrendsList({
       <ul className="search-page__list">
         {data.items.map((item, index) => (
           <li key={item.id}>
-            <MediaTrendRow item={item} rank={index + 1} onPick={() => onPickMedia(item.title)} />
+            <MediaTrendRow
+              item={item}
+              rank={index + 1}
+              onPick={() => onPickMedia(item.id)}
+            />
           </li>
         ))}
       </ul>
@@ -225,12 +224,7 @@ function TrendsList({
       <ul className="search-page__list">
         {data.items.map((item) => (
           <li key={item.id}>
-            <AuthorRow
-              item={item}
-              viewerId={viewerId}
-              isFollowing={item.id in followById ? followById[item.id]! : item.isFollowing}
-              onFollowChange={onFollowChange}
-            />
+            <AuthorRow item={item} viewerId={viewerId} />
           </li>
         ))}
       </ul>
@@ -241,7 +235,11 @@ function TrendsList({
     <ul className="search-page__list">
       {data.items.map((item, index) => (
         <li key={item.code}>
-          <TypeTrendRow item={item} rank={index + 1} onPick={() => onPickType(item.code)} />
+          <TypeTrendRow
+            item={item}
+            rank={index + 1}
+            onPick={() => onPickType(item.code)}
+          />
         </li>
       ))}
     </ul>
@@ -253,17 +251,13 @@ function SearchResults({
   reviews,
   mediaObjects,
   viewerId,
-  followById,
-  onFollowChange,
   onPickMedia,
 }: {
   users: SearchAuthorHit[];
   reviews: SearchReviewHit[];
   mediaObjects: SearchMediaHit[];
   viewerId: string | null;
-  followById: Record<string, boolean>;
-  onFollowChange: (id: string, next: boolean) => void;
-  onPickMedia: (title: string) => void;
+  onPickMedia: (id: string) => void;
 }) {
   const empty = users.length === 0 && reviews.length === 0 && mediaObjects.length === 0;
   if (empty) {
@@ -282,12 +276,7 @@ function SearchResults({
           <ul className="search-page__list">
             {users.map((item) => (
               <li key={item.id}>
-                <AuthorRow
-                  item={item}
-                  viewerId={viewerId}
-                  isFollowing={item.id in followById ? followById[item.id]! : item.isFollowing}
-                  onFollowChange={onFollowChange}
-                />
+                <AuthorRow item={item} viewerId={viewerId} />
               </li>
             ))}
           </ul>
@@ -313,7 +302,7 @@ function SearchResults({
           <ul className="search-page__list">
             {mediaObjects.map((item) => (
               <li key={item.id}>
-                <MediaHitRow item={item} onPick={() => onPickMedia(item.title)} />
+                <MediaHitRow item={item} onPick={() => onPickMedia(item.id)} />
               </li>
             ))}
           </ul>
@@ -326,17 +315,13 @@ function SearchResults({
 function AuthorRow({
   item,
   viewerId,
-  isFollowing,
-  onFollowChange,
 }: {
   item: SearchAuthorHit;
   viewerId: string | null;
-  isFollowing: boolean;
-  onFollowChange: (id: string, next: boolean) => void;
 }) {
-  const followMutation = useFollowToggle();
   const isMe = viewerId !== null && viewerId === item.id;
-  const display = item.firstName.trim() || (item.username ? `@${item.username}` : "Пользователь");
+  const display =
+    item.firstName.trim() || (item.username ? `@${item.username}` : "Пользователь");
 
   return (
     <div className="search-page__row search-page__row--author">
@@ -351,33 +336,11 @@ function AuthorRow({
           <span className="search-page__row-meta">
             {item.username ? `@${item.username} · ` : null}
             {item.followersCount}{" "}
-            {ruPlural(
-              item.followersCount,
-              "подписчик",
-              "подписчика",
-              "подписчиков",
-            )}
+            {ruPlural(item.followersCount, "подписчик", "подписчика", "подписчиков")}
           </span>
         </span>
       </Link>
-      {!isMe ? (
-        <Button
-          type="button"
-          className="search-page__follow"
-          variant={isFollowing ? "secondary" : "primary"}
-          disabled={followMutation.isPending}
-          aria-pressed={isFollowing}
-          onClick={() => {
-            const next = !isFollowing;
-            followMutation.mutate(
-              { userId: item.id, nextFollowing: next },
-              { onSuccess: () => onFollowChange(item.id, next) },
-            );
-          }}
-        >
-          {isFollowing ? "Отписаться" : "Подписаться"}
-        </Button>
-      ) : null}
+      {!isMe ? <FollowButton userId={item.id} /> : null}
     </div>
   );
 }
@@ -396,7 +359,11 @@ function MediaTrendRow({
       <span className="search-page__rank" aria-hidden>
         {rank}
       </span>
-      <MediaPoster className="search-page__poster" title={item.title} posterUrl={item.posterUrl} />
+      <MediaPoster
+        className="search-page__poster"
+        title={item.title}
+        posterUrl={item.posterUrl}
+      />
       <span className="search-page__row-body">
         <span className="search-page__row-title">{item.title}</span>
         <span className="search-page__row-meta">
@@ -410,7 +377,11 @@ function MediaTrendRow({
 function MediaHitRow({ item, onPick }: { item: SearchMediaHit; onPick: () => void }) {
   return (
     <button type="button" className="search-page__row" onClick={onPick}>
-      <MediaPoster className="search-page__poster" title={item.title} posterUrl={item.posterUrl} />
+      <MediaPoster
+        className="search-page__poster"
+        title={item.title}
+        posterUrl={item.posterUrl}
+      />
       <span className="search-page__row-body">
         <span className="search-page__row-title">{item.title}</span>
         <span className="search-page__row-meta">{MEDIA_TYPE_LABELS[item.type]}</span>
@@ -448,9 +419,7 @@ function ReviewRow({ item }: { item: SearchReviewHit }) {
   return (
     <Link
       className={
-        backdropUrl
-          ? "search-page__row search-page__row--backdrop"
-          : "search-page__row"
+        backdropUrl ? "search-page__row search-page__row--backdrop" : "search-page__row"
       }
       to={`/reviews/${item.id}`}
       style={

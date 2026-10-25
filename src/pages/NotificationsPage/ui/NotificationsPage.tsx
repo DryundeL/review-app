@@ -57,7 +57,9 @@ export function NotificationsPage() {
       await queryClient.cancelQueries({ queryKey: ["notifications"] });
       await queryClient.cancelQueries({ queryKey: ["notifications-unread"] });
 
-      const previousList = queryClient.getQueryData<InboxNotificationList>(["notifications"]);
+      const previousList = queryClient.getQueryData<InboxNotificationList>([
+        "notifications",
+      ]);
       const previousUnread = queryClient.getQueryData<UnreadNotificationsCount>([
         "notifications-unread",
       ]);
@@ -71,7 +73,9 @@ export function NotificationsPage() {
         };
       });
 
-      const wasUnread = previousList?.items.some((item) => item.id === id && !item.isRead);
+      const wasUnread = previousList?.items.some(
+        (item) => item.id === id && !item.isRead,
+      );
       if (wasUnread && previousUnread) {
         queryClient.setQueryData<UnreadNotificationsCount>(["notifications-unread"], {
           count: Math.max(0, previousUnread.count - 1),
@@ -102,7 +106,9 @@ export function NotificationsPage() {
       await queryClient.cancelQueries({ queryKey: ["notifications"] });
       await queryClient.cancelQueries({ queryKey: ["notifications-unread"] });
 
-      const previousList = queryClient.getQueryData<InboxNotificationList>(["notifications"]);
+      const previousList = queryClient.getQueryData<InboxNotificationList>([
+        "notifications",
+      ]);
       const previousUnread = queryClient.getQueryData<UnreadNotificationsCount>([
         "notifications-unread",
       ]);
@@ -173,7 +179,11 @@ export function NotificationsPage() {
       {inboxQuery.isError ? (
         <div className="notifications-page__prefs-error" role="alert">
           <p>{messageFromError(inboxQuery.error, "Не удалось загрузить уведомления.")}</p>
-          <Button type="button" variant="secondary" onClick={() => void inboxQuery.refetch()}>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => void inboxQuery.refetch()}
+          >
             Повторить
           </Button>
         </div>
@@ -257,7 +267,11 @@ export function NotificationsPage() {
         {prefsQuery.isError ? (
           <div className="notifications-page__prefs-error" role="alert">
             <p>{messageFromError(prefsQuery.error)}</p>
-            <Button type="button" variant="secondary" onClick={() => void prefsQuery.refetch()}>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => void prefsQuery.refetch()}
+            >
               Повторить
             </Button>
           </div>
@@ -277,7 +291,10 @@ export function NotificationsPage() {
                 return (
                   <li key={item.name} className="notifications-page__prefs-row">
                     <div className="notifications-page__prefs-copy">
-                      <span className="notifications-page__prefs-label" id={`${id}-label`}>
+                      <span
+                        className="notifications-page__prefs-label"
+                        id={`${id}-label`}
+                      >
                         {item.title}
                       </span>
                       <span className="notifications-page__prefs-hint" id={`${id}-hint`}>
@@ -331,6 +348,7 @@ function NotificationRow({ item }: { item: InboxNotification }) {
 }
 
 function notificationHref(item: InboxNotification): string | null {
+  if (item.type === "follow_request") return "/settings#follow-requests-heading";
   if (item.reviewId) return `/reviews/${item.reviewId}`;
   if (item.actorId) return `/profiles/${item.actorId}`;
   return null;
@@ -358,7 +376,10 @@ function SettingsGearIcon() {
   );
 }
 
-function messageFromError(error: unknown, fallback = "Не удалось загрузить настройки."): string {
+function messageFromError(
+  error: unknown,
+  fallback = "Не удалось загрузить настройки.",
+): string {
   if (error instanceof ApiError) return error.message;
   if (error instanceof Error && error.message) return error.message;
   return fallback;

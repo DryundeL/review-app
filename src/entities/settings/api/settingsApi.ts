@@ -47,6 +47,12 @@ function assertLanguage(value: string): string {
 
 function normalizePatchSettings(input: PatchSettingsInput): PatchSettingsInput {
   const body: PatchSettingsInput = {};
+  if (input.isProfilePrivate !== undefined) {
+    if (typeof input.isProfilePrivate !== "boolean") {
+      throw new ApiError(422, "VALIDATION_ERROR", "Некорректная настройка приватности.");
+    }
+    body.isProfilePrivate = input.isProfilePrivate;
+  }
   if (input.language !== undefined) {
     body.language = assertLanguage(input.language);
   }
@@ -99,7 +105,9 @@ export function patchSettings(
   });
 }
 
-export function fetchNotificationSettings(signal?: AbortSignal): Promise<NotificationSettings> {
+export function fetchNotificationSettings(
+  signal?: AbortSignal,
+): Promise<NotificationSettings> {
   return apiClient("/v1/notification-settings", {
     method: "GET",
     signal,

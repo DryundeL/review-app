@@ -8,6 +8,7 @@ import type {
 } from "../model/types.ts";
 
 const settingsSchema = z.object({
+  isProfilePrivate: z.boolean(),
   language: z.string().min(2).max(16),
   allowNotifications: z.boolean(),
 });

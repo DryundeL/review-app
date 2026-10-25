@@ -18,6 +18,7 @@ export { mediaMetaLine } from "./model/mediaLabel";
 export { matchesQuery } from "./model/search";
 export type { Review, ReviewBlock, ReviewComment } from "./model/types";
 export type {
+  CatalogMediaObject,
   CreateReviewInput,
   FeedMode,
   FeedSort,
@@ -36,6 +37,7 @@ export {
   createReview,
   deleteReview,
   getMediaObject,
+  getMediaTopReviews,
   getReview,
   listFeed,
   listMediaObjects,

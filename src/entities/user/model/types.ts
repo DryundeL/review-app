@@ -1,4 +1,6 @@
 export type SessionProfile = {
+  isProfilePrivate?: boolean;
+  followStatus?: FollowState["followStatus"];
   id: string;
   telegramId: string;
   username: string;
@@ -22,6 +24,8 @@ export type SessionProfile = {
 
 /** Карточка профиля из GET /v1/profiles/:id (и свой /v1/profile). */
 export type PublicProfile = {
+  isProfilePrivate: boolean;
+  followStatus?: FollowState["followStatus"];
   id: string;
   username: string;
   firstName: string;
@@ -64,4 +68,9 @@ export type FollowConnection = {
 
 export type FollowConnectionList = {
   items: FollowConnection[];
+};
+
+export type FollowState = {
+  followStatus: "none" | "pending" | "following";
+  isFollowing: boolean;
 };

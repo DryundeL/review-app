@@ -1,4 +1,5 @@
 export type {
+  FollowState,
   FollowConnection,
   FollowConnectionList,
   PublicProfile,
@@ -6,6 +7,9 @@ export type {
   User,
 } from "./model/types";
 export {
+  fetchFollowState,
+  listFollowRequests,
+  resolveFollowRequest,
   fetchPublicProfile,
   followUser,
   listProfileFollowers,

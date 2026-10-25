@@ -1,25 +1,17 @@
+import { FollowButton } from "@/features/follow-user";
 import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import type { RemoteReviewSummary } from "@/entities/review";
-import { useFollowToggle } from "@/features/follow-user";
 import { shopAssetUrl } from "@/shared/lib/shopCode";
-import { Button, UserAvatar } from "@/shared/ui";
+import { UserAvatar } from "@/shared/ui";
 import { RemoteReviewCard } from "@/widgets/RemoteReviewCard";
 
 type FeedReviewItemProps = {
   review: RemoteReviewSummary;
   viewerId: string | null;
-  isFollowing: boolean;
-  onFollowChange: (authorId: string, nextFollowing: boolean) => void;
 };
 
-export function FeedReviewItem({
-  review,
-  viewerId,
-  isFollowing,
-  onFollowChange,
-}: FeedReviewItemProps) {
-  const followMutation = useFollowToggle();
+export function FeedReviewItem({ review, viewerId }: FeedReviewItemProps) {
   const authorId = review.author?.id ?? review.authorId;
   const username = review.author?.username.trim() ?? "";
   const authorLabel = username ? `@${username}` : "Автор";
@@ -43,29 +35,17 @@ export function FeedReviewItem({
           />
           <span className="feed-item__author-name">{authorLabel}</span>
         </Link>
-        {!isMe ? (
-          <Button
-            type="button"
-            className="feed-item__follow"
-            variant={isFollowing ? "secondary" : "primary"}
-            disabled={followMutation.isPending}
-            aria-pressed={isFollowing}
-            onClick={() => {
-              const next = !isFollowing;
-              followMutation.mutate(
-                { userId: authorId, nextFollowing: next },
-                {
-                  onSuccess: () => onFollowChange(authorId, next),
-                },
-              );
-            }}
-          >
-            {isFollowing ? "Отписаться" : "Подписаться"}
-          </Button>
-        ) : null}
+        {!isMe ? <FollowButton userId={authorId} /> : null}
       </div>
-      <div className={backdropUrl ? "shop-list-backdrop" : undefined} style={backdropStyle}>
-        <RemoteReviewCard review={review} hideStatus hideBackdrop={Boolean(backdropUrl)} />
+      <div
+        className={backdropUrl ? "shop-list-backdrop" : undefined}
+        style={backdropStyle}
+      >
+        <RemoteReviewCard
+          review={review}
+          hideStatus
+          hideBackdrop={Boolean(backdropUrl)}
+        />
       </div>
     </div>
   );

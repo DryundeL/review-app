@@ -20,6 +20,14 @@ export type MediaObjectSummary = {
   posterUrl?: string;
 };
 
+export type CatalogMediaObject = MediaObjectSummary & {
+  info: {
+    genre?: string;
+    releaseYear?: number;
+    releaseStatus: "announced" | "ongoing" | "completed" | "hiatus";
+  };
+};
+
 export type RemoteReviewAuthor = {
   id: string;
   username: string;

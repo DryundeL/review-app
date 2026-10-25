@@ -5,6 +5,7 @@ import { safeHttpsUrl } from "../../../shared/lib/safeHttpsUrl.ts";
 import { MEDIA_TYPE_LABELS, type MediaType } from "../../../shared/types/media.ts";
 import type {
   MediaObjectSummary,
+  CatalogMediaObject,
   RemoteReview,
   RemoteReviewAuthor,
   RemoteReviewList,
@@ -34,8 +35,14 @@ const mediaObjectSchema = z.object({
 
 const authorSchema = z.object({
   id: uuid,
-  username: z.string().nullish().transform((value) => value ?? ""),
-  isFollowing: z.boolean().nullish().transform((value) => value ?? false),
+  username: z
+    .string()
+    .nullish()
+    .transform((value) => value ?? ""),
+  isFollowing: z
+    .boolean()
+    .nullish()
+    .transform((value) => value ?? false),
   photoUrl: z.string().optional().nullable(),
   avatarFrame: z.string().optional().nullable(),
   backdrop: z.string().optional().nullable(),
@@ -91,12 +98,19 @@ const listSchema = z.object({
   nextCursor: z.string().nullable().optional(),
 });
 
+const mediaInfoSchema = z.object({
+  genre: z.string().max(100).optional(),
+  releaseYear: z.number().int().min(1800).max(2100).optional(),
+  releaseStatus: z.enum(["announced", "ongoing", "completed", "hiatus"]),
+});
+
 const catalogMediaSchema = z
   .object({
     id: uuid,
     title: z.string().min(1).max(256),
     type: mediaTypeSchema.optional(),
     primaryType: mediaTypeSchema.optional(),
+    info: mediaInfoSchema,
     originalTitle: z.string().min(1).max(256).optional().nullable(),
     releaseYear: z.number().int().min(1800).max(2200).optional().nullable(),
     posterUrl: z.string().optional().nullable(),
@@ -108,14 +122,13 @@ const mediaListSchema = z.union([
   z.array(catalogMediaSchema),
 ]);
 
-function optionalCatalogFields(
-  raw: {
-    originalTitle?: string | null;
-    releaseYear?: number | null;
-    posterUrl?: string | null;
-  },
-): Pick<MediaObjectSummary, "originalTitle" | "releaseYear" | "posterUrl"> {
-  const fields: Pick<MediaObjectSummary, "originalTitle" | "releaseYear" | "posterUrl"> = {};
+function optionalCatalogFields(raw: {
+  originalTitle?: string | null;
+  releaseYear?: number | null;
+  posterUrl?: string | null;
+}): Pick<MediaObjectSummary, "originalTitle" | "releaseYear" | "posterUrl"> {
+  const fields: Pick<MediaObjectSummary, "originalTitle" | "releaseYear" | "posterUrl"> =
+    {};
   const originalTitle = raw.originalTitle?.trim();
   if (originalTitle) fields.originalTitle = originalTitle;
   if (typeof raw.releaseYear === "number") fields.releaseYear = raw.releaseYear;
@@ -133,14 +146,17 @@ function toMediaSummary(raw: z.infer<typeof mediaObjectSchema>): MediaObjectSumm
   };
 }
 
-function toCatalogMediaSummary(raw: z.infer<typeof catalogMediaSchema>): MediaObjectSummary | null {
+function toCatalogMediaSummary(
+  raw: z.infer<typeof catalogMediaSchema>,
+): CatalogMediaObject | null {
   const type = raw.type ?? raw.primaryType;
   if (!type) return null;
   return {
     id: raw.id,
     title: raw.title,
     type,
-    ...optionalCatalogFields(raw),
+    info: raw.info,
+    ...optionalCatalogFields({ ...raw, releaseYear: raw.info.releaseYear }),
   };
 }
 
@@ -164,9 +180,7 @@ function mapAuthor(
 function mapSummary(
   item: z.infer<typeof reviewSummarySchema> | z.infer<typeof reviewListItemSchema>,
 ) {
-  const author = item.author
-    ? mapAuthor(item.author, item.isFollowing)
-    : undefined;
+  const author = item.author ? mapAuthor(item.author, item.isFollowing) : undefined;
 
   return {
     id: item.id,
@@ -185,7 +199,9 @@ function mapSummary(
       : item.isFollowing != null
         ? { isFollowing: item.isFollowing }
         : {}),
-    ...(typeof item.viewerIsLike === "boolean" ? { viewerIsLike: item.viewerIsLike } : {}),
+    ...(typeof item.viewerIsLike === "boolean"
+      ? { viewerIsLike: item.viewerIsLike }
+      : {}),
   };
 }
 
@@ -226,7 +242,7 @@ export function parseRemoteReviewListText(text: string): RemoteReviewList {
   };
 }
 
-export function parseMediaObjectText(text: string): MediaObjectSummary {
+export function parseMediaObjectText(text: string): CatalogMediaObject {
   let payload: unknown;
   try {
     payload = JSON.parse(text) as unknown;
@@ -240,7 +256,7 @@ export function parseMediaObjectText(text: string): MediaObjectSummary {
   return media;
 }
 
-export function parseMediaObjectsText(text: string): MediaObjectSummary[] {
+export function parseMediaObjectsText(text: string): CatalogMediaObject[] {
   let payload: unknown;
   try {
     payload = JSON.parse(text) as unknown;
@@ -252,5 +268,13 @@ export function parseMediaObjectsText(text: string): MediaObjectSummary[] {
   const items = Array.isArray(parsed.data) ? parsed.data : parsed.data.items;
   return items
     .map(toCatalogMediaSummary)
-    .filter((item): item is MediaObjectSummary => item !== null);
+    .filter((item): item is CatalogMediaObject => item !== null);
+}
+
+export function parseTopReviewsText(text: string): RemoteReviewList {
+  const list = parseRemoteReviewListText(text);
+  if (list.items.length > 5 || list.items.some((item) => item.status !== "published")) {
+    throw unexpectedResponseError();
+  }
+  return { items: list.items };
 }

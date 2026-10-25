@@ -1,9 +1,9 @@
+import { FollowButton } from "@/features/follow-user";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getReview, viewReview, voteReview } from "@/entities/review";
 import { useAuthSession } from "@/features/auth";
-import { useFollowToggle } from "@/features/follow-user";
 import { ReportReviewControl } from "@/features/report-review";
 import { ApiError } from "@/shared/api";
 import { usePageMeta } from "@/shared/hooks";
@@ -26,8 +26,6 @@ export function ReviewPage() {
   const { reviewId } = useParams();
   const { profile } = useAuthSession();
   const queryClient = useQueryClient();
-  const followMutation = useFollowToggle();
-  const [followOverride, setFollowOverride] = useState<boolean | null>(null);
   /** Optimistic override; источник правды — review.viewerIsLike с бэка. */
   const [myVoteOverride, setMyVoteOverride] = useState<boolean | null>(null);
 
@@ -39,7 +37,6 @@ export function ReviewPage() {
   });
 
   useEffect(() => {
-    setFollowOverride(null);
     setMyVoteOverride(null);
   }, [reviewId]);
 
@@ -64,7 +61,7 @@ export function ReviewPage() {
   usePageMeta(pageMeta);
 
   useEffect(() => {
-    if (!reviewId || !reviewQuery.data) return;
+    if (!profile || !reviewId || !reviewQuery.data) return;
     if (profile && reviewQuery.data.authorId === profile.id) return;
     void viewReview(reviewId).catch(() => {
       // просмотр не критичен для чтения
@@ -105,12 +102,15 @@ export function ReviewPage() {
   }
 
   if (reviewQuery.isError || !reviewQuery.data) {
-    const notFound = reviewQuery.error instanceof ApiError && reviewQuery.error.status === 404;
+    const notFound =
+      reviewQuery.error instanceof ApiError && reviewQuery.error.status === 404;
     return (
       <section className="review-page screen">
         <h1>{notFound ? "Обзор недоступен" : "Ошибка загрузки"}</h1>
         <p className="muted">
-          {notFound ? "Нет такого обзора или это чужой черновик." : "Попробуйте ещё раз позже."}
+          {notFound
+            ? "Нет такого обзора или это чужой черновик."
+            : "Попробуйте ещё раз позже."}
         </p>
         <Link to="/profile">В профиль</Link>
       </section>
@@ -122,8 +122,6 @@ export function ReviewPage() {
   const isOwn = Boolean(profile && authorId === profile.id);
   const username = review.author.username.trim();
   const authorLabel = username ? `@${username}` : "Автор";
-  const isFollowing =
-    followOverride ?? review.author.isFollowing ?? review.isFollowing ?? false;
   const myVote =
     myVoteOverride ??
     (typeof review.viewerIsLike === "boolean" ? review.viewerIsLike : null);
@@ -157,22 +155,7 @@ export function ReviewPage() {
         {!isOwn ? (
           <div className="review-page__author-actions">
             <ReportReviewControl reviewId={review.id} />
-            <Button
-              type="button"
-              className="review-page__follow"
-              variant={isFollowing ? "secondary" : "primary"}
-              disabled={followMutation.isPending}
-              aria-pressed={isFollowing}
-              onClick={() => {
-                const next = !isFollowing;
-                followMutation.mutate(
-                  { userId: authorId, nextFollowing: next },
-                  { onSuccess: () => setFollowOverride(next) },
-                );
-              }}
-            >
-              {isFollowing ? "Отписаться" : "Подписаться"}
-            </Button>
+            <FollowButton userId={authorId} />
           </div>
         ) : null}
       </div>
@@ -189,7 +172,7 @@ export function ReviewPage() {
           <p className="review-page__media">
             <span className="review-page__type">{typeLabel}</span>
             <span aria-hidden>·</span>
-            <span>{mediaTitle}</span>
+            <Link to={`/media-objects/${media.id}`}>{mediaTitle}</Link>
           </p>
           <h1>{review.title}</h1>
           <p className="review-page__stats">
@@ -198,7 +181,10 @@ export function ReviewPage() {
               dislikes={review.dislikesCount}
               views={review.viewsCount}
             />
-            <span className="review-page__rating" aria-label={`Оценка ${review.rating} из 10`}>
+            <span
+              className="review-page__rating"
+              aria-label={`Оценка ${review.rating} из 10`}
+            >
               {review.rating}
               <small>/10</small>
             </span>
@@ -232,7 +218,7 @@ export function ReviewPage() {
             variant={myVote === true ? "primary" : "secondary"}
             aria-label="Нравится"
             aria-pressed={myVote === true}
-            disabled={voteMutation.isPending}
+            disabled={!profile || voteMutation.isPending}
             onClick={() => voteMutation.mutate(true)}
           >
             <LikeIcon size={20} />
@@ -244,7 +230,7 @@ export function ReviewPage() {
             variant="secondary"
             aria-label="Не нравится"
             aria-pressed={myVote === false}
-            disabled={voteMutation.isPending}
+            disabled={!profile || voteMutation.isPending}
             onClick={() => voteMutation.mutate(false)}
           >
             <DislikeIcon size={20} />

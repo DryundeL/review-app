@@ -1,8 +1,12 @@
 import { z } from "zod";
-import { unexpectedResponseError } from "@/shared/api/errors";
-import { safeHttpsUrl } from "@/shared/lib/safeHttpsUrl";
-import { parseShopCode } from "@/shared/lib/shopCode";
-import type { FollowConnection, FollowConnectionList, PublicProfile } from "../model/types";
+import { unexpectedResponseError } from "../../../shared/api/errors.ts";
+import { safeHttpsUrl } from "../../../shared/lib/safeHttpsUrl.ts";
+import { parseShopCode } from "../../../shared/lib/shopCode.ts";
+import type {
+  FollowConnection,
+  FollowConnectionList,
+  PublicProfile,
+} from "../model/types.ts";
 
 const uuid = z.string().uuid();
 
@@ -15,6 +19,8 @@ const publicProfileSchema = z.object({
   followingCount: z.number().int().nonnegative(),
   isFollowing: z.boolean(),
   isMe: z.boolean(),
+  isProfilePrivate: z.boolean().optional().default(false),
+  followStatus: z.enum(["none", "pending", "following"]).optional(),
   telegramId: z.number().optional(),
   languageCode: z.string().optional(),
   isPremium: z.boolean().optional(),
@@ -61,7 +67,7 @@ export function parsePublicProfileText(text: string): PublicProfile {
   const backdrop = parseShopCode(rawBackdrop ?? undefined);
   return {
     ...rest,
-    ...(telegramId !== undefined ? { telegramId: String(telegramId) } : {}),
+    ...(rest.isMe && telegramId !== undefined ? { telegramId: String(telegramId) } : {}),
     ...(photoUrl ? { photoUrl } : {}),
     ...(background ? { background } : {}),
     ...(avatarFrame ? { avatarFrame } : {}),
@@ -96,4 +102,23 @@ function mapFollowConnection(
     createdAt: raw.createdAt,
     ...(photoUrl ? { photoUrl } : {}),
   };
+}
+
+const followStateSchema = z
+  .object({
+    followStatus: z.enum(["none", "pending", "following"]),
+    isFollowing: z.boolean(),
+  })
+  .refine((state) => state.isFollowing === (state.followStatus === "following"));
+
+export function parseFollowStateText(text: string) {
+  let value: unknown;
+  try {
+    value = JSON.parse(text);
+  } catch {
+    throw unexpectedResponseError();
+  }
+  const parsed = followStateSchema.safeParse(value);
+  if (!parsed.success) throw unexpectedResponseError();
+  return parsed.data;
 }

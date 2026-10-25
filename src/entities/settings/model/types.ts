@@ -1,9 +1,11 @@
 export type AppSettings = {
+  isProfilePrivate: boolean;
   language: string;
   allowNotifications: boolean;
 };
 
 export type PatchSettingsInput = {
+  isProfilePrivate?: boolean;
   language?: string;
   allowNotifications?: boolean;
 };
