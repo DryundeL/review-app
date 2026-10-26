@@ -1,4 +1,5 @@
 import DOMPurify from "dompurify";
+import { parseSpoilerText } from "./spoilerText.ts";
 
 export const MAX_BLOCK_BODY = 500;
 export const REVIEW_BODY_TAGS = [
@@ -34,12 +35,19 @@ export function sanitizeReviewBody(value: string): string {
   });
 }
 
-export function bodyHasText(value: string): boolean {
-  if (!isHtmlBody(value)) return value.replace(/\|\|/g, "").trim().length > 0;
+export function reviewBodyText(value: string): string {
+  if (!isHtmlBody(value))
+    return parseSpoilerText(value)
+      .map((segment) => segment.text)
+      .join("");
   const fragment = DOMPurify.sanitize(value, {
     ALLOWED_TAGS: [],
     ALLOWED_ATTR: [],
     RETURN_DOM_FRAGMENT: true,
   });
-  return (fragment.textContent ?? "").trim().length > 0;
+  return fragment.textContent ?? "";
+}
+
+export function bodyHasText(value: string): boolean {
+  return reviewBodyText(value).trim().length > 0;
 }

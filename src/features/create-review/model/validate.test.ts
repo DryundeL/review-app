@@ -40,9 +40,30 @@ test("keeps safe HTML, removes active content, rejects empty markup", () => {
   assert.ok(result.payload.blocks);
   assert.equal(result.payload.blocks[0].body, "<p><strong>Текст</strong></p>");
   assert.equal(toCreatePayload(draft("<p><br></p>"), "published").ok, false);
-  assert.equal(toCreatePayload(draft(`<p>${"я".repeat(493)}</p>`), "published").ok, true);
+  assert.equal(toCreatePayload(draft(`<p>${"я".repeat(500)}</p>`), "published").ok, true);
   assert.equal(
-    toCreatePayload(draft(`<p>${"я".repeat(494)}</p>`), "published").ok,
+    toCreatePayload(draft(`<p>${"я".repeat(501)}</p>`), "published").ok,
     false,
   );
+});
+
+test("HTML tags and attributes do not consume the visible text limit", () => {
+  for (const character of ["я", "😀", "&amp;", "&#128578;", "&lt;"]) {
+    const body = `<p><strong>${character.repeat(500)}</strong></p>`;
+    const result = toCreatePayload(draft(body), "published");
+    assert.ok(result.ok, character);
+    assert.ok(result.payload.blocks);
+    assert.ok(result.payload.blocks[0].body.includes("<strong>"));
+    assert.equal(
+      toCreatePayload(draft(`<p>${character.repeat(501)}</p>`), "draft").ok,
+      false,
+    );
+  }
+  assert.ok(
+    toCreatePayload(
+      draft(`<p><span data-spoiler="true">${"😀".repeat(500)}</span></p>`),
+      "published",
+    ).ok,
+  );
+  assert.ok(toCreatePayload(draft("<strong>я</strong>".repeat(500)), "published").ok);
 });

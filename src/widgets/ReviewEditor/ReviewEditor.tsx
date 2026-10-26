@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import {
   MAX_BLOCK_BODY,
   sanitizeReviewBody,
+  reviewBodyText,
   unicodeLength,
 } from "@/shared/lib/reviewBody";
 import { Button } from "@/shared/ui";
@@ -66,8 +67,7 @@ export function ReviewEditor({
     editor?.setEditable(!disabled);
   }, [disabled, editor]);
 
-  const textLength = unicodeLength(editor?.getText({ blockSeparator: "" }) ?? "");
-  const length = editor?.isEmpty ? 0 : unicodeLength(value);
+  const length = unicodeLength(reviewBodyText(value));
   const overLimit = length > maxLength;
 
   return (
@@ -119,13 +119,13 @@ export function ReviewEditor({
               : "review-editor__count"
           }
         >
-          {textLength} символов · HTML: {length}/{maxLength}
+          {length}/{maxLength}
         </span>
       </div>
       <EditorContent editor={editor} />
       <p className="review-editor__hint">
-        Выделите текст для форматирования. Лимит включает HTML-разметку. Небезопасный HTML
-        удаляется.
+        Выделите текст для форматирования. HTML-разметка не учитывается в лимите.
+        Небезопасный HTML удаляется.
       </p>
     </div>
   );

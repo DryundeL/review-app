@@ -4,6 +4,7 @@ import {
   isHtmlBody,
   MAX_BLOCK_BODY,
   sanitizeReviewBody,
+  reviewBodyText,
   unicodeLength,
 } from "../../../shared/lib/reviewBody.ts";
 import type { CreateReviewInput, ReviewStatus } from "@/entities/review";
@@ -61,7 +62,7 @@ export function toCreatePayload(
     if (!bodyHasText(body)) {
       return { ok: false, message: "Текст блока не может быть пустым." };
     }
-    if (unicodeLength(body) > MAX_BLOCK_BODY) {
+    if (unicodeLength(reviewBodyText(body)) > MAX_BLOCK_BODY) {
       return { ok: false, message: "Текст блока длиннее 500 символов." };
     }
     blocks.push({ title: blockTitle, body });

@@ -4,7 +4,7 @@ import { JSDOM } from "jsdom";
 
 const dom = new JSDOM("");
 Object.assign(globalThis, { window: dom.window });
-const { sanitizeReviewBody, unicodeLength, bodyHasText } =
+const { sanitizeReviewBody, unicodeLength, bodyHasText, reviewBodyText } =
   await import("./reviewBody.ts");
 
 test("retains only supported formatting and spoiler attributes", () => {
@@ -38,4 +38,19 @@ test("counts Unicode code points and rejects visually empty markup", () => {
   assert.equal(bodyHasText("<p><br></p>"), false);
   assert.equal(bodyHasText("<p>&nbsp;</p>"), false);
   assert.equal(bodyHasText("<p>текст</p>"), true);
+});
+
+test("visible text count ignores HTML and decodes entities exactly once", () => {
+  for (const body of ["", "<p></p>", "<p><br></p>"]) {
+    assert.equal(unicodeLength(reviewBodyText(body)), 0);
+  }
+  assert.equal(
+    reviewBodyText(
+      '<p><strong>А</strong><span data-spoiler="true">😀</span>&amp;&lt;&amp;lt;</p>',
+    ),
+    "А😀&<&lt;",
+  );
+  assert.equal(unicodeLength(reviewBodyText("<p>😀&amp;</p>")), 2);
+  assert.equal(reviewBodyText("до ||спойлер||"), "до спойлер");
+  assert.equal(unicodeLength(reviewBodyText("<p>а б!</p><p>я</p>")), 5);
 });
