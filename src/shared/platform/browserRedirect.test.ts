@@ -16,6 +16,27 @@ test("public homepage stays on the site for desktop visitors", () => {
   }
 });
 
+test("public content pages remain available to desktop visitors", () => {
+  const previous = Object.getOwnPropertyDescriptor(globalThis, "window");
+  try {
+    for (const pathname of [
+      "/search",
+      "/reviews/id",
+      "/media-objects/id",
+      "/profiles/id",
+    ]) {
+      Object.defineProperty(globalThis, "window", {
+        configurable: true,
+        value: { location: { pathname } },
+      });
+      assert.equal(redirectBrowserToTelegramIfNeeded(), false, pathname);
+    }
+  } finally {
+    if (previous) Object.defineProperty(globalThis, "window", previous);
+    else Reflect.deleteProperty(globalThis, "window");
+  }
+});
+
 test("isSearchCrawler recognizes major bots and ignores browsers", () => {
   assert.equal(
     isSearchCrawler(

@@ -32,8 +32,13 @@ export async function apiClient<T>(
     headers.set("Content-Type", "application/json");
   }
 
+  const serverRendering = import.meta.env?.SSR === true;
+  if (serverRendering) {
+    headers.delete("Authorization");
+    headers.delete("Cookie");
+  }
   let attachedToken: string | null = null;
-  if (options.auth !== false && !headers.has("Authorization")) {
+  if (!serverRendering && options.auth !== false && !headers.has("Authorization")) {
     attachedToken = getAccessToken();
     if (attachedToken) {
       headers.set("Authorization", `Bearer ${attachedToken}`);

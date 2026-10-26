@@ -1,7 +1,7 @@
 import { FollowButton } from "@/features/follow-user";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { MEDIA_TYPE_LABELS, isMediaType } from "@/shared/types";
 import {
   fetchSearch,
@@ -33,8 +33,14 @@ export function SearchPage() {
   const { profile } = useAuthSession();
   const setFeedType = useFilterFeedStore((state) => state.setType);
 
-  const [query, setQuery] = useState("");
-  const [tab, setTab] = useState<SearchTrendsTab>("media");
+  const [searchParams] = useSearchParams();
+  const [query, setQuery] = useState(
+    () => sanitizeSearchQuery(searchParams.get("q") ?? "") ?? "",
+  );
+  const [tab, setTab] = useState<SearchTrendsTab>(() => {
+    const value = searchParams.get("tab");
+    return value === "authors" || value === "types" ? value : "media";
+  });
 
   const debouncedQuery = useDebouncedValue(query, 300);
   const activeQuery = sanitizeSearchQuery(debouncedQuery);

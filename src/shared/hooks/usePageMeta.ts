@@ -1,8 +1,11 @@
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
+import { PageMetaContext } from "./pageMetaContext";
 import { applyPageMeta, type PageMeta } from "@/shared/lib/pageMeta";
 
 /** Синхронизирует document head с метаданными экрана. `null` — не трогать head. */
 export function usePageMeta(meta: PageMeta | null): void {
+  const collector = useContext(PageMetaContext);
+  if (collector && meta) collector.current = meta;
   const inactive = meta === null;
   const title = meta?.title;
   const description = meta?.description;

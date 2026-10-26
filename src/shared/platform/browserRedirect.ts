@@ -1,3 +1,4 @@
+import { isPublicPath } from "../lib/publicRoutes.ts";
 import { appConfig } from "../config/index.ts";
 import { readTelegramInitData } from "./telegram.ts";
 
@@ -44,12 +45,12 @@ export function isSearchCrawler(userAgent: string): boolean {
 
 /**
  * Пока нет десктопной версии: десктопный браузер → редирект в Telegram-бота.
- * Главная, мобильный браузер, Mini App, краулеры и localhost — открываем сайт как есть.
+ * Публичные страницы, мобильный браузер, Mini App, краулеры и localhost — открываем сайт как есть.
  * @returns true, если уходим в Telegram (приложение не монтировать).
  */
 export function redirectBrowserToTelegramIfNeeded(): boolean {
   if (typeof window === "undefined") return false;
-  if (window.location.pathname === "/") return false;
+  if (isPublicPath(window.location.pathname)) return false;
   if (import.meta.env.DEV || isLocalDevHost(window.location.hostname)) return false;
   if (readTelegramInitData()) return false;
   if (isSearchCrawler(navigator.userAgent)) return false;
