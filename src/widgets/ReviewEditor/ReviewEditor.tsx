@@ -66,7 +66,8 @@ export function ReviewEditor({
     editor?.setEditable(!disabled);
   }, [disabled, editor]);
 
-  const length = unicodeLength(value);
+  const textLength = unicodeLength(editor?.getText({ blockSeparator: "" }) ?? "");
+  const length = editor?.isEmpty ? 0 : unicodeLength(value);
   const overLimit = length > maxLength;
 
   return (
@@ -118,7 +119,7 @@ export function ReviewEditor({
               : "review-editor__count"
           }
         >
-          {length}/{maxLength}
+          {textLength} символов · HTML: {length}/{maxLength}
         </span>
       </div>
       <EditorContent editor={editor} />

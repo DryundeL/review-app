@@ -41,3 +41,13 @@ test("serializes formatting as escaped HTML", () => {
     "<p><strong>&lt;img src=x onerror=alert(1)&gt;</strong></p>",
   );
 });
+
+test("empty editor paragraphs do not consume body characters", () => {
+  for (const content of [
+    [{ type: "paragraph" }],
+    [{ type: "paragraph", content: [{ type: "hardBreak" }] }],
+    [{ type: "paragraph" }, { type: "paragraph" }],
+  ]) {
+    assert.equal(editorDocToBody({ type: "doc", content }), "");
+  }
+});

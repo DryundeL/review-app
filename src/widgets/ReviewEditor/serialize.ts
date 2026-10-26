@@ -17,8 +17,12 @@ function escapeHtml(text: string): string {
 }
 
 export function editorDocToBody(doc: JSONContent | null | undefined): string {
-  if (!doc) return "";
+  if (!doc || !hasText(doc)) return "";
   return serializeNode(doc);
+}
+
+function hasText(node: JSONContent): boolean {
+  return Boolean(node.text?.trim()) || (node.content ?? []).some(hasText);
 }
 
 function serializeNode(node: JSONContent): string {
