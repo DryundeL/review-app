@@ -1,5 +1,10 @@
-import { useId, useState } from "react";
+import { createElement, useId, useState, type ReactNode } from "react";
 import { parseSpoilerText } from "@/shared/lib/spoilerText";
+import {
+  isHtmlBody,
+  REVIEW_BODY_TAGS,
+  sanitizeReviewBody,
+} from "@/shared/lib/reviewBody";
 import { cn } from "@/shared/lib/cn";
 import "./SpoilerText.css";
 
@@ -11,6 +16,14 @@ type SpoilerTextProps = {
 };
 
 export function SpoilerText({ text, className, preview = false }: SpoilerTextProps) {
+  if (isHtmlBody(text)) {
+    const doc = new DOMParser().parseFromString(sanitizeReviewBody(text), "text/html");
+    return (
+      <div className={cn("spoiler-text", className)}>
+        {renderHtmlNodes(doc.body.childNodes, preview)}
+      </div>
+    );
+  }
   const segments = parseSpoilerText(text);
 
   return (
@@ -26,7 +39,22 @@ export function SpoilerText({ text, className, preview = false }: SpoilerTextPro
   );
 }
 
-function SpoilerPlaque({ text, lockedOpen }: { text: string; lockedOpen: boolean }) {
+function renderHtmlNodes(nodes: NodeListOf<ChildNode>, preview: boolean): ReactNode[] {
+  return Array.from(nodes, (node, index) => {
+    if (node.nodeType === 3) return node.textContent;
+    if (node.nodeType !== 1) return null;
+    const element = node as Element;
+    const tag = element.localName;
+    if (!REVIEW_BODY_TAGS.includes(tag)) return null;
+    const children = renderHtmlNodes(element.childNodes, preview);
+    if (tag === "span" && element.getAttribute("data-spoiler") === "true") {
+      return <SpoilerPlaque key={index} text={children} lockedOpen={preview} />;
+    }
+    return createElement(tag, { key: index }, ...(tag === "br" ? [] : children));
+  });
+}
+
+function SpoilerPlaque({ text, lockedOpen }: { text: ReactNode; lockedOpen: boolean }) {
   const [revealed, setRevealed] = useState(false);
   const labelId = useId();
   const isOpen = lockedOpen || revealed;
@@ -60,7 +88,13 @@ function SpoilerPlaque({ text, lockedOpen }: { text: string; lockedOpen: boolean
           ? "Спойлер открыт. Нажмите, чтобы скрыть."
           : "Скрытый спойлер. Нажмите, чтобы показать."}
       </span>
-      {isOpen ? text : <span aria-hidden className="spoiler-plaque__label">Спойлер</span>}
+      {isOpen ? (
+        text
+      ) : (
+        <span aria-hidden className="spoiler-plaque__label">
+          Спойлер
+        </span>
+      )}
     </span>
   );
 }

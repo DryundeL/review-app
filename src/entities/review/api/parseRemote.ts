@@ -20,8 +20,11 @@ const mediaTypeSchema = z.custom<MediaType>(
 const blockSchema = z.object({
   id: uuid,
   position: z.number().int().min(1).max(10),
-  title: z.string().min(1).max(50),
-  body: z.string().min(1).max(256),
+  title: z
+    .string()
+    .min(1)
+    .refine((value) => Array.from(value).length <= 50),
+  body: z.string().min(1),
 });
 
 const mediaObjectSchema = z.object({

@@ -1,4 +1,11 @@
-import { stripAngleBrackets } from "@/shared/lib/spoilerText";
+import { stripAngleBrackets } from "../../../shared/lib/spoilerText.ts";
+import {
+  bodyHasText,
+  isHtmlBody,
+  MAX_BLOCK_BODY,
+  sanitizeReviewBody,
+  unicodeLength,
+} from "../../../shared/lib/reviewBody.ts";
 import type { CreateReviewInput, ReviewStatus } from "@/entities/review";
 
 export type DraftBlock = {
@@ -43,17 +50,19 @@ export function toCreatePayload(
 
   const blocks: { title: string; body: string }[] = [];
   for (const block of draft.blocks) {
-    const blockTitle = sanitizeText(block.title, 50);
-    const body = sanitizeText(block.body, 256);
-    if (blockTitle.length === 0 && body.length === 0) continue;
-    if (blockTitle.length < 1) {
+    const blockTitle = stripAngleBrackets(block.title).trim();
+    const body = isHtmlBody(block.body)
+      ? sanitizeReviewBody(block.body).trim()
+      : block.body.trim();
+    if (blockTitle.length === 0 && !bodyHasText(body)) continue;
+    if (unicodeLength(blockTitle) < 1 || unicodeLength(blockTitle) > 50) {
       return { ok: false, message: "У каждого блока нужен заголовок (до 50 символов)." };
     }
-    if (body.length < 1) {
+    if (!bodyHasText(body)) {
       return { ok: false, message: "Текст блока не может быть пустым." };
     }
-    if (body.length > 256) {
-      return { ok: false, message: "Текст блока длиннее 256 символов." };
+    if (unicodeLength(body) > MAX_BLOCK_BODY) {
+      return { ok: false, message: "Текст блока длиннее 500 символов." };
     }
     blocks.push({ title: blockTitle, body });
   }

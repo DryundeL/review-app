@@ -2,13 +2,17 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useEffect } from "react";
-import { plainLength } from "@/shared/lib/spoilerText";
+import {
+  MAX_BLOCK_BODY,
+  sanitizeReviewBody,
+  unicodeLength,
+} from "@/shared/lib/reviewBody";
 import { Button } from "@/shared/ui";
 import { bodyToEditorDoc, editorDocToBody } from "./serialize";
 import { SpoilerMark } from "./spoilerMark";
 import "./ReviewEditor.css";
 
-const MAX_BODY = 256;
+const MAX_BODY = MAX_BLOCK_BODY;
 
 type ReviewEditorProps = {
   value: string;
@@ -33,12 +37,6 @@ export function ReviewEditor({
         codeBlock: false,
         blockquote: false,
         horizontalRule: false,
-        bulletList: false,
-        orderedList: false,
-        listItem: false,
-        bold: false,
-        italic: false,
-        strike: false,
       }),
       SpoilerMark,
       Placeholder.configure({ placeholder }),
@@ -49,6 +47,7 @@ export function ReviewEditor({
       onChange(editorDocToBody(current.getJSON()));
     },
     editorProps: {
+      transformPastedHTML: sanitizeReviewBody,
       attributes: {
         class: "review-editor__canvas",
         "aria-label": "Текст обзора",
@@ -67,12 +66,41 @@ export function ReviewEditor({
     editor?.setEditable(!disabled);
   }, [disabled, editor]);
 
-  const length = plainLength(value);
+  const length = unicodeLength(value);
   const overLimit = length > maxLength;
 
   return (
     <div className="review-editor">
       <div className="review-editor__toolbar" role="toolbar" aria-label="Форматирование">
+        {(
+          [
+            ["bold", "Жирный", () => editor?.chain().focus().toggleBold().run()],
+            ["italic", "Курсив", () => editor?.chain().focus().toggleItalic().run()],
+            ["strike", "Зачёркнутый", () => editor?.chain().focus().toggleStrike().run()],
+            [
+              "bulletList",
+              "Список",
+              () => editor?.chain().focus().toggleBulletList().run(),
+            ],
+            [
+              "orderedList",
+              "Нумерация",
+              () => editor?.chain().focus().toggleOrderedList().run(),
+            ],
+          ] as const
+        ).map(([name, label, action]) => (
+          <Button
+            key={name}
+            type="button"
+            variant="secondary"
+            className="review-editor__tool"
+            disabled={!editor || disabled}
+            aria-pressed={editor?.isActive(name) ?? false}
+            onClick={action}
+          >
+            {label}
+          </Button>
+        ))}
         <Button
           type="button"
           variant="secondary"
@@ -83,13 +111,20 @@ export function ReviewEditor({
         >
           Спойлер
         </Button>
-        <span className={overLimit ? "review-editor__count review-editor__count--bad" : "review-editor__count"}>
+        <span
+          className={
+            overLimit
+              ? "review-editor__count review-editor__count--bad"
+              : "review-editor__count"
+          }
+        >
           {length}/{maxLength}
         </span>
       </div>
       <EditorContent editor={editor} />
       <p className="review-editor__hint">
-        Выделенный текст → «Спойлер». В обзоре он спрячется за плашкой. HTML запрещён API.
+        Выделите текст для форматирования. Лимит включает HTML-разметку. Небезопасный HTML
+        удаляется.
       </p>
     </div>
   );

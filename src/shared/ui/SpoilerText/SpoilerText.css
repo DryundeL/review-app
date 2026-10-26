@@ -19,7 +19,9 @@
   vertical-align: baseline;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .spoiler-plaque:hover,
@@ -45,4 +47,15 @@
 .spoiler-plaque--open:hover,
 .spoiler-plaque--open:focus-visible {
   background: color-mix(in srgb, var(--color-gold) 36%, transparent);
+}
+
+.spoiler-text p {
+  margin: 0;
+}
+.spoiler-text p + p {
+  margin-top: 0.65em;
+}
+.spoiler-text ul,
+.spoiler-text ol {
+  padding-left: 1.5em;
 }

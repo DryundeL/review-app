@@ -200,3 +200,13 @@ test("top reviews preserves server order and viewer dislikes without blocks", as
     parseTopReviewsText(JSON.stringify({ items: Array(6).fill(item) })),
   );
 });
+
+test("response bodies have no write-time length limit", () => {
+  const body = "😀".repeat(1000);
+  const review = parseRemoteReview({
+    ...detailBase,
+    author: { id: authorId, username: "ann" },
+    blocks: [{ id: reviewId, position: 1, title: "😀".repeat(50), body }],
+  });
+  assert.equal(review.blocks[0].body, body);
+});
