@@ -54,7 +54,7 @@ export function ReviewPage() {
         `${mediaTitle} · оценка ${review.rating}/10. ${review.title}`.trim(),
       ),
       image: safeHttpsUrl(review.mediaObject.posterUrl),
-      noindex: false,
+      noindex: review.status !== "published",
     };
   }, [reviewId, reviewQuery.data, reviewQuery.isError]);
 

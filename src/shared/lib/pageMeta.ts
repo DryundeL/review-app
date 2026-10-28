@@ -12,11 +12,7 @@ const SITE_NAME = "Review Hub";
 const DEFAULT_DESCRIPTION =
   "Review Hub (Ревью Хаб) — обзоры аниме, манги, фильмов и сериалов. Делитесь рецензиями, ставьте оценки и находите, что посмотреть или почитать.";
 
-function upsertMeta(
-  attr: "name" | "property",
-  key: string,
-  content: string,
-): void {
+function upsertMeta(attr: "name" | "property", key: string, content: string): void {
   const selector = `meta[${attr}="${key}"]`;
   let el = document.head.querySelector<HTMLMetaElement>(selector);
   if (!el) {
@@ -38,7 +34,7 @@ function upsertLink(rel: string, href: string): void {
 }
 
 /** Ставит title/description/OG/canonical. Без сторонних SEO-библиотек. */
-export function applyPageMeta(meta: PageMeta): void {
+export function resolvePageMeta(meta: PageMeta) {
   const title = meta.title
     ? meta.title.includes(SITE_NAME)
       ? meta.title
@@ -47,9 +43,15 @@ export function applyPageMeta(meta: PageMeta): void {
   const description = meta.description?.trim() || DEFAULT_DESCRIPTION;
   const path = meta.path ?? "/";
   const canonical = new URL(path, appConfig.siteUrl).toString();
-  const image = meta.image?.trim() || new URL("/favicon.png", appConfig.siteUrl).toString();
+  const image =
+    meta.image?.trim() || new URL("/favicon.png", appConfig.siteUrl).toString();
   const robots = meta.noindex ? "noindex, nofollow" : "index, follow";
 
+  return { title, description, canonical, image, robots };
+}
+
+export function applyPageMeta(meta: PageMeta): void {
+  const { title, description, canonical, image, robots } = resolvePageMeta(meta);
   document.title = title;
   upsertMeta("name", "description", description);
   upsertMeta("name", "robots", robots);
@@ -75,6 +77,7 @@ export function metaForPath(pathname: string): PageMeta {
     return {
       path: "/search",
       title: "Поиск",
+      noindex: true,
       description: "Поиск аниме, манги, фильмов и обзоров в Review Hub.",
     };
   }

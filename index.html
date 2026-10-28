@@ -7,38 +7,7 @@
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <meta name="theme-color" content="#101413" />
-    <meta
-      name="description"
-      content="Review Hub (Ревью Хаб) — обзоры аниме, манги, фильмов и сериалов. Делитесь рецензиями, ставьте оценки и находите, что посмотреть или почитать."
-    />
-    <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://review-hub.ru/" />
-
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Review Hub" />
-    <meta property="og:locale" content="ru_RU" />
-    <meta property="og:url" content="https://review-hub.ru/" />
-    <meta
-      property="og:title"
-      content="Review Hub — обзоры аниме, манги, фильмов и сериалов"
-    />
-    <meta
-      property="og:description"
-      content="Review Hub (Ревью Хаб) — обзоры аниме, манги, фильмов и сериалов. Делитесь рецензиями, ставьте оценки и находите, что посмотреть или почитать."
-    />
-    <meta property="og:image" content="https://review-hub.ru/favicon.png" />
-    <meta property="og:image:alt" content="Логотип Review Hub" />
-
-    <meta name="twitter:card" content="summary" />
-    <meta
-      name="twitter:title"
-      content="Review Hub — обзоры аниме, манги, фильмов и сериалов"
-    />
-    <meta
-      name="twitter:description"
-      content="Review Hub (Ревью Хаб) — обзоры аниме, манги, фильмов и сериалов. Делитесь рецензиями, ставьте оценки и находите, что посмотреть или почитать."
-    />
-    <meta name="twitter:image" content="https://review-hub.ru/favicon.png" />
+    <!--ssr-head-->
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -48,7 +17,6 @@
     />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/favicon.png" />
-    <title>Review Hub — обзоры аниме, манги, фильмов и сериалов</title>
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -60,45 +28,11 @@
         "description": "Сообщество с обзорами аниме, манги, фильмов и сериалов."
       }
     </script>
-    <style>
-      .site-intro {
-        max-width: 32rem;
-        margin: 12vh auto;
-        padding: 24px;
-        font:
-          16px/1.6 Manrope,
-          sans-serif;
-        color: #f4f6f4;
-        background: #0a0c0b;
-      }
-      .site-intro h1 {
-        font-size: 2rem;
-      }
-      .site-intro a {
-        color: #b7e4c7;
-        text-decoration: underline;
-      }
-    </style>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>
   <body>
-    <div id="root">
-      <main class="site-intro">
-        <h1>Review Hub — обзоры аниме, манги, фильмов и сериалов</h1>
-        <p>
-          Review Hub (Ревью Хаб) — сообщество с обзорами аниме, манги, фильмов и сериалов.
-          Делитесь рецензиями, ставьте оценки и находите, что посмотреть или почитать.
-        </p>
-        <p data-nosnippet>
-          <a href="https://t.me/rate_review_hub_bot">Открыть Review Hub в Telegram</a>
-        </p>
-        <noscript
-          ><p>
-            Для входа на сайте включите JavaScript или откройте приложение в Telegram.
-          </p></noscript
-        >
-      </main>
-    </div>
+    <div id="root"><!--ssr-outlet--></div>
+    <!--ssr-state-->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -1,12 +1,7 @@
 User-agent: *
 Allow: /
-Disallow: /create
-Disallow: /notifications
-Disallow: /settings
-Disallow: /achievements
-Disallow: /profile$
-Disallow: /profile/
-Disallow: /shop
-Disallow: /*/edit
+Disallow: /api/
+Disallow: /healthz
 
+# HTML pages remain crawlable so robots can read noindex in metadata/headers.
 Sitemap: https://review-hub.ru/sitemap.xml

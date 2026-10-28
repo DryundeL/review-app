@@ -25,6 +25,7 @@ export function Feed() {
 
   useEffect(() => {
     setFeedFilterOwner(profile?.id);
+    void useFilterFeedStore.persist.rehydrate();
   }, [profile?.id]);
 
   const feedQuery = useInfiniteQuery({

@@ -100,6 +100,7 @@ function bootstrapTelegramWebApp(webApp: TelegramWebApp): void {
 }
 
 export function createTelegramAdapter(): PlatformAdapter | null {
+  if (typeof window === "undefined") return null;
   const webApp = window.Telegram?.WebApp;
 
   if (!webApp || !readTelegramInitData()) {

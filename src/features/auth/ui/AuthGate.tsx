@@ -1,3 +1,4 @@
+import { isClientOnlyPath } from "@/shared/lib/publicRoutes";
 import { useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
@@ -12,12 +13,7 @@ type AuthGateProps = {
 export function AuthGate({ children }: AuthGateProps) {
   const session = useAuthSession();
   const { pathname } = useLocation();
-  const publicRoute =
-    pathname === "/" ||
-    pathname === "/search" ||
-    /^\/reviews\/[^/]+$/.test(pathname) ||
-    /^\/media-objects\/[^/]+$/.test(pathname) ||
-    /^\/profiles\/[^/]+$/.test(pathname);
+  const requiresLogin = isClientOnlyPath(pathname);
   const queryClient = useQueryClient();
   const previousAccount = useRef<string | null>(session.profile?.id ?? null);
 
@@ -32,7 +28,7 @@ export function AuthGate({ children }: AuthGateProps) {
     queryClient.clear();
   }, [queryClient, session.profile?.id]);
 
-  if (session.phase !== "authenticated" && !publicRoute) {
+  if (session.phase !== "authenticated" && requiresLogin) {
     return <LoginScreen />;
   }
 

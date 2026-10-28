@@ -4,6 +4,7 @@ import path from "node:path";
 
 export default defineConfig({
   plugins: [react()],
+  ssr: { resolve: { externalConditions: ["node", "module-sync"] } },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

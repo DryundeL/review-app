@@ -4,6 +4,8 @@ services:
     image: review-app:${APP_VERSION:-local}
     build: .
     restart: unless-stopped
+    environment:
+      SSR_API_BASE_URL: ${SSR_API_BASE_URL:-https://review-hub.ru/api}
     ports:
       - "127.0.0.1:8081:8080"
     read_only: true

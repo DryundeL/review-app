@@ -49,6 +49,7 @@ export const useFilterFeedStore = create<FilterFeedState>()(
     }),
     {
       name: STORAGE_NAME,
+      skipHydration: true,
       storage: ownerScopedStorage,
       partialize: (state) => ({
         sort: state.sort,
