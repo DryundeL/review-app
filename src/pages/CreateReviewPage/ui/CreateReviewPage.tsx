@@ -290,7 +290,6 @@ export function CreateReviewPage() {
               <Input
                 value={block.title}
                 onChange={(event) => updateBlock(block.key, { title: event.target.value })}
-                maxLength={50}
                 placeholder="Плюсы / Минусы / Финал"
               />
             </label>

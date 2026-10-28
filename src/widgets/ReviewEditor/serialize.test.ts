@@ -6,11 +6,48 @@ describe("review editor serialize", () => {
   test("round-trips spoiler markup", () => {
     const body = "до ||секрет|| после";
     const doc = bodyToEditorDoc(body);
-    assert.equal(editorDocToBody(doc), body);
+    assert.equal(
+      editorDocToBody(doc as import("@tiptap/core").JSONContent),
+      '<p>до <span data-spoiler="true">секрет</span> после</p>',
+    );
   });
 
-  test("strips angle brackets", () => {
-    const doc = bodyToEditorDoc("a<b>c");
-    assert.equal(editorDocToBody(doc), "abc");
+  test("preserves literal angle brackets as text", () => {
+    const doc = bodyToEditorDoc("a < b");
+    assert.equal(
+      editorDocToBody(doc as import("@tiptap/core").JSONContent),
+      "<p>a &lt; b</p>",
+    );
   });
+});
+
+test("serializes formatting as escaped HTML", () => {
+  assert.equal(
+    editorDocToBody({
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: "<img src=x onerror=alert(1)>",
+              marks: [{ type: "bold" }],
+            },
+          ],
+        },
+      ],
+    }),
+    "<p><strong>&lt;img src=x onerror=alert(1)&gt;</strong></p>",
+  );
+});
+
+test("empty editor paragraphs do not consume body characters", () => {
+  for (const content of [
+    [{ type: "paragraph" }],
+    [{ type: "paragraph", content: [{ type: "hardBreak" }] }],
+    [{ type: "paragraph" }, { type: "paragraph" }],
+  ]) {
+    assert.equal(editorDocToBody({ type: "doc", content }), "");
+  }
 });

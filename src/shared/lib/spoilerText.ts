@@ -1,4 +1,4 @@
-/** Discord-style spoilers: ||hidden|| — API forbids HTML tags. */
+/** Legacy Discord-style spoilers: ||hidden||. */
 
 export type SpoilerSegment =
   | { kind: "text"; text: string }
