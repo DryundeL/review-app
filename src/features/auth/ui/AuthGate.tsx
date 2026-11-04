@@ -4,6 +4,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
 import { bootstrapAuth } from "../model/authController";
 import { useAuthSession } from "../model/useAuthSession";
+import { authScreen } from "../model/authScreen";
+import { AuthLoadingScreen } from "./AuthLoadingScreen";
 import { LoginScreen } from "./LoginScreen";
 
 type AuthGateProps = {
@@ -17,6 +19,10 @@ export function AuthGate({ children }: AuthGateProps) {
   const queryClient = useQueryClient();
   const previousAccount = useRef<string | null>(session.profile?.id ?? null);
 
+  useLayoutEffect(() => {
+    document.documentElement.removeAttribute("data-telegram-startup");
+  }, []);
+
   useEffect(() => {
     bootstrapAuth();
   }, []);
@@ -28,9 +34,8 @@ export function AuthGate({ children }: AuthGateProps) {
     queryClient.clear();
   }, [queryClient, session.profile?.id]);
 
-  if (session.phase !== "authenticated" && requiresLogin) {
-    return <LoginScreen />;
-  }
-
+  const screen = authScreen(session.phase, session.isMiniApp, requiresLogin);
+  if (screen === "loading") return <AuthLoadingScreen />;
+  if (screen === "login") return <LoginScreen />;
   return children;
 }

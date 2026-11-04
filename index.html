@@ -28,9 +28,21 @@
         "description": "Сообщество с обзорами аниме, манги, фильмов и сериалов."
       }
     </script>
+    <link rel="stylesheet" href="/auth-loading.css" />
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="/telegram-bootstrap.js"></script>
   </head>
   <body>
+    <div
+      id="telegram-startup"
+      class="auth-loading"
+      aria-label="Загрузка приложения"
+      aria-busy="true"
+    >
+      <img class="auth-loading__mark" src="/favicon.png" width="72" height="72" alt="" />
+      <p class="auth-loading__title" role="status">Готовим ваш Review Hub</p>
+      <div class="auth-loading__track" aria-hidden="true"></div>
+    </div>
     <div id="root"><!--ssr-outlet--></div>
     <!--ssr-state-->
     <script type="module" src="/src/main.tsx"></script>

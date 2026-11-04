@@ -211,7 +211,7 @@
   .bottom-nav,
   .bottom-nav--desktop-only {
     position: sticky;
-    top: calc(24px + var(--safe-top));
+    top: calc(var(--desktop-gutter) + var(--safe-top));
     bottom: auto;
     left: auto;
     grid-column: 1;
@@ -221,7 +221,9 @@
     flex-direction: column;
     width: 100%;
     height: auto;
-    max-height: calc(100dvh - 48px - var(--safe-top) - var(--safe-bottom));
+    max-height: calc(
+      100dvh - 2 * var(--desktop-gutter) - var(--safe-top) - var(--safe-bottom)
+    );
     padding: 0;
     gap: 16px;
     transform: none;
