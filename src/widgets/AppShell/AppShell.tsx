@@ -104,7 +104,7 @@ export function AppShell() {
         ) : null}
         <Outlet />
       </main>
-      {hideNav ? null : <BottomNavigation />}
+      <BottomNavigation hideOnMobile={hideNav} />
     </div>
   );
 }

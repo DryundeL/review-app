@@ -132,6 +132,30 @@ export function Feed() {
         </button>
       </div>
 
+      <div className="feed__desktop-filters" role="group" aria-label="Тип произведения">
+        <button
+          type="button"
+          className={!type ? "feed__chip feed__chip--active" : "feed__chip"}
+          aria-pressed={!type}
+          onClick={clearType}
+        >
+          Все типы
+        </button>
+        {FILTER_TYPES.map((mediaType) => (
+          <button
+            key={mediaType}
+            type="button"
+            className={
+              type === mediaType ? "feed__chip feed__chip--active" : "feed__chip"
+            }
+            aria-pressed={type === mediaType}
+            onClick={() => toggleType(mediaType)}
+          >
+            {MEDIA_TYPE_LABELS[mediaType]}
+          </button>
+        ))}
+      </div>
+
       <Modal
         open={filtersOpen}
         onOpenChange={setFiltersOpen}

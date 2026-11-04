@@ -144,12 +144,20 @@ test("SSR renders guest page data and SEO metadata in the HTML response", async 
     assert.equal(response.status, 200, path + ": " + html.slice(0, 500));
     const body = html.split('<div id="root">')[1].split('<script id="__REVIEW_SSR__"')[0];
     assert.ok(body.includes(text), path);
+    assert.match(body, /aria-label="Основная навигация"/, path);
+    assert.match(body, /aria-label="Добавить обзор"/, path);
+    assert.match(body, /class="bottom-nav__secondary"/, path);
+    if (path.startsWith("/reviews/") || path.startsWith("/media-objects/")) {
+      assert.match(body, /bottom-nav--desktop-only/, path);
+    }
     assert.ok(html.includes('id="__REVIEW_SSR__"'), path);
     assert.ok(!html.includes("<!--ssr-"), path);
     assert.equal(response.headers.get("cache-control"), "no-store");
   }
   const home = await page("/");
   assert.match(home.html, /<h1[^>]*>Review Hub/);
+  assert.match(home.html, /class="feed__desktop-filters" role="group" aria-label="Тип произведения"/);
+  assert.match(home.html, /aria-pressed="true">Все типы<\/button>/);
   assert.ok(home.html.includes('name="description" content="Review Hub (Ревью Хаб)'));
   const { html } = await page(`/media-objects/${mediaId}`);
   assert.ok(html.includes(`<title>${media.title} · Review Hub</title>`));

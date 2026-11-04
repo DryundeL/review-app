@@ -87,3 +87,59 @@
   color: var(--color-danger);
   font-size: 0.875rem;
 }
+
+@media (min-width: 768px) {
+  .settings-page {
+    width: 100%;
+    max-width: 720px;
+    margin-inline: auto;
+    padding: 16px 0 40px;
+    gap: 24px;
+  }
+
+  .settings-page > h1 {
+    font-size: 1.75rem;
+  }
+
+  .settings-page__row {
+    min-height: 88px;
+    padding: 20px 24px;
+    gap: 24px;
+  }
+
+  .settings-page__copy {
+    gap: 8px;
+    overflow-wrap: anywhere;
+  }
+  .settings-page__label {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  .settings-page__hint {
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+  .settings-page__select-face {
+    min-height: 44px;
+    gap: 12px;
+  }
+  .settings-page__select:focus-within {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 4px;
+  }
+  .settings-page .email-bind {
+    padding: 24px;
+    gap: 20px;
+  }
+  .settings-page .email-bind__hint,
+  .settings-page .email-bind__status {
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+  .settings-page .email-bind__form {
+    gap: 16px;
+  }
+  .settings-page .email-bind .ui-input {
+    min-height: 48px;
+  }
+}

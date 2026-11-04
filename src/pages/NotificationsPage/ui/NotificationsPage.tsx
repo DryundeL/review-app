@@ -337,6 +337,7 @@ function NotificationRow({ item }: { item: InboxNotification }) {
   return (
     <>
       <span className="notes__main">
+        {!item.isRead ? <span className="sr-only">Непрочитано. </span> : null}
         <span className="notes__title">{item.title}</span>
         <span className="notes__body">{item.body}</span>
       </span>

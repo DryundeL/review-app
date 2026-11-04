@@ -241,3 +241,125 @@
   color: var(--color-text);
   border-color: var(--color-muted);
 }
+
+@media (min-width: 768px) {
+  .review-page {
+    width: 100%;
+    max-width: 720px;
+    margin-inline: auto;
+    padding: 16px 0 40px;
+    gap: 32px;
+  }
+
+  .review-page--backdrop {
+    margin-inline: auto;
+    padding: 24px;
+    border-radius: var(--radius-lg);
+  }
+
+  .review-page__author {
+    min-height: 44px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .review-page__author-link {
+    gap: 12px;
+    max-width: 100%;
+  }
+
+  .review-page__avatar {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  .review-page__author-name {
+    font-size: 1rem;
+  }
+
+  .review-page__author-actions {
+    margin-left: auto;
+  }
+
+  .review-page__head {
+    grid-template-columns: 144px minmax(0, 1fr);
+    gap: 24px;
+    padding-bottom: 32px;
+  }
+
+  .review-page__poster {
+    width: 144px;
+    height: 216px;
+    border-radius: var(--radius-lg);
+  }
+
+  .review-page__titles {
+    gap: 16px;
+  }
+
+  .review-page__titles h1 {
+    font-size: clamp(1.75rem, 2.5vw, 2.25rem);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  .review-page__media {
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+
+  .review-page__media a:hover {
+    color: var(--color-accent);
+  }
+
+  .review-page__stats {
+    gap: 12px;
+  }
+
+  .review-page__rating {
+    font-size: 1.75rem;
+  }
+
+  .review-page__media-button.ui-button {
+    min-height: 44px;
+    padding-inline: 16px;
+    font-size: 0.875rem;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .review-page__blocks {
+    gap: 32px;
+    min-width: 0;
+  }
+
+  .review-page__block {
+    min-width: 0;
+    gap: 16px;
+  }
+
+  .review-page__block h2 {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    letter-spacing: 0.08em;
+    overflow-wrap: anywhere;
+  }
+
+  .review-page__block .spoiler-text {
+    font-size: 1.0625rem;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+  }
+
+  .review-page__vote {
+    grid-template-columns: repeat(2, minmax(120px, 160px));
+    padding-top: 24px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .review-page__vote .ui-button {
+    min-height: 48px;
+  }
+}

@@ -18,3 +18,33 @@
   flex: 1 0 100%;
   overflow-wrap: anywhere;
 }
+
+@media (min-width: 768px) {
+  .follow-requests__list {
+    gap: 16px;
+    margin-block: 24px;
+  }
+
+  .follow-requests__row {
+    gap: 12px;
+    padding: 20px;
+  }
+
+  .follow-requests__row > a {
+    flex: 1 1 160px;
+    min-width: 0;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+  }
+
+  .follow-requests__row > a:hover {
+    color: var(--color-accent);
+  }
+
+  .follow-requests__row .ui-button {
+    flex-shrink: 0;
+    min-height: 44px;
+  }
+}

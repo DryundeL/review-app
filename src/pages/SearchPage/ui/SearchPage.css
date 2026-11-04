@@ -122,7 +122,8 @@
   border-bottom-color: transparent;
   border-radius: var(--radius-sm);
   background-color: var(--color-bg);
-  background-image: linear-gradient(
+  background-image:
+    linear-gradient(
       to bottom,
       color-mix(in srgb, var(--color-bg) 35%, transparent),
       color-mix(in srgb, var(--color-bg) 60%, transparent)
@@ -259,4 +260,142 @@ a.search-page__row {
   align-items: center;
   gap: var(--space-3);
   color: var(--color-text);
+}
+
+@media (min-width: 768px) {
+  .search-page {
+    width: 100%;
+    max-width: 720px;
+    margin-inline: auto;
+    gap: 24px;
+  }
+
+  .search-page__header {
+    gap: 20px;
+  }
+
+  .search-page__title {
+    font-size: 1.75rem;
+  }
+
+  .search-page__input {
+    min-height: 56px;
+    padding-left: 20px;
+    padding-right: 60px;
+    border-color: var(--glass-border);
+    background: var(--glass-bg);
+    box-shadow: var(--glass-shadow);
+  }
+
+  .search-page__clear {
+    width: 40px;
+    height: 40px;
+    right: 8px;
+    font-size: 1.25rem;
+  }
+
+  .search-page__tabs {
+    flex-wrap: wrap;
+    overflow: visible;
+    padding: 0;
+  }
+
+  .search-page__tab {
+    min-height: 44px;
+    padding-inline: 20px;
+  }
+
+  .search-page__section {
+    gap: 12px;
+  }
+
+  .search-page__section-title {
+    padding-inline: 16px;
+  }
+
+  .search-page__list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .search-page__list > li {
+    min-width: 0;
+  }
+
+  .search-page__row {
+    min-height: 88px;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition:
+      border-color 200ms ease,
+      background-color 200ms ease;
+  }
+
+  .search-page__row--backdrop {
+    margin-inline: 0;
+  }
+
+  .search-page__row--author {
+    padding: 0 16px 0 0;
+  }
+
+  .search-page__author-link {
+    min-height: 88px;
+    padding: 16px;
+    border-radius: var(--radius-md);
+  }
+
+  .search-page__row-title {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
+  .search-page__row-meta {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.5;
+  }
+
+  .search-page__row:hover,
+  .search-page__row:focus-within {
+    border-color: color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
+  }
+
+  .search-page__poster {
+    width: 52px;
+    height: 72px;
+    border-radius: 8px;
+  }
+
+  .search-page__avatar {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+  }
+
+  .search-page__avatar--review {
+    width: 36px;
+    height: 36px;
+  }
+
+  .search-page__empty,
+  .search-page__error {
+    padding: 40px 24px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .search-page__skeleton {
+    gap: 12px;
+  }
+
+  .search-page__skeleton > div {
+    height: 104px;
+    border-radius: var(--radius-md);
+  }
 }
