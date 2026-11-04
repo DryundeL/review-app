@@ -142,53 +142,53 @@ export function Feed() {
         >
           {typeLabel ?? "Тип"}
         </button>
-      </div>
 
-      <div className="feed__filter-rail">
-        <button
-          type="button"
-          className="feed__filter-arrow"
-          aria-label="Прокрутить типы влево"
-          onClick={() => scrollFilters(-1)}
-        >
-          <span aria-hidden="true">‹</span>
-        </button>
-        <div
-          ref={filtersRef}
-          className="feed__desktop-filters"
-          role="group"
-          aria-label="Тип произведения"
-        >
+        <div className="feed__filter-rail">
           <button
             type="button"
-            className={!type ? "feed__chip feed__chip--active" : "feed__chip"}
-            aria-pressed={!type}
-            onClick={clearType}
+            className="feed__filter-arrow"
+            aria-label="Прокрутить типы влево"
+            onClick={() => scrollFilters(-1)}
           >
-            Все типы
+            <span aria-hidden="true">‹</span>
           </button>
-          {FILTER_TYPES.map((mediaType) => (
+          <div
+            ref={filtersRef}
+            className="feed__desktop-filters"
+            role="group"
+            aria-label="Тип произведения"
+          >
             <button
-              key={mediaType}
               type="button"
-              className={
-                type === mediaType ? "feed__chip feed__chip--active" : "feed__chip"
-              }
-              aria-pressed={type === mediaType}
-              onClick={() => toggleType(mediaType)}
+              className={!type ? "feed__chip feed__chip--active" : "feed__chip"}
+              aria-pressed={!type}
+              onClick={clearType}
             >
-              {MEDIA_TYPE_LABELS[mediaType]}
+              Все типы
             </button>
-          ))}
+            {FILTER_TYPES.map((mediaType) => (
+              <button
+                key={mediaType}
+                type="button"
+                className={
+                  type === mediaType ? "feed__chip feed__chip--active" : "feed__chip"
+                }
+                aria-pressed={type === mediaType}
+                onClick={() => toggleType(mediaType)}
+              >
+                {MEDIA_TYPE_LABELS[mediaType]}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="feed__filter-arrow"
+            aria-label="Прокрутить типы вправо"
+            onClick={() => scrollFilters(1)}
+          >
+            <span aria-hidden="true">›</span>
+          </button>
         </div>
-        <button
-          type="button"
-          className="feed__filter-arrow"
-          aria-label="Прокрутить типы вправо"
-          onClick={() => scrollFilters(1)}
-        >
-          <span aria-hidden="true">›</span>
-        </button>
       </div>
 
       <Modal

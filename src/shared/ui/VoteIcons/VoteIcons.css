@@ -16,3 +16,15 @@
   flex-shrink: 0;
   opacity: 0.9;
 }
+
+@media (min-width: 768px) {
+  .vote-counts__item {
+    gap: 0.35em;
+    font-size: 0.875rem;
+  }
+
+  .vote-counts__item svg {
+    width: 18px;
+    height: 18px;
+  }
+}
