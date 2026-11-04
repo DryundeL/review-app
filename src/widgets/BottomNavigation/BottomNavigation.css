@@ -16,9 +16,9 @@
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-pill);
   background: var(--glass-bg);
-  box-shadow: var(--glass-shadow), 0 12px 32px rgb(0 0 0 / 30%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  backdrop-filter: blur(24px) saturate(160%);
+  box-shadow: var(--glass-shadow), 0 12px 32px rgb(0 0 0 / 16%);
+  -webkit-backdrop-filter: blur(8px) saturate(180%);
+  backdrop-filter: blur(8px) saturate(180%);
   pointer-events: none;
 }
 
@@ -42,7 +42,8 @@
   padding: var(--space-1);
   border: 1px solid transparent;
   border-radius: var(--radius-pill);
-  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+  position: relative;
+  transition: transform 350ms var(--glass-ease), color 200ms ease;
   color: var(--color-muted);
 }
 
@@ -52,9 +53,6 @@
 }
 
 .bottom-nav__link--active {
-  background: var(--glass-bg);
-  border-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 12%);
   color: var(--color-accent);
 }
 
@@ -74,15 +72,15 @@
   margin: 0 auto;
   padding: 0;
   border-radius: 50%;
-  background: var(--glass-bg);
-  border: 1px solid color-mix(in srgb, var(--color-accent) 65%, transparent);
+  background: transparent;
+  border: 1px solid var(--glass-border);
   color: var(--color-accent);
-  box-shadow: var(--glass-shadow);
+  box-shadow: none;
 }
 
 .bottom-nav__create.bottom-nav__link--active {
   color: var(--color-accent);
-  box-shadow: var(--glass-shadow);
+  box-shadow: none;
 }
 
 .bottom-nav__create:focus-visible {
@@ -137,6 +135,39 @@
 }
 
 .bottom-nav__link:hover {
-  background: var(--glass-bg);
   color: var(--color-accent);
+}
+
+.bottom-nav__indicator {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 8px;
+  width: calc((100% - 32px) / 5);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill);
+  background: var(--glass-bg);
+  box-shadow: var(--glass-shadow);
+  transform: translateX(calc(var(--active-tab) * (100% + 4px)));
+  opacity: 1;
+  pointer-events: none;
+  transition: transform 480ms cubic-bezier(0.22, 1.2, 0.36, 1), opacity 200ms ease;
+}
+
+.bottom-nav__indicator[data-visible="false"] {
+  opacity: 0;
+}
+
+.bottom-nav__link:active {
+  transform: scale(0.88);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .bottom-nav__link:hover .bottom-nav__icon-wrap {
+    transform: translateY(-2px);
+  }
+}
+
+.bottom-nav__icon-wrap {
+  transition: transform 350ms var(--glass-ease);
 }

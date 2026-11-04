@@ -9,7 +9,8 @@
   border-radius: var(--radius-pill);
   font-weight: 700;
   cursor: pointer;
-  transition: opacity 0.15s ease;
+  transition: transform 300ms var(--glass-ease), border-color 200ms ease,
+    color 200ms ease, box-shadow 300ms ease, background-position 500ms ease;
 }
 
 .ui-button:disabled {

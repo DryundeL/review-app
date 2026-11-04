@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink, useLocation } from "react-router-dom";
 import { fetchUnreadNotificationsCount } from "@/entities/settings";
@@ -29,6 +30,8 @@ export function BottomNavigation() {
     enabled: Boolean(profile),
   });
 
+  const activeIndex = links.findIndex((link) => isExactTab(location.pathname, link.to));
+
   const unreadCount = unreadQuery.data?.count ?? 0;
   const badgeLabel = unreadCount > 99 ? "99+" : String(unreadCount);
 
@@ -36,7 +39,15 @@ export function BottomNavigation() {
     <nav className="bottom-nav" aria-label="Основная навигация">
       <div className="bottom-nav__bar" aria-hidden="true" />
 
-      <div className="bottom-nav__items">
+      <div
+        className="bottom-nav__items"
+        style={{ "--active-tab": Math.max(0, activeIndex) } as CSSProperties}
+      >
+        <span
+          className="bottom-nav__indicator"
+          data-visible={activeIndex >= 0}
+          aria-hidden="true"
+        />
         {links.map((link) => {
           const showBadge = link.icon === "bell" && unreadCount > 0;
           return (
