@@ -295,7 +295,7 @@ p {
 
 /* Shared glass treatment for buttons, filters and compact navigation controls. */
 :is(.ui-button, .chip, .feed__filter-btn, .feed__chip, .search-page__tab,
-  .back, .app-shell__back, .search-page__clear, .user-header__stat-btn) {
+  .back, .app-shell__back, .search-page__clear) {
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-pill);
   background: var(--glass-bg);

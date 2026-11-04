@@ -9,7 +9,6 @@ import "./BottomNavigation.css";
 const links = [
   { to: "/", label: "Главная", end: true, icon: "home" },
   { to: "/search", label: "Поиск", end: true, icon: "search" },
-  { to: "/create", label: "Создать", end: true, icon: "plus", create: true },
   { to: "/notifications", label: "Уведомления", end: true, icon: "bell" },
   { to: "/profile", label: "Профиль", end: true, icon: "user" },
 ] as const;
@@ -37,12 +36,11 @@ export function BottomNavigation() {
 
   return (
     <nav className="bottom-nav" aria-label="Основная навигация">
-      <div className="bottom-nav__bar" aria-hidden="true" />
-
       <div
         className="bottom-nav__items"
         style={{ "--active-tab": Math.max(0, activeIndex) } as CSSProperties}
       >
+        <div className="bottom-nav__bar" aria-hidden="true" />
         <span
           className="bottom-nav__indicator"
           data-visible={activeIndex >= 0}
@@ -62,7 +60,6 @@ export function BottomNavigation() {
                 [
                   "bottom-nav__link",
                   `bottom-nav__link--${link.icon}`,
-                  "create" in link ? "bottom-nav__create" : "",
                   isActive ? "bottom-nav__link--active" : "",
                 ]
                   .filter(Boolean)
@@ -70,7 +67,6 @@ export function BottomNavigation() {
               }
               onClick={(event) => {
                 // Повторный тап по активной вкладке — перезапросить данные экрана.
-                if ("create" in link) return;
                 if (!isExactTab(location.pathname, link.to)) return;
                 event.preventDefault();
                 refreshQueriesForPath(queryClient, link.to);
@@ -87,15 +83,27 @@ export function BottomNavigation() {
                   </span>
                 ) : null}
               </span>
+              <span className="bottom-nav__label">{link.label}</span>
             </NavLink>
           );
         })}
       </div>
+      <NavLink
+        to="/create"
+        end
+        aria-label="Добавить обзор"
+        className={({ isActive }) =>
+          `bottom-nav__link bottom-nav__create${isActive ? " bottom-nav__link--active" : ""}`
+        }
+      >
+        <span className="bottom-nav__icon-wrap"><NavIcon name="plus" /></span>
+        <span className="bottom-nav__label">Обзор</span>
+      </NavLink>
     </nav>
   );
 }
 
-function NavIcon({ name }: { name: (typeof links)[number]["icon"] }) {
+function NavIcon({ name }: { name: (typeof links)[number]["icon"] | "plus" }) {
   return (
     <svg className="bottom-nav__icon" viewBox="0 0 24 24" aria-hidden="true">
       {name === "home" ? (
