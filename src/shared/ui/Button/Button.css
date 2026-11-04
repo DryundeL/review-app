@@ -18,17 +18,18 @@
 }
 
 .ui-button--primary {
-  background: var(--color-accent);
-  color: var(--color-on-accent);
+  background: var(--glass-bg);
+  border-color: color-mix(in srgb, var(--color-accent) 65%, transparent);
+  color: var(--color-accent);
 }
 
 .ui-button--secondary {
-  background: var(--color-surface-2);
-  border-color: var(--color-border);
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
   color: var(--color-text);
 }
 
 .ui-button--ghost {
-  background: transparent;
+  background: var(--glass-bg);
   color: var(--color-muted);
 }
