@@ -57,11 +57,15 @@
   padding-bottom: calc(var(--space-4) + var(--safe-bottom));
 }
 
+.app-shell__back-row {
+  display: flex;
+  align-items: center;
+}
+
 .app-shell__back {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  align-self: flex-start;
   width: 44px;
   min-height: 44px;
   margin: calc(-1 * var(--space-2)) 0 var(--space-2);
@@ -114,8 +118,14 @@
     padding-top: 0;
   }
 
+  .app-shell__back-row {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto 12px;
+  }
+
   .app-shell__back {
-    margin-top: 0;
+    margin: 0;
   }
 }
 

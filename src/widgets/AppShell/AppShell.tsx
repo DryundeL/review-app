@@ -93,14 +93,16 @@ export function AppShell() {
         className={hideNav ? "app-shell__main app-shell__main--solo" : "app-shell__main"}
       >
         {showBack ? (
-          <button
-            type="button"
-            className="app-shell__back"
-            aria-label="Назад"
-            onClick={handleBack}
-          >
-            <BackArrowIcon />
-          </button>
+          <div className="app-shell__back-row">
+            <button
+              type="button"
+              className="app-shell__back"
+              aria-label="Назад"
+              onClick={handleBack}
+            >
+              <BackArrowIcon />
+            </button>
+          </div>
         ) : null}
         <Outlet />
       </main>
