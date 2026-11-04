@@ -117,9 +117,9 @@
 }
 
 @media (min-width: 768px) {
-  .app-shell__main > .screen {
+  /* единый левый край: лента/поиск без .screen тоже не центрируем */
+  .app-shell__main > * {
     width: 100%;
-    /* иначе page margin-inline:auto уезжает вправо, а «Назад» остаётся слева */
     margin-inline: 0;
   }
 

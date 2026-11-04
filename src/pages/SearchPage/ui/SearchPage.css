@@ -266,7 +266,7 @@ a.search-page__row {
   .search-page {
     width: 100%;
     max-width: 720px;
-    margin-inline: auto;
+    margin-inline: 0;
     gap: 24px;
   }
 

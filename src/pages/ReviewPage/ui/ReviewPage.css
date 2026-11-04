@@ -246,13 +246,13 @@
   .review-page {
     width: 100%;
     max-width: 720px;
-    margin-inline: auto;
+    margin-inline: 0;
     padding: 16px 0 40px;
     gap: 32px;
   }
 
   .review-page--backdrop {
-    margin-inline: auto;
+    margin-inline: 0;
     padding: 24px;
     border-radius: var(--radius-lg);
   }

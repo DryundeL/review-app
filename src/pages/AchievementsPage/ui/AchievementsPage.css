@@ -9,7 +9,7 @@
   .achievements-page {
     width: 100%;
     max-width: 800px;
-    margin-inline: auto;
+    margin-inline: 0;
     padding: 16px 0 40px;
     gap: 24px;
   }
