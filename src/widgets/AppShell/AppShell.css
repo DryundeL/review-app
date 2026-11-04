@@ -105,6 +105,9 @@
   .app-shell__main--solo {
     grid-column: 2;
     grid-row: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
     min-width: 0;
     width: 100%;
     max-width: 848px;
@@ -114,14 +117,21 @@
 }
 
 @media (min-width: 768px) {
+  .app-shell__main > .screen {
+    width: 100%;
+    /* иначе page margin-inline:auto уезжает вправо, а «Назад» остаётся слева */
+    margin-inline: 0;
+  }
+
   .app-shell__main > .screen:not(.review-page--backdrop) {
     padding-top: 0;
   }
 
   .app-shell__back-row {
+    flex: 0 0 auto;
     width: 100%;
-    max-width: 800px;
-    margin: 0 auto 12px;
+    max-width: none;
+    margin: 0 0 16px;
   }
 
   .app-shell__back {
