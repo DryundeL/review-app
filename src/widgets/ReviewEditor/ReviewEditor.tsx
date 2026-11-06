@@ -75,64 +75,70 @@ export function ReviewEditor({
 
   return (
     <div className="review-editor">
-      <div className="review-editor__toolbar" role="group" aria-label="Форматирование">
-        {(
-          [
-            ["bold", "Жирный", () => editor?.chain().focus().toggleBold().run()],
-            ["italic", "Курсив", () => editor?.chain().focus().toggleItalic().run()],
-            ["strike", "Зачёркнутый", () => editor?.chain().focus().toggleStrike().run()],
+      <EditorContent editor={editor} />
+      <div className="review-editor__footer">
+        <div className="review-editor__toolbar" role="group" aria-label="Форматирование">
+          {(
             [
-              "bulletList",
-              "Список",
-              () => editor?.chain().focus().toggleBulletList().run(),
-            ],
-            [
-              "orderedList",
-              "Нумерация",
-              () => editor?.chain().focus().toggleOrderedList().run(),
-            ],
-          ] as const
-        ).map(([name, label, action]) => (
+              ["bold", "Жирный", () => editor?.chain().focus().toggleBold().run()],
+              ["italic", "Курсив", () => editor?.chain().focus().toggleItalic().run()],
+              [
+                "strike",
+                "Зачёркнутый",
+                () => editor?.chain().focus().toggleStrike().run(),
+              ],
+              [
+                "bulletList",
+                "Список",
+                () => editor?.chain().focus().toggleBulletList().run(),
+              ],
+              [
+                "orderedList",
+                "Нумерация",
+                () => editor?.chain().focus().toggleOrderedList().run(),
+              ],
+            ] as const
+          ).map(([name, label, action]) => (
+            <Button
+              key={name}
+              type="button"
+              variant="secondary"
+              className="review-editor__tool"
+              disabled={!editor || disabled}
+              aria-pressed={editor?.isActive(name) ?? false}
+              aria-label={label}
+              title={label}
+              onPointerDown={(event) => event.preventDefault()}
+              onClick={action}
+            >
+              <ToolIcon name={name} />
+            </Button>
+          ))}
           <Button
-            key={name}
             type="button"
             variant="secondary"
             className="review-editor__tool"
             disabled={!editor || disabled}
-            aria-pressed={editor?.isActive(name) ?? false}
-            aria-label={label}
-            title={label}
+            aria-pressed={editor?.isActive("spoiler") ?? false}
+            aria-label="Спойлер"
+            title="Спойлер"
             onPointerDown={(event) => event.preventDefault()}
-            onClick={action}
+            onClick={() => editor?.chain().focus().toggleSpoiler().run()}
           >
-            <ToolIcon name={name} />
+            <ToolIcon name="spoiler" />
           </Button>
-        ))}
-        <Button
-          type="button"
-          variant="secondary"
-          className="review-editor__tool"
-          disabled={!editor || disabled}
-          aria-pressed={editor?.isActive("spoiler") ?? false}
-          aria-label="Спойлер"
-          title="Спойлер"
-          onPointerDown={(event) => event.preventDefault()}
-          onClick={() => editor?.chain().focus().toggleSpoiler().run()}
+        </div>
+        <span
+          id={countId}
+          className={
+            overLimit
+              ? "review-editor__count review-editor__count--bad"
+              : "review-editor__count"
+          }
         >
-          <ToolIcon name="spoiler" />
-        </Button>
+          {length}/{maxLength}
+        </span>
       </div>
-      <EditorContent editor={editor} />
-      <span
-        id={countId}
-        className={
-          overLimit
-            ? "review-editor__count review-editor__count--bad"
-            : "review-editor__count"
-        }
-      >
-        {length}/{maxLength}
-      </span>
     </div>
   );
 }
