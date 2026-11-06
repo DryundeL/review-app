@@ -294,13 +294,14 @@ export function CreateReviewPage() {
               ) : null}
             </div>
             <label className="create-review__block-title">
+              <span className="create-review__block-title-label">Название блока</span>
               <Input
                 value={block.title}
                 onChange={(event) =>
                   updateBlock(block.key, { title: event.target.value })
                 }
                 aria-label={`Название блока ${index + 1}`}
-                placeholder="Название блока"
+                placeholder="Например, сюжет и герои"
                 disabled={saveMutation.isPending}
               />
             </label>
