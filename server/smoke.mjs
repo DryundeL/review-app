@@ -2,6 +2,13 @@ import assert from "node:assert/strict";
 
 // Контейнер запускается без сети и с заведомо недоступным SSR_API_BASE_URL.
 const base = "http://127.0.0.1:8080";
+const image = await fetch(base + "/storage/test.png");
+assert.equal(image.status, 200);
+assert.equal(image.headers.get("content-type"), "image/png");
+assert.deepEqual(
+  Buffer.from(await image.arrayBuffer()),
+  await (await import("node:fs/promises")).readFile("/app/storage/test.png"),
+);
 const home = await fetch(base);
 assert.equal(home.status, 503);
 assert.equal(home.headers.get("retry-after"), "30");
@@ -26,6 +33,8 @@ for (const path of [
   "/api/v1/auth/identity",
   "/ribots.txt",
   "/missing.xml",
+  "/storage/missing.png",
+  "/storage/",
 ]) {
   const response = await fetch(base + path);
   assert.equal(response.status, 404, path);

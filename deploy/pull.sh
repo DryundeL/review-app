@@ -24,6 +24,8 @@ compose() {
   docker compose -f "$release/compose.yaml" "$@"
 }
 compose config --quiet
+storage_host_path=${STORAGE_HOST_PATH:-/home/wapp/apps/review-api/storage}
+test -d "$storage_host_path" || { echo 'Storage directory does not exist; deployment stopped.' >&2; exit 1; }
 docker image inspect "review-app:$revision" >/dev/null
 compose up -d --no-build --wait --wait-timeout 60 app
 ln -sfn "$release" "$state/current.next"

@@ -8,3 +8,4 @@ dist
 *.pem
 *.key
 sessions.json
+storage

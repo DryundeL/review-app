@@ -119,7 +119,9 @@ SSR-запроса. При ошибке основного API сервер во
 Docker-сборка также запускает unit- и SSR-тесты с локальным API-стабом.
 `deploy/smoke-test.sh` проверяет production-контейнер без сети: healthcheck,
 личный маршрут с noindex, 503 страницы и sitemap при недоступном API, robots.txt и отсутствие SPA
-fallback для неизвестных assets/API путей. Для публичной страницы с данными:
+fallback для неизвестных assets/API путей. Также подключает временный PNG через
+read-only bind mount, проверяет его выдачу и `RW=false`. Запускайте скрипт из корня
+репозитория; настоящий storage API он не использует. Для публичной страницы с данными:
 
 ```sh
 curl --fail https://review-hub.ru/media-objects/<UUID>
@@ -130,3 +132,65 @@ curl -i https://review-hub.ru/reviews/not-a-uuid
 В ответе первых двух запросов должны быть название/текст и метаданные без запуска
 JavaScript. Последний должен вернуть 404. Для черновика автор сможет войти и
 прочитать его в браузере; SSR не публикует его содержимое.
+
+## Публичные фотографии из storage API
+
+Контейнер `app` раздаёт `GET`/`HEAD /storage/<относительный-путь>` из `/app/storage`.
+Например, файл `photos/a.jpg` доступен как `https://review-hub.ru/storage/photos/a.jpg`.
+Хостовый nginx уже проксирует этот маршрут в Node.js; `deploy/app.conf` — прежняя
+конфигурация nginx-контейнера, в текущем Dockerfile она не используется.
+
+Compose подключает существующий каталог
+`${STORAGE_HOST_PATH:-/home/wapp/apps/review-api/storage}` через bind mount только
+для чтения и с `create_host_path: false`. Отсутствующий каталог останавливает
+деплой, автоматически создавать его нельзя. Фотографии не входят в образ или
+каталог релиза (`storage` исключён из Docker build context). API сохраняет свой
+существующий mount с записью. Права, владельца и содержимое storage не менять.
+Пользователь `node` внутри rootless-контейнера должен уже иметь права чтения
+файлов и прохода по каталогам; если их нет, деплой следует остановить и согласовать
+схему доступа, не запускать frontend от root.
+
+Разрешены PNG, JPEG, WebP, GIF и ICO; HTML, SVG и остальные типы не публикуются.
+Каталоги, отсутствующие файлы и симлинки за пределы storage возвращают 404 без
+SSR fallback. Запись по HTTP запрещена (405); ответы содержат `nosniff` и
+`Cache-Control: no-cache`, поэтому замена фотографии API не фиксируется immutable-кэшем.
+API должен возвращать публичный HTTPS URL вида
+`https://review-hub.ru/storage/...`: существующая проверка URL в клиенте требует HTTPS.
+
+После публикации изменений запустите от `wapp` (без sudo):
+
+```sh
+export DOCKER_CONTEXT=rootless
+export STORAGE_HOST_PATH=/home/wapp/apps/review-api/storage
+test -d "$STORAGE_HOST_PATH"
+sh /home/wapp/apps/review-app/pull.sh
+cd /home/wapp/.local/share/review-app/current
+docker compose config --quiet
+docker compose exec -T app node -e '
+const fs = require("node:fs");
+fs.accessSync("/app/storage", fs.constants.R_OK | fs.constants.X_OK);
+'
+docker inspect "$(docker compose ps -q app)" \
+  --format '{{range .Mounts}}{{if eq .Destination "/app/storage"}}{{.Source}} -> {{.Destination}} RW={{.RW}}{{end}}{{end}}'
+```
+
+В inspect ожидается `RW=false` и исходный каталог API. Для нестандартного пути
+передавайте один и тот же `STORAGE_HOST_PATH` при каждом деплое, включая запуск
+через Actions (переменная SSH-shell автоматически туда не переносится).
+
+Проверьте **существующее** изображение, не создавая тестовый файл в storage.
+Замените `photos/existing.jpg` реальным относительным путём, URL-кодируя пробелы:
+
+```sh
+curl --fail --silent --show-error -D /tmp/review-photo.headers \
+  -o /tmp/review-photo.jpg http://127.0.0.1:8081/storage/photos/existing.jpg
+curl --fail --head https://review-hub.ru/storage/photos/existing.jpg
+curl -i https://review-hub.ru/storage/nonexistent-test-image.png
+curl -i https://review-hub.ru/storage/
+curl --fail http://127.0.0.1:8081/healthz
+```
+
+Ожидаются 200 с корректным `Content-Type: image/...` для изображения и HEAD,
+404 для отсутствующего файла и каталога. Локальные тесты `npm run test:ssr`
+используют временный PNG вне настоящего storage и проверяют также запрет POST,
+обхода пути и выхода через симлинк. Проверка mount не пытается записывать в storage.

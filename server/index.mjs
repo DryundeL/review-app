@@ -23,7 +23,11 @@ const TYPES = {
   ".xml": "application/xml; charset=utf-8",
 };
 
-export async function createAppServer({ dev = false } = {}) {
+export async function createAppServer({
+  dev = false,
+  storageRoot = "/app/storage",
+} = {}) {
+  storageRoot = resolve(storageRoot);
   const apiBase = new URL(process.env.SSR_API_BASE_URL ?? "http://127.0.0.1:8080");
   if (
     !["http:", "https:"].includes(apiBase.protocol) ||
@@ -97,25 +101,41 @@ export async function createAppServer({ dev = false } = {}) {
       res.on("close", () => controller.abort());
 
       async function handle() {
-        if (!dev && extname(location.pathname)) {
+        const isStorage =
+          location.pathname === "/storage" || location.pathname.startsWith("/storage/");
+        if (isStorage || (!dev && extname(location.pathname))) {
+          const root = isStorage ? storageRoot : clientRoot;
           const filename = resolve(
-            clientRoot,
-            `.${decodeURIComponent(location.pathname)}`,
+            root,
+            `.${decodeURIComponent(isStorage ? location.pathname.slice(8) : location.pathname)}`,
           );
           const type = TYPES[extname(filename).toLowerCase()];
-          if (!type || !filename.startsWith(clientRoot + sep))
+          if (
+            !type ||
+            !filename.startsWith(root + sep) ||
+            (isStorage &&
+              ![
+                "image/png",
+                "image/jpeg",
+                "image/webp",
+                "image/gif",
+                "image/x-icon",
+              ].includes(type))
+          )
             return finish(404, "Not found");
           try {
             const actual = await realpath(filename);
-            if (!actual.startsWith(clientRoot + sep)) return finish(404, "Not found");
+            const actualRoot = isStorage ? await realpath(root) : root;
+            if (!actual.startsWith(actualRoot + sep)) return finish(404, "Not found");
             const info = await stat(actual);
             if (!info.isFile()) return finish(404, "Not found");
             res.writeHead(200, {
               "Content-Type": type,
               "Content-Length": info.size,
-              "Cache-Control": location.pathname.startsWith("/assets/")
-                ? "public, max-age=31536000, immutable"
-                : "no-cache",
+              "Cache-Control":
+                !isStorage && location.pathname.startsWith("/assets/")
+                  ? "public, max-age=31536000, immutable"
+                  : "no-cache",
             });
             if (req.method === "HEAD") return res.end();
             const stream = createReadStream(actual);
@@ -183,7 +203,12 @@ export async function createAppServer({ dev = false } = {}) {
         })();
         return;
       }
-      if (vite) vite.middlewares(req, res, run);
+      if (
+        vite &&
+        location.pathname !== "/storage" &&
+        !location.pathname.startsWith("/storage/")
+      )
+        vite.middlewares(req, res, run);
       else run();
     },
   );

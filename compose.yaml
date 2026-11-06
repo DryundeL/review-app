@@ -9,6 +9,13 @@ services:
     ports:
       - "127.0.0.1:8081:8080"
     read_only: true
+    volumes:
+      - type: bind
+        source: ${STORAGE_HOST_PATH:-/home/wapp/apps/review-api/storage}
+        target: /app/storage
+        read_only: true
+        bind:
+          create_host_path: false
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
     tmpfs:
