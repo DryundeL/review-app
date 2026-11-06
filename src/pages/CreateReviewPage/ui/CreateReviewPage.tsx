@@ -85,10 +85,7 @@ export function CreateReviewPage() {
 
   const saveMutation = useMutation({
     mutationFn: async (status: "draft" | "published") => {
-      const prepared = toCreatePayload(
-        { mediaObjectId, title, rating, blocks },
-        status,
-      );
+      const prepared = toCreatePayload({ mediaObjectId, title, rating, blocks }, status);
       if (!prepared.ok) throw new Error(prepared.message);
 
       if (reviewId) {
@@ -164,7 +161,10 @@ export function CreateReviewPage() {
           <div className="create-review__picked-row">
             <p className="create-review__picked">
               Выбрано: <strong>{selectedMedia.title}</strong>
-              <span className="create-review__picked-meta"> · {mediaMetaLine(selectedMedia)}</span>
+              <span className="create-review__picked-meta">
+                {" "}
+                · {mediaMetaLine(selectedMedia)}
+              </span>
             </p>
             <button
               type="button"
@@ -229,7 +229,9 @@ export function CreateReviewPage() {
                     }}
                   >
                     <span className="create-review__media-title">{item.title}</span>
-                    <span className="create-review__media-meta">{mediaMetaLine(item)}</span>
+                    <span className="create-review__media-meta">
+                      {mediaMetaLine(item)}
+                    </span>
                   </button>
                 </li>
               ))}
@@ -257,7 +259,11 @@ export function CreateReviewPage() {
               <button
                 key={value}
                 type="button"
-                className={value === rating ? "create-review__score is-active" : "create-review__score"}
+                className={
+                  value === rating
+                    ? "create-review__score is-active"
+                    : "create-review__score"
+                }
                 aria-pressed={value === rating}
                 onClick={() => setRating(value)}
               >
@@ -278,19 +284,24 @@ export function CreateReviewPage() {
                   type="button"
                   className="create-review__remove"
                   onClick={() =>
-                    setBlocks((current) => current.filter((item) => item.key !== block.key))
+                    setBlocks((current) =>
+                      current.filter((item) => item.key !== block.key),
+                    )
                   }
                 >
                   Удалить
                 </button>
               ) : null}
             </div>
-            <label className="create-review__field">
-              <span>Заголовок блока</span>
+            <label className="create-review__block-title">
               <Input
                 value={block.title}
-                onChange={(event) => updateBlock(block.key, { title: event.target.value })}
-                placeholder="Плюсы / Минусы / Финал"
+                onChange={(event) =>
+                  updateBlock(block.key, { title: event.target.value })
+                }
+                aria-label={`Название блока ${index + 1}`}
+                placeholder="Название блока"
+                disabled={saveMutation.isPending}
               />
             </label>
             <ReviewEditor
@@ -331,14 +342,14 @@ export function CreateReviewPage() {
           disabled={saveMutation.isPending || (isEdit && !hydrated)}
           onClick={() => saveMutation.mutate("draft")}
         >
-          {isEdit ? "Сохранить черновик" : "Черновик"}
+          Сохранить
         </Button>
         <Button
           type="button"
           disabled={saveMutation.isPending || (isEdit && !hydrated)}
           onClick={() => saveMutation.mutate("published")}
         >
-          {isEdit ? "Сохранить и опубликовать" : "Опубликовать"}
+          Опубликовать
         </Button>
       </div>
     </section>
