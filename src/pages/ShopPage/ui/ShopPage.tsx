@@ -4,7 +4,6 @@ import {
   fetchGamificationMe,
   fetchShopCatalog,
   purchaseShopItem,
-  shopAssetUrl,
   type ShopItem,
   type ShopItemKind,
 } from "@/entities/gamification";
@@ -140,7 +139,7 @@ export function ShopPage() {
             </h2>
             <ul className="shop-page__grid">
               {items.map((item) => {
-                const preview = shopAssetUrl(item.code);
+                const preview = item.url;
                 const isOwned = owned.has(item.code);
                 const isEquipped = equippedCode(me.equipped, kind) === item.code;
                 return (

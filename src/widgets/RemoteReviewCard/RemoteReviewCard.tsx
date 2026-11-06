@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import type { RemoteReviewSummary } from "@/entities/review";
 import { useAuthSession } from "@/features/auth";
 import { ReportReviewControl } from "@/features/report-review";
-import { shopAssetUrl } from "@/shared/lib/shopCode";
+import { useShopAssetUrl } from "@/shared/lib/shopAssets";
 import { MEDIA_TYPE_LABELS } from "@/shared/types";
 import { Button, MediaPoster, Modal, VoteCounts } from "@/shared/ui";
 import "./RemoteReviewCard.css";
@@ -37,9 +37,7 @@ export function RemoteReviewCard({
   const canReport =
     review.status === "published" && profile != null && profile.id !== authorId;
   const backdropUrl =
-    !hideBackdrop && review.author?.backdrop
-      ? shopAssetUrl(review.author.backdrop)
-      : undefined;
+    useShopAssetUrl(hideBackdrop ? undefined : review.author?.backdrop);
   const cardStyle: CSSProperties | undefined = backdropUrl
     ? { ["--remote-review-backdrop" as string]: `url("${backdropUrl}")` }
     : undefined;

@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import {
-  achievementAssetUrl,
   fetchProfileAchievements,
   type Achievement,
 } from "@/entities/achievement";
@@ -199,7 +198,7 @@ function AchievementIcon({
   className: string;
   size: "sm" | "md";
 }) {
-  const src = achievementAssetUrl(achievement.code);
+  const src = achievement.url;
   const [broken, setBroken] = useState(false);
 
   if (!src || broken) {

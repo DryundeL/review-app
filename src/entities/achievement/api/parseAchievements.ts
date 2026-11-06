@@ -1,3 +1,4 @@
+import { storageImageUrl } from "../../../shared/lib/storageImageUrl.ts";
 import { z } from "zod";
 import { unexpectedResponseError } from "../../../shared/api/errors.ts";
 import { parseShopCode } from "../../../shared/lib/shopCode.ts";
@@ -5,6 +6,7 @@ import type { Achievement, ProfileAchievements } from "../model/types.ts";
 
 const itemSchema = z.object({
   code: z.string(),
+  url: z.string().nullable().optional(),
   title: z.string().trim().min(1).max(128),
   description: z.string().max(512).default(""),
   progress: z.number(),
@@ -48,6 +50,7 @@ function mapItem(raw: z.infer<typeof itemSchema>): Achievement | null {
 
   return {
     code,
+    url: storageImageUrl(raw.url),
     title: raw.title.trim(),
     description: raw.description.trim(),
     progress: clampProgress(raw.progress),

@@ -7,9 +7,3 @@ export function parseShopCode(value: unknown): string | undefined {
   if (!SHOP_CODE_RE.test(trimmed)) return undefined;
   return trimmed;
 }
-
-export function shopAssetUrl(code: string): string | undefined {
-  const safe = parseShopCode(code);
-  if (!safe) return undefined;
-  return `/gamification/${safe}.webp`;
-}

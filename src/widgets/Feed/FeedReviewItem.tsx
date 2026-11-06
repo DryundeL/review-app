@@ -2,7 +2,7 @@ import { FollowButton } from "@/features/follow-user";
 import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import type { RemoteReviewSummary } from "@/entities/review";
-import { shopAssetUrl } from "@/shared/lib/shopCode";
+import { useShopAssetUrl } from "@/shared/lib/shopAssets";
 import { UserAvatar } from "@/shared/ui";
 import { RemoteReviewCard } from "@/widgets/RemoteReviewCard";
 import "./Feed.css";
@@ -17,9 +17,7 @@ export function FeedReviewItem({ review, viewerId }: FeedReviewItemProps) {
   const username = review.author?.username.trim() ?? "";
   const authorLabel = username ? `@${username}` : "Автор";
   const isMe = viewerId !== null && viewerId === authorId;
-  const backdropUrl = review.author?.backdrop
-    ? shopAssetUrl(review.author.backdrop)
-    : undefined;
+  const backdropUrl = useShopAssetUrl(review.author?.backdrop);
   const backdropStyle: CSSProperties | undefined = backdropUrl
     ? { ["--shop-list-backdrop" as string]: `url("${backdropUrl}")` }
     : undefined;

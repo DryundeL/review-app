@@ -1,5 +1,6 @@
 export type Achievement = {
   code: string;
+  url?: string;
   title: string;
   description: string;
   progress: number;

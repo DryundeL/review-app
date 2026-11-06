@@ -1,4 +1,4 @@
-import { shopAssetUrl } from "@/shared/lib/shopCode";
+import { useShopAssetUrl } from "@/shared/lib/shopAssets";
 import { cn } from "@/shared/lib/cn";
 import "./UserAvatar.css";
 
@@ -11,7 +11,7 @@ type UserAvatarProps = {
 
 export function UserAvatar({ label, photoUrl, frameCode, className }: UserAvatarProps) {
   const letter = (label.trim()[0] ?? "?").toUpperCase();
-  const frameUrl = frameCode ? shopAssetUrl(frameCode) : undefined;
+  const frameUrl = useShopAssetUrl(frameCode);
 
   const avatar = photoUrl ? (
     <img

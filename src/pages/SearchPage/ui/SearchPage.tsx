@@ -18,7 +18,7 @@ import { useAuthSession } from "@/features/auth";
 import { useFilterFeedStore } from "@/features/filter-feed";
 import { useDebouncedValue } from "@/shared/hooks";
 import { ruPlural } from "@/shared/lib/ruPlural";
-import { shopAssetUrl } from "@/shared/lib/shopCode";
+import { useShopAssetUrl } from "@/shared/lib/shopAssets";
 import { Button, Input, MediaPoster, UserAvatar } from "@/shared/ui";
 import "./SearchPage.css";
 
@@ -420,7 +420,7 @@ function TypeTrendRow({
 
 function ReviewRow({ item }: { item: SearchReviewHit }) {
   const authorLabel = item.username ? `@${item.username}` : "Автор";
-  const backdropUrl = item.backdrop ? shopAssetUrl(item.backdrop) : undefined;
+  const backdropUrl = useShopAssetUrl(item.backdrop);
 
   return (
     <Link

@@ -1,3 +1,4 @@
+import { storageImageUrl } from "../../../shared/lib/storageImageUrl.ts";
 import { z } from "zod";
 import { unexpectedResponseError } from "../../../shared/api/errors.ts";
 import { parseShopCode } from "../../../shared/lib/shopCode.ts";
@@ -15,6 +16,7 @@ const kindSchema = z.enum(["background", "avatar_frame", "backdrop"]);
 const shopItemSchema = z.object({
   id: uuid,
   code: z.string(),
+  url: z.string().nullable().optional(),
   kind: kindSchema,
   title: z.string().min(1).max(128),
   price: z.number().int().nonnegative(),
@@ -63,6 +65,7 @@ function mapItem(raw: z.infer<typeof shopItemSchema>): ShopItem | null {
   return {
     id: raw.id,
     code,
+    url: storageImageUrl(raw.url),
     kind: raw.kind as ShopItemKind,
     title: raw.title.trim(),
     price: raw.price,

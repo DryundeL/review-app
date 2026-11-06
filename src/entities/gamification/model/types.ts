@@ -3,6 +3,7 @@ export type ShopItemKind = "background" | "avatar_frame" | "backdrop";
 export type ShopItem = {
   id: string;
   code: string;
+  url?: string;
   kind: ShopItemKind;
   title: string;
   price: number;

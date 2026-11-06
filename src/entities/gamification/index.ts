@@ -12,4 +12,4 @@ export {
   fetchShopCatalog,
   purchaseShopItem,
 } from "./api/gamificationApi";
-export { shopAssetUrl } from "@/shared/lib/shopCode";
+export { ShopAssetsProvider } from "./ui/ShopAssetsProvider";

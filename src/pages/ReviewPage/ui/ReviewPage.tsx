@@ -9,7 +9,7 @@ import { ApiError } from "@/shared/api";
 import { usePageMeta } from "@/shared/hooks";
 import { truncateMeta, type PageMeta } from "@/shared/lib/pageMeta";
 import { safeHttpsUrl } from "@/shared/lib/safeHttpsUrl";
-import { shopAssetUrl } from "@/shared/lib/shopCode";
+import { useShopAssetUrl } from "@/shared/lib/shopAssets";
 import { MEDIA_TYPE_LABELS } from "@/shared/types";
 import {
   Button,
@@ -59,6 +59,7 @@ export function ReviewPage() {
   }, [reviewId, reviewQuery.data, reviewQuery.isError]);
 
   usePageMeta(pageMeta);
+  const backdropUrl = useShopAssetUrl(reviewQuery.data?.author.backdrop);
 
   useEffect(() => {
     if (!profile || !reviewId || !reviewQuery.data) return;
@@ -128,9 +129,6 @@ export function ReviewPage() {
   const media = review.mediaObject;
   const mediaTitle = media.title.trim() || "Произведение";
   const typeLabel = MEDIA_TYPE_LABELS[media.type];
-  const backdropUrl = review.author.backdrop
-    ? shopAssetUrl(review.author.backdrop)
-    : undefined;
   const pageStyle: CSSProperties | undefined = backdropUrl
     ? { ["--review-page-backdrop" as string]: `url("${backdropUrl}")` }
     : undefined;

@@ -27,7 +27,7 @@ import { ApiError } from "@/shared/api";
 import { usePageMeta } from "@/shared/hooks";
 import { truncateMeta, type PageMeta } from "@/shared/lib/pageMeta";
 import { safeHttpsUrl } from "@/shared/lib/safeHttpsUrl";
-import { shopAssetUrl } from "@/shared/lib/shopCode";
+import { useShopAssetUrl } from "@/shared/lib/shopAssets";
 import { Button, Modal, UserAvatar } from "@/shared/ui";
 import { AchievementsStrip } from "@/widgets/AchievementsStrip";
 import { RemoteReviewCard } from "@/widgets/RemoteReviewCard";
@@ -573,7 +573,7 @@ function ReviewsBlock({
   emptyTab: ReviewTab;
   backdropCode?: string;
 }) {
-  const backdropUrl = backdropCode ? shopAssetUrl(backdropCode) : undefined;
+  const backdropUrl = useShopAssetUrl(backdropCode);
   const backdropStyle: CSSProperties | undefined = backdropUrl
     ? { ["--shop-list-backdrop" as string]: `url("${backdropUrl}")` }
     : undefined;
@@ -662,7 +662,7 @@ function ProfileHero({
   backgroundCode?: string;
   children: ReactNode;
 }) {
-  const backgroundUrl = backgroundCode ? shopAssetUrl(backgroundCode) : undefined;
+  const backgroundUrl = useShopAssetUrl(backgroundCode);
   const style: CSSProperties | undefined = backgroundUrl
     ? { ["--profile-hero-bg" as string]: `url("${backgroundUrl}")` }
     : undefined;

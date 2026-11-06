@@ -98,3 +98,27 @@ describe("parseAchievements", () => {
     }
   });
 });
+
+it("uses achievement URL from API without deriving a filename from code", () => {
+  const item = {
+    code: "first_review",
+    title: "First",
+    progress: 0,
+    current: 0,
+    target: 1,
+  };
+  for (const url of [
+    "/storage/achevments/custom.webp",
+    "javascript:alert(1)",
+    null,
+    undefined,
+  ]) {
+    const result = parseProfileAchievementsText(
+      JSON.stringify({ achievements: [{ ...item, url }] }),
+    );
+    assert.equal(
+      result.achievements[0]?.url,
+      typeof url === "string" && url.startsWith("/storage/") ? url : undefined,
+    );
+  }
+});

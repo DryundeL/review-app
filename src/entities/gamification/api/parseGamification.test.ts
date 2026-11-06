@@ -44,3 +44,29 @@ describe("parseGamification", () => {
     assert.equal(me.equipped.backdrop, null);
   });
 });
+
+describe("shop image URLs", () => {
+  it("uses the exact URL returned by the catalog and drops unsafe images", () => {
+    const item = {
+      id: "11111111-1111-4111-8111-111111111111",
+      code: "frame_gold",
+      kind: "avatar_frame",
+      title: "Gold",
+      price: 100,
+      sortOrder: 10,
+    };
+    for (const url of [
+      "/storage/gemification/custom.webp",
+      "//evil.test/a.webp",
+      null,
+      undefined,
+    ]) {
+      const result = parseShopCatalogText(JSON.stringify({ items: [{ ...item, url }] }));
+      assert.equal(
+        result.items[0]?.url,
+        typeof url === "string" && url.startsWith("/storage/") ? url : undefined,
+      );
+      assert.equal(result.items[0]?.code, "frame_gold");
+    }
+  });
+});
