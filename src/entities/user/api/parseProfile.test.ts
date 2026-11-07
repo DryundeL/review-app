@@ -44,3 +44,24 @@ test("public profile preserves privacy and never exposes another user's Telegram
     "12345",
   );
 });
+
+test("profile accepts direct cosmetic URLs and rejects unsafe paths", async () => {
+  const { parsePublicProfileText } = await import("./parseProfile.ts");
+  const payload = {
+    id: "11111111-1111-4111-8111-111111111111",
+    username: "ann",
+    firstName: "Ann",
+    lastName: "",
+    followersCount: 0,
+    followingCount: 0,
+    isFollowing: false,
+    isMe: false,
+    background: "/storage/gemification/custom-bg.webp",
+    avatarFrame: "//evil.test/a.webp",
+    backdrop: "/storage/../secret.webp",
+  };
+  const result = parsePublicProfileText(JSON.stringify(payload));
+  assert.equal(result.background, payload.background);
+  assert.equal(result.avatarFrame, undefined);
+  assert.equal(result.backdrop, undefined);
+});

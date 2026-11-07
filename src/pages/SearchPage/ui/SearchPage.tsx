@@ -18,7 +18,6 @@ import { useAuthSession } from "@/features/auth";
 import { useFilterFeedStore } from "@/features/filter-feed";
 import { useDebouncedValue } from "@/shared/hooks";
 import { ruPlural } from "@/shared/lib/ruPlural";
-import { useShopAssetUrl } from "@/shared/lib/shopAssets";
 import { Button, Input, MediaPoster, UserAvatar } from "@/shared/ui";
 import "./SearchPage.css";
 
@@ -336,6 +335,7 @@ function AuthorRow({
           className="search-page__avatar"
           label={display}
           photoUrl={item.photoUrl}
+          frameUrl={item.avatarFrame}
         />
         <span className="search-page__row-body">
           <span className="search-page__row-title">{display}</span>
@@ -420,17 +420,17 @@ function TypeTrendRow({
 
 function ReviewRow({ item }: { item: SearchReviewHit }) {
   const authorLabel = item.username ? `@${item.username}` : "Автор";
-  const backdropUrl = useShopAssetUrl(item.backdrop);
+  const backdrop = item.backdrop;
 
   return (
     <Link
       className={
-        backdropUrl ? "search-page__row search-page__row--backdrop" : "search-page__row"
+        backdrop ? "search-page__row search-page__row--backdrop" : "search-page__row"
       }
       to={`/reviews/${item.id}`}
       style={
-        backdropUrl
-          ? { ["--search-row-backdrop" as string]: `url("${backdropUrl}")` }
+        backdrop
+          ? { ["--search-row-backdrop" as string]: `url("${backdrop}")` }
           : undefined
       }
     >
@@ -438,7 +438,7 @@ function ReviewRow({ item }: { item: SearchReviewHit }) {
         className="search-page__avatar search-page__avatar--review"
         label={authorLabel}
         photoUrl={item.photoUrl}
-        frameCode={item.avatarFrame}
+        frameUrl={item.avatarFrame}
       />
       <MediaPoster
         className="search-page__poster"

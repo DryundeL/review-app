@@ -35,9 +35,8 @@ export type RemoteReviewAuthor = {
   isFollowing: boolean;
   /** HTTPS-аватар; omitempty — поля может не быть. */
   photoUrl?: string;
-  /** Код рамки из магазина (frame_gold и т.п.). */
+  background?: string;
   avatarFrame?: string;
-  /** Код подложки из магазина (list_dark и т.п.). */
   backdrop?: string;
 };
 

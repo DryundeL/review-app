@@ -47,15 +47,11 @@ function parseJson(text: string): unknown {
   }
 }
 
-function mapCode(raw: string): string | null {
-  return parseShopCode(raw) ?? null;
-}
-
 function mapEquipped(raw: z.infer<typeof equippedSchema>): EquippedCosmetics {
   return {
-    background: raw.background ? mapCode(raw.background) : null,
-    avatarFrame: raw.avatarFrame ? mapCode(raw.avatarFrame) : null,
-    backdrop: raw.backdrop ? mapCode(raw.backdrop) : null,
+    background: storageImageUrl(raw.background) ?? null,
+    avatarFrame: storageImageUrl(raw.avatarFrame) ?? null,
+    backdrop: storageImageUrl(raw.backdrop) ?? null,
   };
 }
 

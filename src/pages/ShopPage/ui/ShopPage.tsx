@@ -112,13 +112,15 @@ export function ShopPage() {
         </p>
         <details className="shop-page__help">
           <summary className="shop-page__help-trigger">
-            <span className="shop-page__help-icon" aria-hidden="true">?</span>
+            <span className="shop-page__help-icon" aria-hidden="true">
+              ?
+            </span>
             Как заработать очки
           </summary>
           <p className="shop-page__help-text">
-            Публикуйте обзоры, ставьте лайки другим авторам, получайте лайки
-            и новых подписчиков. За публикацию обзора очки начисляются за каждый
-            блок. Лайки своим обзорам очков не дают.
+            Публикуйте обзоры, ставьте лайки другим авторам, получайте лайки и новых
+            подписчиков. За публикацию обзора очки начисляются за каждый блок. Лайки своим
+            обзорам очков не дают.
           </p>
         </details>
       </header>
@@ -133,7 +135,11 @@ export function ShopPage() {
         const items = catalogQuery.data.items.filter((item) => item.kind === kind);
         if (items.length === 0) return null;
         return (
-          <section key={kind} className="shop-page__section" aria-labelledby={`shop-${kind}`}>
+          <section
+            key={kind}
+            className="shop-page__section"
+            aria-labelledby={`shop-${kind}`}
+          >
             <h2 id={`shop-${kind}`} className="shop-page__section-title">
               {KIND_LABEL[kind]}
             </h2>
@@ -141,7 +147,9 @@ export function ShopPage() {
               {items.map((item) => {
                 const preview = item.url;
                 const isOwned = owned.has(item.code);
-                const isEquipped = equippedCode(me.equipped, kind) === item.code;
+                const isEquipped = Boolean(
+                  item.url && equippedUrl(me.equipped, kind) === item.url,
+                );
                 return (
                   <li key={item.id} className="shop-page__card">
                     <div
@@ -214,8 +222,12 @@ function equipKey(kind: ShopItemKind): "avatarFrame" | "background" | "backdrop"
   return "backdrop";
 }
 
-function equippedCode(
-  equipped: { background: string | null; avatarFrame: string | null; backdrop: string | null },
+function equippedUrl(
+  equipped: {
+    background: string | null;
+    avatarFrame: string | null;
+    backdrop: string | null;
+  },
   kind: ShopItemKind,
 ): string | null {
   if (kind === "avatar_frame") return equipped.avatarFrame;
@@ -223,7 +235,10 @@ function equippedCode(
   return equipped.backdrop;
 }
 
-function messageFromError(error: unknown, fallback = "Не удалось выполнить запрос."): string {
+function messageFromError(
+  error: unknown,
+  fallback = "Не удалось выполнить запрос.",
+): string {
   if (error instanceof ApiError) {
     if (error.code === "INSUFFICIENT_POINTS") return "Недостаточно очков.";
     if (error.code === "CONFLICT") return "Уже куплено.";

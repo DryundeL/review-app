@@ -10,6 +10,9 @@ export type SearchAuthorHit = {
   isFollowing: boolean;
   /** HTTPS-аватар; omitempty — поля может не быть. */
   photoUrl?: string;
+  background?: string;
+  avatarFrame?: string;
+  backdrop?: string;
 };
 
 export type SearchMediaTrend = {
@@ -38,6 +41,7 @@ export type SearchReviewHit = {
   username: string;
   /** Аватар автора в выдаче поиска (плоское поле или author.photoUrl). */
   photoUrl?: string;
+  background?: string;
   avatarFrame?: string;
   backdrop?: string;
   mediaObject: {

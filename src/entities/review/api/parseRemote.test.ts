@@ -95,8 +95,8 @@ test("feed list maps author.isFollowing, photoUrl and cosmetics", () => {
             username: "ann",
             isFollowing: false,
             photoUrl: "https://cdn.example/a.jpg",
-            avatarFrame: "frame_gold",
-            backdrop: "list_dark",
+            avatarFrame: "/storage/gemification/frame_gold.webp",
+            backdrop: "/storage/gemification/list_dark.webp",
           },
           mediaObject,
           title: "Обзор",
@@ -116,8 +116,8 @@ test("feed list maps author.isFollowing, photoUrl and cosmetics", () => {
     username: "ann",
     isFollowing: false,
     photoUrl: "https://cdn.example/a.jpg",
-    avatarFrame: "frame_gold",
-    backdrop: "list_dark",
+    avatarFrame: "/storage/gemification/frame_gold.webp",
+    backdrop: "/storage/gemification/list_dark.webp",
   });
 });
 
@@ -209,4 +209,18 @@ test("response bodies have no write-time length limit", () => {
     blocks: [{ id: reviewId, position: 1, title: "😀".repeat(50), body }],
   });
   assert.equal(review.blocks[0].body, body);
+});
+
+test("author cosmetics use direct URLs independently of item codes", () => {
+  const review = parseRemoteReview({
+    ...detailBase,
+    author: {
+      id: authorId,
+      username: "ann",
+      avatarFrame: "/storage/gemification/custom-frame.webp",
+      backdrop: "/storage/gemification/custom-list.webp",
+    },
+  });
+  assert.equal(review.author.avatarFrame, "/storage/gemification/custom-frame.webp");
+  assert.equal(review.author.backdrop, "/storage/gemification/custom-list.webp");
 });

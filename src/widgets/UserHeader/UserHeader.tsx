@@ -27,7 +27,7 @@ export function UserHeader({
           className="user-header__avatar"
           label={user.displayName}
           photoUrl={user.photoUrl}
-          frameCode={user.avatarFrame}
+          frameUrl={user.avatarFrame}
         />
         <div className="user-header__info">
           <div className="user-header__title-row">

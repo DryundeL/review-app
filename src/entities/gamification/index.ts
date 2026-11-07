@@ -12,4 +12,3 @@ export {
   fetchShopCatalog,
   purchaseShopItem,
 } from "./api/gamificationApi";
-export { ShopAssetsProvider } from "./ui/ShopAssetsProvider";

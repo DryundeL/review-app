@@ -27,7 +27,6 @@ import { ApiError } from "@/shared/api";
 import { usePageMeta } from "@/shared/hooks";
 import { truncateMeta, type PageMeta } from "@/shared/lib/pageMeta";
 import { safeHttpsUrl } from "@/shared/lib/safeHttpsUrl";
-import { useShopAssetUrl } from "@/shared/lib/shopAssets";
 import { Button, Modal, UserAvatar } from "@/shared/ui";
 import { AchievementsStrip } from "@/widgets/AchievementsStrip";
 import { RemoteReviewCard } from "@/widgets/RemoteReviewCard";
@@ -100,17 +99,17 @@ function OwnProfileView({ profile }: { profile: SessionProfile }) {
     tab === "requests" ? "published" : tab,
   );
 
-  const backgroundCode = profile.background;
+  const background = profile.background;
 
   return (
     <section
       className={
-        backgroundCode
+        background
           ? "profile-page screen profile-page--flush-hero profile-page--hero-bg"
           : "profile-page screen profile-page--flush-hero"
       }
     >
-      <ProfileHero backgroundCode={backgroundCode}>
+      <ProfileHero background={background}>
         <div className="profile-page__topbar">
           <Button asChild variant="ghost" className="profile-page__shop-btn">
             <Link to="/shop">
@@ -128,7 +127,7 @@ function OwnProfileView({ profile }: { profile: SessionProfile }) {
         <UserHeader
           user={toUser(profile)}
           note={profile.isPremium ? "Premium" : null}
-          onDarkSurface={Boolean(backgroundCode)}
+          onDarkSurface={Boolean(background)}
           onFollowersClick={() => setFollowList("followers")}
           onFollowingClick={() => setFollowList("following")}
         />
@@ -160,7 +159,7 @@ function OwnProfileView({ profile }: { profile: SessionProfile }) {
           onDelete={(id) => deleteMutation.mutateAsync(id)}
           emptyOwn
           emptyTab={tab === "drafts" ? "drafts" : "published"}
-          backdropCode={profile.backdrop}
+          backdrop={profile.backdrop}
         />
       )}
 
@@ -271,7 +270,7 @@ function PublicProfileView({
   const { published, drafts, visible } = splitReviews(reviews, isMe ? tab : "published");
   const list = isMe ? visible : published;
 
-  const backgroundCode = profile.background;
+  const background = profile.background;
 
   function handleBack() {
     void queryClient.invalidateQueries({ refetchType: "active" });
@@ -286,12 +285,12 @@ function PublicProfileView({
   return (
     <section
       className={
-        backgroundCode
+        background
           ? "profile-page screen profile-page--flush-hero profile-page--hero-bg"
           : "profile-page screen profile-page--flush-hero"
       }
     >
-      <ProfileHero backgroundCode={backgroundCode}>
+      <ProfileHero background={background}>
         <div className="profile-page__topbar">
           <button
             type="button"
@@ -307,7 +306,7 @@ function PublicProfileView({
         <UserHeader
           user={toUser(profile)}
           note={profile.isPremium ? "Premium" : null}
-          onDarkSurface={Boolean(backgroundCode)}
+          onDarkSurface={Boolean(background)}
           onFollowersClick={() => setFollowList("followers")}
           onFollowingClick={() => setFollowList("following")}
         />
@@ -339,7 +338,7 @@ function PublicProfileView({
         onDelete={(id) => deleteMutation.mutateAsync(id)}
         emptyOwn={isMe}
         emptyTab={isMe ? tab : "published"}
-        backdropCode={profile.backdrop}
+        backdrop={profile.backdrop}
       />
 
       <FollowConnectionsModal
@@ -474,6 +473,7 @@ function FollowConnectionRow({
           className="profile-page__follow-avatar"
           label={label}
           photoUrl={item.photoUrl}
+          frameUrl={item.avatarFrame}
         />
         <span className="profile-page__follow-name">{label}</span>
       </Link>
@@ -561,7 +561,7 @@ function ReviewsBlock({
   onDelete,
   emptyOwn,
   emptyTab,
-  backdropCode,
+  backdrop,
 }: {
   reviewsQuery: { isLoading: boolean; isError: boolean };
   reviews: RemoteReviewSummary[];
@@ -571,11 +571,10 @@ function ReviewsBlock({
   onDelete: (id: string) => Promise<void>;
   emptyOwn: boolean;
   emptyTab: ReviewTab;
-  backdropCode?: string;
+  backdrop?: string;
 }) {
-  const backdropUrl = useShopAssetUrl(backdropCode);
-  const backdropStyle: CSSProperties | undefined = backdropUrl
-    ? { ["--shop-list-backdrop" as string]: `url("${backdropUrl}")` }
+  const backdropStyle: CSSProperties | undefined = backdrop
+    ? { ["--shop-list-backdrop" as string]: `url("${backdrop}")` }
     : undefined;
 
   return (
@@ -625,14 +624,14 @@ function ReviewsBlock({
           {reviews.map((review) => (
             <li key={review.id}>
               <div
-                className={backdropUrl ? "shop-list-backdrop" : undefined}
+                className={backdrop ? "shop-list-backdrop" : undefined}
                 style={backdropStyle}
               >
                 <RemoteReviewCard
                   review={review}
                   canEdit={canEdit}
                   hideStatus={!canEdit}
-                  hideBackdrop={Boolean(backdropUrl)}
+                  hideBackdrop={Boolean(backdrop)}
                   deleting={deletingId === review.id}
                   onDelete={canEdit ? onDelete : undefined}
                 />
@@ -656,21 +655,20 @@ function splitReviews(reviews: RemoteReviewSummary[], tab: ReviewTab) {
 }
 
 function ProfileHero({
-  backgroundCode,
+  background,
   children,
 }: {
-  backgroundCode?: string;
+  background?: string;
   children: ReactNode;
 }) {
-  const backgroundUrl = useShopAssetUrl(backgroundCode);
-  const style: CSSProperties | undefined = backgroundUrl
-    ? { ["--profile-hero-bg" as string]: `url("${backgroundUrl}")` }
+  const style: CSSProperties | undefined = background
+    ? { ["--profile-hero-bg" as string]: `url("${background}")` }
     : undefined;
 
   return (
     <div
       className={
-        backgroundUrl
+        background
           ? "profile-page__hero profile-page__hero--has-bg"
           : "profile-page__hero"
       }

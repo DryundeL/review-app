@@ -2,7 +2,6 @@ import { FollowButton } from "@/features/follow-user";
 import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import type { RemoteReviewSummary } from "@/entities/review";
-import { useShopAssetUrl } from "@/shared/lib/shopAssets";
 import { UserAvatar } from "@/shared/ui";
 import { RemoteReviewCard } from "@/widgets/RemoteReviewCard";
 import "./Feed.css";
@@ -17,9 +16,9 @@ export function FeedReviewItem({ review, viewerId }: FeedReviewItemProps) {
   const username = review.author?.username.trim() ?? "";
   const authorLabel = username ? `@${username}` : "Автор";
   const isMe = viewerId !== null && viewerId === authorId;
-  const backdropUrl = useShopAssetUrl(review.author?.backdrop);
-  const backdropStyle: CSSProperties | undefined = backdropUrl
-    ? { ["--shop-list-backdrop" as string]: `url("${backdropUrl}")` }
+  const backdrop = review.author?.backdrop;
+  const backdropStyle: CSSProperties | undefined = backdrop
+    ? { ["--shop-list-backdrop" as string]: `url("${backdrop}")` }
     : undefined;
 
   return (
@@ -30,20 +29,20 @@ export function FeedReviewItem({ review, viewerId }: FeedReviewItemProps) {
             className="feed-item__avatar"
             label={authorLabel}
             photoUrl={review.author?.photoUrl}
-            frameCode={review.author?.avatarFrame}
+            frameUrl={review.author?.avatarFrame}
           />
           <span className="feed-item__author-name">{authorLabel}</span>
         </Link>
         {!isMe ? <FollowButton userId={authorId} /> : null}
       </div>
       <div
-        className={backdropUrl ? "shop-list-backdrop" : undefined}
+        className={backdrop ? "shop-list-backdrop" : undefined}
         style={backdropStyle}
       >
         <RemoteReviewCard
           review={review}
           hideStatus
-          hideBackdrop={Boolean(backdropUrl)}
+          hideBackdrop={Boolean(backdrop)}
         />
       </div>
     </div>

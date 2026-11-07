@@ -1,7 +1,7 @@
+import { cosmeticImageUrls } from "../../../shared/lib/cosmeticImageUrls.ts";
 import { z } from "zod";
 import { unexpectedResponseError } from "../../../shared/api/errors.ts";
 import { safeHttpsUrl } from "../../../shared/lib/safeHttpsUrl.ts";
-import { parseShopCode } from "../../../shared/lib/shopCode.ts";
 import type {
   FollowConnection,
   FollowConnectionList,
@@ -25,15 +25,19 @@ const publicProfileSchema = z.object({
   languageCode: z.string().optional(),
   isPremium: z.boolean().optional(),
   photoUrl: z.string().optional().nullable(),
-  background: z.string().optional().nullable(),
-  avatarFrame: z.string().optional().nullable(),
-  backdrop: z.string().optional().nullable(),
+  background: z.string().nullish(),
+  avatarFrame: z.string().nullish(),
+  backdrop: z.string().nullish(),
 });
 
 const followConnectionSchema = z.object({
   userId: uuid,
   username: z.string(),
   photoUrl: z.string().optional().nullable(),
+  background: z.string().nullish(),
+  avatarFrame: z.string().nullish(),
+  backdrop: z.string().nullish(),
+
   isFollowing: z.boolean(),
   createdAt: z.string().min(1),
 });
@@ -55,23 +59,18 @@ export function parsePublicProfileText(text: string): PublicProfile {
 
   const {
     telegramId,
+    background,
+    avatarFrame,
+    backdrop,
     photoUrl: rawPhotoUrl,
-    background: rawBackground,
-    avatarFrame: rawAvatarFrame,
-    backdrop: rawBackdrop,
     ...rest
   } = parsed.data;
   const photoUrl = safeHttpsUrl(rawPhotoUrl ?? undefined);
-  const background = parseShopCode(rawBackground ?? undefined);
-  const avatarFrame = parseShopCode(rawAvatarFrame ?? undefined);
-  const backdrop = parseShopCode(rawBackdrop ?? undefined);
   return {
     ...rest,
+    ...cosmeticImageUrls({ background, avatarFrame, backdrop }),
     ...(rest.isMe && telegramId !== undefined ? { telegramId: String(telegramId) } : {}),
     ...(photoUrl ? { photoUrl } : {}),
-    ...(background ? { background } : {}),
-    ...(avatarFrame ? { avatarFrame } : {}),
-    ...(backdrop ? { backdrop } : {}),
   };
 }
 
@@ -100,6 +99,7 @@ function mapFollowConnection(
     username: raw.username.trim(),
     isFollowing: raw.isFollowing,
     createdAt: raw.createdAt,
+    ...cosmeticImageUrls(raw),
     ...(photoUrl ? { photoUrl } : {}),
   };
 }

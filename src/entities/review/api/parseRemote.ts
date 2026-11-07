@@ -1,6 +1,6 @@
+import { cosmeticImageUrls } from "../../../shared/lib/cosmeticImageUrls.ts";
 import { z } from "zod";
 import { unexpectedResponseError } from "../../../shared/api/errors.ts";
-import { parseShopCode } from "../../../shared/lib/shopCode.ts";
 import { safeHttpsUrl } from "../../../shared/lib/safeHttpsUrl.ts";
 import { MEDIA_TYPE_LABELS, type MediaType } from "../../../shared/types/media.ts";
 import type {
@@ -47,8 +47,9 @@ const authorSchema = z.object({
     .nullish()
     .transform((value) => value ?? false),
   photoUrl: z.string().optional().nullable(),
-  avatarFrame: z.string().optional().nullable(),
-  backdrop: z.string().optional().nullable(),
+  background: z.string().nullish(),
+  avatarFrame: z.string().nullish(),
+  backdrop: z.string().nullish(),
 });
 
 /**
@@ -168,15 +169,12 @@ function mapAuthor(
   itemIsFollowing?: boolean | null,
 ): RemoteReviewAuthor {
   const photoUrl = safeHttpsUrl(author.photoUrl ?? undefined);
-  const avatarFrame = parseShopCode(author.avatarFrame ?? undefined);
-  const backdrop = parseShopCode(author.backdrop ?? undefined);
   return {
     id: author.id,
     username: author.username,
     isFollowing: itemIsFollowing ?? author.isFollowing,
+    ...cosmeticImageUrls(author),
     ...(photoUrl ? { photoUrl } : {}),
-    ...(avatarFrame ? { avatarFrame } : {}),
-    ...(backdrop ? { backdrop } : {}),
   };
 }
 

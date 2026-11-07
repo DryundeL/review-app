@@ -180,3 +180,23 @@ describe("auth boundary", { concurrency: 1 }, () => {
     assert.equal(calls, 3);
   });
 });
+
+test("session profile preserves direct cosmetic URLs without catalog codes", () => {
+  const value = parseProfileText(
+    JSON.stringify({
+      id: "11111111-1111-4111-8111-111111111111",
+      telegramId: 123,
+      username: "ann",
+      firstName: "Ann",
+      lastName: "",
+      languageCode: "ru",
+      isPremium: false,
+      avatarFrame: "/storage/gemification/frame.webp",
+      backdrop: "/storage/gemification/list.webp",
+      background: "/storage/gemification/bg.webp",
+    }),
+  );
+  assert.equal(value.avatarFrame, "/storage/gemification/frame.webp");
+  assert.equal(value.backdrop, "/storage/gemification/list.webp");
+  assert.equal(value.background, "/storage/gemification/bg.webp");
+});

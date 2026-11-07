@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { parseGamificationMeText, parseShopCatalogText } from "./parseGamification.ts";
+import {
+  parseEquippedText,
+  parseGamificationMeText,
+  parseShopCatalogText,
+} from "./parseGamification.ts";
 
 describe("parseGamification", () => {
   it("parses catalog and drops bad codes", () => {
@@ -35,12 +39,16 @@ describe("parseGamification", () => {
       JSON.stringify({
         pointsBalance: 120,
         ownedCodes: ["frame_gold", "BAD"],
-        equipped: { background: "bg_stars", avatarFrame: "frame_gold", backdrop: null },
+        equipped: {
+          background: "/storage/gemification/bg_stars.webp",
+          avatarFrame: "/storage/gemification/frame_gold.webp",
+          backdrop: null,
+        },
       }),
     );
     assert.equal(me.pointsBalance, 120);
     assert.deepEqual(me.ownedCodes, ["frame_gold"]);
-    assert.equal(me.equipped.background, "bg_stars");
+    assert.equal(me.equipped.background, "/storage/gemification/bg_stars.webp");
     assert.equal(me.equipped.backdrop, null);
   });
 });
@@ -69,4 +77,31 @@ describe("shop image URLs", () => {
       assert.equal(result.items[0]?.code, "frame_gold");
     }
   });
+});
+
+it("equipment responses contain URLs, reject codes and keep empty slots null", () => {
+  assert.deepEqual(
+    parseEquippedText(
+      JSON.stringify({
+        background: "/storage/gemification/background_blue.webp",
+        avatarFrame: "/storage/gemification/frame_gold.webp",
+        backdrop: null,
+      }),
+    ),
+    {
+      background: "/storage/gemification/background_blue.webp",
+      avatarFrame: "/storage/gemification/frame_gold.webp",
+      backdrop: null,
+    },
+  );
+  assert.deepEqual(
+    parseEquippedText(
+      JSON.stringify({
+        background: "bg_blue",
+        avatarFrame: "//evil.test/a.webp",
+        backdrop: "/storage/../private.webp",
+      }),
+    ),
+    { background: null, avatarFrame: null, backdrop: null },
+  );
 });

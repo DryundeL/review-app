@@ -1,4 +1,3 @@
-import { ShopAssetsProvider } from "@/entities/gamification";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -29,14 +28,6 @@ function canNavigateBack(): boolean {
 }
 
 export function AppShell() {
-  return (
-    <ShopAssetsProvider>
-      <AppShellContent />
-    </ShopAssetsProvider>
-  );
-}
-
-function AppShellContent() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();

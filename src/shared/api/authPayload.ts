@@ -1,7 +1,7 @@
+import { cosmeticImageUrls } from "../lib/cosmeticImageUrls.ts";
 import { z } from "zod";
 import { normalizeEmail } from "../lib/email.ts";
 import { safeHttpsUrl } from "../lib/safeHttpsUrl.ts";
-import { parseShopCode } from "../lib/shopCode.ts";
 import {
   ApiError,
   readErrorCode,
@@ -46,9 +46,9 @@ const profileSchema = z.object({
   followStatus: z.enum(["none", "pending", "following"]).optional(),
   isMe: z.boolean().optional(),
   photoUrl: z.string().optional().nullable(),
-  background: z.string().optional().nullable(),
-  avatarFrame: z.string().optional().nullable(),
-  backdrop: z.string().optional().nullable(),
+  background: z.string().nullish(),
+  avatarFrame: z.string().nullish(),
+  backdrop: z.string().nullish(),
   email: z.string().nullish(),
 });
 
@@ -143,9 +143,6 @@ export function parseProfileText(text: string): AuthProfile {
 
   const telegramId = readRawTelegramId(text) ?? String(parsed.data.telegramId);
   const photoUrl = safeHttpsUrl(parsed.data.photoUrl ?? undefined);
-  const background = parseShopCode(parsed.data.background ?? undefined);
-  const avatarFrame = parseShopCode(parsed.data.avatarFrame ?? undefined);
-  const backdrop = parseShopCode(parsed.data.backdrop ?? undefined);
   const email = normalizeEmail(parsed.data.email ?? "");
   return {
     id: parsed.data.id,
@@ -162,10 +159,8 @@ export function parseProfileText(text: string): AuthProfile {
     followStatus:
       parsed.data.followStatus ?? (parsed.data.isFollowing ? "following" : "none"),
     isMe: parsed.data.isMe ?? true,
+    ...cosmeticImageUrls(parsed.data),
     ...(photoUrl ? { photoUrl } : {}),
-    ...(background ? { background } : {}),
-    ...(avatarFrame ? { avatarFrame } : {}),
-    ...(backdrop ? { backdrop } : {}),
     ...(email ? { email } : {}),
   };
 }

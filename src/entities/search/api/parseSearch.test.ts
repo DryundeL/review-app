@@ -78,8 +78,8 @@ test("search review hit maps nested author cosmetics", () => {
             id: "11111111-1111-4111-8111-111111111111",
             username: "ann",
             photoUrl: "https://cdn.example/a.jpg",
-            avatarFrame: "frame_gold",
-            backdrop: "list_dark",
+            avatarFrame: "/storage/gemification/frame_gold.webp",
+            backdrop: "/storage/gemification/list_dark.webp",
           },
           mediaObject: {
             id: "33333333-3333-4333-8333-333333333333",
@@ -94,6 +94,39 @@ test("search review hit maps nested author cosmetics", () => {
 
   assert.equal(result.reviews[0]?.username, "ann");
   assert.equal(result.reviews[0]?.photoUrl, "https://cdn.example/a.jpg");
-  assert.equal(result.reviews[0]?.avatarFrame, "frame_gold");
-  assert.equal(result.reviews[0]?.backdrop, "list_dark");
+  assert.equal(result.reviews[0]?.avatarFrame, "/storage/gemification/frame_gold.webp");
+  assert.equal(result.reviews[0]?.backdrop, "/storage/gemification/list_dark.webp");
+});
+
+test("search preserves direct nested and flat cosmetic URLs without codes", () => {
+  const item = {
+    id: "11111111-1111-4111-8111-111111111111",
+    authorId: "22222222-2222-4222-8222-222222222222",
+    title: "Review",
+    rating: 8,
+    mediaObject: {
+      id: "33333333-3333-4333-8333-333333333333",
+      title: "Movie",
+      type: "movie",
+    },
+    avatarFrame: "/storage/gemification/direct-frame.webp",
+    backdrop: "/storage/gemification/direct-list.webp",
+  };
+  for (const review of [
+    item,
+    {
+      ...item,
+      avatarFrame: undefined,
+      backdrop: undefined,
+      author: {
+        username: "ann",
+        avatarFrame: item.avatarFrame,
+        backdrop: item.backdrop,
+      },
+    },
+  ]) {
+    const result = parseSearchText(JSON.stringify({ reviews: [review] })).reviews[0];
+    assert.equal(result?.avatarFrame, item.avatarFrame);
+    assert.equal(result?.backdrop, item.backdrop);
+  }
 });

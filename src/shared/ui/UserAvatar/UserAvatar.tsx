@@ -1,17 +1,22 @@
-import { useShopAssetUrl } from "@/shared/lib/shopAssets";
+import { storageImageUrl } from "@/shared/lib/storageImageUrl";
 import { cn } from "@/shared/lib/cn";
 import "./UserAvatar.css";
 
 type UserAvatarProps = {
   label: string;
   photoUrl?: string;
-  frameCode?: string;
+  frameUrl?: string;
   className?: string;
 };
 
-export function UserAvatar({ label, photoUrl, frameCode, className }: UserAvatarProps) {
+export function UserAvatar({
+  label,
+  photoUrl,
+  frameUrl: rawFrameUrl,
+  className,
+}: UserAvatarProps) {
   const letter = (label.trim()[0] ?? "?").toUpperCase();
-  const frameUrl = useShopAssetUrl(frameCode);
+  const frameUrl = storageImageUrl(rawFrameUrl);
 
   const avatar = photoUrl ? (
     <img
@@ -23,7 +28,10 @@ export function UserAvatar({ label, photoUrl, frameCode, className }: UserAvatar
       referrerPolicy="no-referrer"
     />
   ) : (
-    <span className={cn("user-avatar", "user-avatar--fallback", !frameUrl && className)} aria-hidden>
+    <span
+      className={cn("user-avatar", "user-avatar--fallback", !frameUrl && className)}
+      aria-hidden
+    >
       {letter}
     </span>
   );
@@ -33,7 +41,13 @@ export function UserAvatar({ label, photoUrl, frameCode, className }: UserAvatar
   return (
     <span className={cn("user-avatar-frame", className)}>
       {avatar}
-      <img className="user-avatar-frame__ring" src={frameUrl} alt="" aria-hidden decoding="async" />
+      <img
+        className="user-avatar-frame__ring"
+        src={frameUrl}
+        alt=""
+        aria-hidden
+        decoding="async"
+      />
     </span>
   );
 }

@@ -5,44 +5,31 @@ import { renderToString } from "react-dom/server";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createServer } from "vite";
 
-test("shop, achievements and equipped cosmetics render API URLs without changing photos", async () => {
+test("cosmetic URLs render directly without catalog lookup or changes to photos", async () => {
   const vite = await createServer({
     server: { middlewareMode: true },
     appType: "custom",
   });
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   try {
-    const { ShopAssetsProvider } = await vite.ssrLoadModule(
-      "/src/entities/gamification/ui/ShopAssetsProvider.tsx",
-    );
     const { UserAvatar } = await vite.ssrLoadModule(
       "/src/shared/ui/UserAvatar/UserAvatar.tsx",
     );
-    const render = () =>
+    const render = (frameUrl) =>
       renderToString(
-        createElement(
-          QueryClientProvider,
-          { client },
-          createElement(
-            ShopAssetsProvider,
-            null,
-            createElement(UserAvatar, {
-              label: "Author",
-              photoUrl: "https://cdn.example/avatar.jpg",
-              frameCode: "frame_gold",
-            }),
-          ),
-        ),
+        createElement(UserAvatar, {
+          label: "Author",
+          photoUrl: "https://cdn.example/avatar.jpg",
+          frameUrl,
+        }),
       );
-    client.setQueryData(["shop-catalog"], {
-      items: [{ code: "frame_gold", url: "/storage/gemification/custom-frame.webp" }],
-    });
-    const html = render();
-    assert.ok(html.includes('src="/storage/gemification/custom-frame.webp"'));
+    const html = render("/storage/gemification/direct-frame.webp");
+    assert.ok(html.includes('src="/storage/gemification/direct-frame.webp"'));
     assert.ok(html.includes('src="https://cdn.example/avatar.jpg"'));
-    assert.ok(!html.includes("/gamification/frame_gold.webp"));
-    client.setQueryData(["shop-catalog"], { items: [] });
-    assert.ok(!render().includes("user-avatar-frame__ring"));
+    assert.ok(!render(undefined).includes("user-avatar-frame__ring"));
+    assert.ok(!render("frame_gold").includes("user-avatar-frame__ring"));
+    assert.ok(!render("//evil.test/a.webp").includes("user-avatar-frame__ring"));
+    assert.equal(client.getQueryData(["shop-catalog"]), undefined);
     const { ShopPage } = await vite.ssrLoadModule("/src/pages/ShopPage/ui/ShopPage.tsx");
     client.setQueryData(["shop-catalog"], {
       items: [
@@ -66,6 +53,40 @@ test("shop, achievements and equipped cosmetics render API URLs without changing
       createElement(QueryClientProvider, { client }, createElement(ShopPage)),
     );
     assert.ok(shop.includes("/storage/gemification/catalog-custom.webp"));
+    client.setQueryData(["gamification-me"], {
+      pointsBalance: 100,
+      ownedCodes: ["frame_gold"],
+      equipped: {
+        background: null,
+        avatarFrame: "/storage/gemification/catalog-custom.webp",
+        backdrop: null,
+      },
+    });
+    const equippedShop = renderToString(
+      createElement(QueryClientProvider, { client }, createElement(ShopPage)),
+    );
+    assert.ok(equippedShop.includes("Снять"));
+    assert.ok(!equippedShop.includes("Надеть"));
+    const { equipCosmetics } = await vite.ssrLoadModule(
+      "/src/entities/gamification/api/gamificationApi.ts",
+    );
+    const originalFetch = globalThis.fetch;
+    let requestBody;
+    try {
+      globalThis.fetch = async (_url, init) => {
+        requestBody = JSON.parse(init.body);
+        return new Response(
+          JSON.stringify({ avatarFrame: "/storage/gemification/frame_gold.webp" }),
+          { headers: { "Content-Type": "application/json" } },
+        );
+      };
+      const result = await equipCosmetics({ avatarFrame: "frame_gold" });
+      assert.deepEqual(requestBody, { avatarFrame: "frame_gold" });
+      assert.equal(result.avatarFrame, "/storage/gemification/frame_gold.webp");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
     const { AchievementsBoardPage } = await vite.ssrLoadModule(
       "/src/widgets/AchievementsStrip/AchievementsStrip.tsx",
     );

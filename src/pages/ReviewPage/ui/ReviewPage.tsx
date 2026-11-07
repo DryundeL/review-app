@@ -9,7 +9,6 @@ import { ApiError } from "@/shared/api";
 import { usePageMeta } from "@/shared/hooks";
 import { truncateMeta, type PageMeta } from "@/shared/lib/pageMeta";
 import { safeHttpsUrl } from "@/shared/lib/safeHttpsUrl";
-import { useShopAssetUrl } from "@/shared/lib/shopAssets";
 import { MEDIA_TYPE_LABELS } from "@/shared/types";
 import {
   Button,
@@ -59,7 +58,7 @@ export function ReviewPage() {
   }, [reviewId, reviewQuery.data, reviewQuery.isError]);
 
   usePageMeta(pageMeta);
-  const backdropUrl = useShopAssetUrl(reviewQuery.data?.author.backdrop);
+  const backdrop = reviewQuery.data?.author.backdrop;
 
   useEffect(() => {
     if (!profile || !reviewId || !reviewQuery.data) return;
@@ -129,14 +128,14 @@ export function ReviewPage() {
   const media = review.mediaObject;
   const mediaTitle = media.title.trim() || "Произведение";
   const typeLabel = MEDIA_TYPE_LABELS[media.type];
-  const pageStyle: CSSProperties | undefined = backdropUrl
-    ? { ["--review-page-backdrop" as string]: `url("${backdropUrl}")` }
+  const pageStyle: CSSProperties | undefined = backdrop
+    ? { ["--review-page-backdrop" as string]: `url("${backdrop}")` }
     : undefined;
 
   return (
     <article
       className={
-        backdropUrl ? "review-page screen review-page--backdrop" : "review-page screen"
+        backdrop ? "review-page screen review-page--backdrop" : "review-page screen"
       }
       style={pageStyle}
     >
@@ -146,7 +145,7 @@ export function ReviewPage() {
             className="review-page__avatar"
             label={authorLabel}
             photoUrl={review.author.photoUrl}
-            frameCode={review.author.avatarFrame}
+            frameUrl={review.author.avatarFrame}
           />
           <span className="review-page__author-name">{authorLabel}</span>
         </Link>

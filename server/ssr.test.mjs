@@ -20,7 +20,13 @@ const media = {
 const review = {
   id: reviewId,
   authorId,
-  author: { id: authorId, username: "reviewer", isFollowing: false },
+  author: {
+    id: authorId,
+    username: "reviewer",
+    isFollowing: false,
+    avatarFrame: "/storage/gemification/direct-frame.webp",
+    backdrop: "/storage/gemification/direct-list.webp",
+  },
   mediaObject: { id: mediaId, title: media.title, type: "movie" },
   title: "Опубликованный обзор SSR",
   status: "published",
@@ -91,6 +97,9 @@ before(async () => {
         username: "reviewer",
         firstName: "Автор SSR",
         lastName: "",
+        background: "/storage/gemification/direct-bg.webp",
+        avatarFrame: "/storage/gemification/direct-frame.webp",
+        backdrop: "/storage/gemification/direct-list.webp",
         followersCount: 1,
         followingCount: 0,
         isFollowing: false,
@@ -156,7 +165,10 @@ test("SSR renders guest page data and SEO metadata in the HTML response", async 
   }
   const home = await page("/");
   assert.match(home.html, /<h1[^>]*>Review Hub/);
-  assert.match(home.html, /class="feed__desktop-filters" role="group" aria-label="Тип произведения"/);
+  assert.match(
+    home.html,
+    /class="feed__desktop-filters" role="group" aria-label="Тип произведения"/,
+  );
   assert.match(home.html, /aria-pressed="true">Все типы<\/button>/);
   assert.ok(home.html.includes('name="description" content="Review Hub (Ревью Хаб)'));
   const { html } = await page(`/media-objects/${mediaId}`);
@@ -354,4 +366,22 @@ test("dynamic sitemap index and chunks are served ahead of static files with gue
   const head = await fetch(base + "/sitemap.xml", { method: "HEAD" });
   assert.equal(head.status, 200);
   assert.equal(await head.text(), "");
+});
+
+test("SSR uses direct frame, backdrop and background URLs without fetching the shop catalog", async () => {
+  const reviewPage = await page(`/reviews/${reviewId}`);
+  assert.ok(reviewPage.html.includes('src="/storage/gemification/direct-frame.webp"'));
+  assert.ok(
+    reviewPage.html.includes(
+      "--review-page-backdrop:url(&quot;/storage/gemification/direct-list.webp&quot;)",
+    ),
+  );
+  const profilePage = await page(`/profiles/${authorId}`);
+  assert.ok(
+    profilePage.html.includes(
+      "--profile-hero-bg:url(&quot;/storage/gemification/direct-bg.webp&quot;)",
+    ),
+  );
+  assert.ok(profilePage.html.includes('src="/storage/gemification/direct-frame.webp"'));
+  assert.ok(!calls.some(({ url }) => url.startsWith("/v1/shop/items")));
 });

@@ -1,6 +1,6 @@
+import { cosmeticImageUrls } from "../../../shared/lib/cosmeticImageUrls.ts";
 import { z } from "zod";
 import { unexpectedResponseError } from "../../../shared/api/errors.ts";
-import { parseShopCode } from "../../../shared/lib/shopCode.ts";
 import { safeHttpsUrl } from "../../../shared/lib/safeHttpsUrl.ts";
 import { MEDIA_TYPE_LABELS, type MediaType } from "../../../shared/types/media.ts";
 import type {
@@ -22,11 +22,23 @@ const mediaTypeSchema = z.custom<MediaType>(
 
 const authorHitSchema = z.object({
   id: uuid,
-  username: z.string().nullish().transform((value) => value ?? ""),
-  firstName: z.string().nullish().transform((value) => value ?? ""),
+  username: z
+    .string()
+    .nullish()
+    .transform((value) => value ?? ""),
+  firstName: z
+    .string()
+    .nullish()
+    .transform((value) => value ?? ""),
   followersCount: z.number().nonnegative().optional().default(0),
-  isFollowing: z.boolean().nullish().transform((value) => value ?? false),
+  isFollowing: z
+    .boolean()
+    .nullish()
+    .transform((value) => value ?? false),
   photoUrl: z.string().optional().nullable(),
+  background: z.string().nullish(),
+  avatarFrame: z.string().nullish(),
+  backdrop: z.string().nullish(),
 });
 
 const mediaTrendSchema = z.object({
@@ -45,20 +57,29 @@ const typeTrendSchema = z.object({
 
 const reviewAuthorSchema = z.object({
   id: uuid.optional(),
-  username: z.string().nullish().transform((value) => value ?? ""),
+  username: z
+    .string()
+    .nullish()
+    .transform((value) => value ?? ""),
   photoUrl: z.string().optional().nullable(),
-  avatarFrame: z.string().optional().nullable(),
-  backdrop: z.string().optional().nullable(),
+  background: z.string().nullish(),
+  avatarFrame: z.string().nullish(),
+  backdrop: z.string().nullish(),
 });
 
 const reviewHitSchema = z.object({
   id: uuid,
   title: z.string().min(1).max(256),
   authorId: uuid,
-  username: z.string().nullish().transform((value) => value ?? ""),
+  username: z
+    .string()
+    .nullish()
+    .transform((value) => value ?? ""),
   photoUrl: z.string().optional().nullable(),
-  avatarFrame: z.string().optional().nullable(),
-  backdrop: z.string().optional().nullable(),
+  background: z.string().nullish(),
+  avatarFrame: z.string().nullish(),
+  backdrop: z.string().nullish(),
+
   author: reviewAuthorSchema.optional(),
   mediaObject: z.object({
     id: uuid,
@@ -104,6 +125,7 @@ function toAuthor(raw: z.infer<typeof authorHitSchema>): SearchAuthorHit {
     followersCount: Math.floor(raw.followersCount),
     isFollowing: raw.isFollowing,
     ...optionalPhoto(raw.photoUrl),
+    ...cosmeticImageUrls(raw),
   };
 }
 
@@ -128,16 +150,13 @@ function toTypeTrend(raw: z.infer<typeof typeTrendSchema>): SearchTypeTrend {
 function toReviewHit(raw: z.infer<typeof reviewHitSchema>): SearchReviewHit {
   const nested = raw.author;
   const username = nested?.username || raw.username;
-  const avatarFrame = parseShopCode(nested?.avatarFrame ?? raw.avatarFrame ?? undefined);
-  const backdrop = parseShopCode(nested?.backdrop ?? raw.backdrop ?? undefined);
   return {
     id: raw.id,
     title: raw.title,
     authorId: raw.authorId,
     username,
     ...optionalPhoto(nested?.photoUrl ?? raw.photoUrl),
-    ...(avatarFrame ? { avatarFrame } : {}),
-    ...(backdrop ? { backdrop } : {}),
+    ...cosmeticImageUrls(nested ?? raw),
     mediaObject: {
       id: raw.mediaObject.id,
       title: raw.mediaObject.title,

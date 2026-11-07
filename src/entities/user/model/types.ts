@@ -14,7 +14,7 @@ export type SessionProfile = {
   isMe: boolean;
   /** HTTPS-аватар; omitempty — поля может не быть. */
   photoUrl?: string;
-  /** Ключи косметики с бэка (файлы на фронте по code). */
+  /** Относительные URL надетой косметики из API. */
   background?: string;
   avatarFrame?: string;
   backdrop?: string;
@@ -39,6 +39,7 @@ export type PublicProfile = {
   isPremium?: boolean;
   /** HTTPS-аватар; omitempty — поля может не быть. */
   photoUrl?: string;
+  /** Относительные URL надетой косметики из API. */
   background?: string;
   avatarFrame?: string;
   backdrop?: string;
@@ -49,12 +50,13 @@ export type User = {
   username: string;
   displayName: string;
   photoUrl?: string;
-  popularityScore: number;
-  followersCount: number;
-  followingCount: number;
+  /** Относительные URL надетой косметики из API. */
   background?: string;
   avatarFrame?: string;
   backdrop?: string;
+  popularityScore: number;
+  followersCount: number;
+  followingCount: number;
 };
 
 /** Элемент GET /v1/profiles/:id/followers|following. */
@@ -64,6 +66,10 @@ export type FollowConnection = {
   isFollowing: boolean;
   createdAt: string;
   photoUrl?: string;
+  /** Относительные URL надетой косметики из API. */
+  background?: string;
+  avatarFrame?: string;
+  backdrop?: string;
 };
 
 export type FollowConnectionList = {
