@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { unexpectedResponseError, ApiError } from "../../../shared/api/errors.ts";
+import { storageImageUrl } from "../../../shared/lib/storageImageUrl.ts";
 
 const codeSchema = z.string().regex(/^[a-z][a-z0-9_]{0,31}$/);
 const typesSchema = z
@@ -12,6 +13,7 @@ const dictionarySchema = z.object({
     .array(
       z.object({
         code: codeSchema,
+        imageUrl: z.string().nullish().transform(storageImageUrl),
         label: z.string().min(1),
         sortOrder: z.number().int(),
       }),

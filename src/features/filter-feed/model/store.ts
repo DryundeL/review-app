@@ -1,16 +1,15 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type { FeedMode, FeedSort } from "@/entities/review";
-import type { MediaType } from "@/shared/types";
 
 type FilterFeedState = {
   sort: FeedSort;
   mode: FeedMode;
-  type: MediaType | null;
+  type: string | null;
   setSort: (sort: FeedSort) => void;
   setMode: (mode: FeedMode) => void;
-  setType: (type: MediaType) => void;
-  toggleType: (type: MediaType) => void;
+  setType: (type: string) => void;
+  toggleType: (type: string) => void;
   clearType: () => void;
 };
 

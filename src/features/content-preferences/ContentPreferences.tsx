@@ -237,6 +237,19 @@ function PreferencesDialog({
                       )
                     }
                   />
+                  {item.imageUrl ? (
+                    <img
+                      className="content-preferences__image"
+                      src={item.imageUrl}
+                      alt=""
+                      width={40}
+                      height={40}
+                      loading="lazy"
+                      onError={(event) => {
+                        event.currentTarget.hidden = true;
+                      }}
+                    />
+                  ) : null}
                   <span>{item.label}</span>
                 </label>
               ))}

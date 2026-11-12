@@ -81,7 +81,7 @@ export type FeedMode = "all" | "following";
 export type ListFeedParams = {
   sort?: FeedSort;
   mode?: FeedMode;
-  type?: MediaType;
+  type?: string;
   cursor?: string;
   limit?: number;
 };

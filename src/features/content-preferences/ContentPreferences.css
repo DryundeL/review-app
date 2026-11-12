@@ -44,6 +44,11 @@
   accent-color: var(--color-accent);
   flex-shrink: 0;
 }
+.content-preferences__image {
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
 .content-preferences__choices:disabled {
   opacity: 0.6;
 }

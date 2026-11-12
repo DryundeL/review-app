@@ -1,14 +1,13 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { listFeed, type FeedSort } from "@/entities/review";
+import { fetchReviewTypes, type ReviewType } from "@/entities/settings";
 import { useAuthSession } from "@/features/auth";
 import { setFeedFilterOwner, useFilterFeedStore } from "@/features/filter-feed";
-import { MEDIA_TYPE_LABELS, type MediaType } from "@/shared/types";
 import { Button, Modal } from "@/shared/ui";
 import { FeedReviewItem } from "./FeedReviewItem";
 import "./Feed.css";
 
-const FILTER_TYPES = Object.keys(MEDIA_TYPE_LABELS) as MediaType[];
 const PAGE_SIZE = 20;
 
 const SORT_OPTIONS: { value: FeedSort; label: string }[] = [
@@ -23,6 +22,22 @@ export function Feed() {
     useFilterFeedStore();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const filtersRef = useRef<HTMLDivElement | null>(null);
+  const typesQuery = useQuery({
+    queryKey: ["review-types"],
+    queryFn: ({ signal }) => fetchReviewTypes(signal),
+    staleTime: 5 * 60 * 1000,
+  });
+  const filterTypes = typesQuery.data ?? [];
+  const typesStatus = typesQuery.isPending ? (
+    <p role="status">Загрузка типов…</p>
+  ) : typesQuery.isError ? (
+    <div role="alert">
+      <p>Не удалось загрузить типы.</p>
+      <Button onClick={() => void typesQuery.refetch()}>Повторить</Button>
+    </div>
+  ) : filterTypes.length === 0 ? (
+    <p role="status">Типы временно недоступны.</p>
+  ) : null;
 
   function scrollFilters(direction: -1 | 1) {
     const rail = filtersRef.current;
@@ -85,7 +100,9 @@ export function Feed() {
 
   const sortLabel =
     SORT_OPTIONS.find((option) => option.value === sort)?.label ?? "Новые";
-  const typeLabel = type ? MEDIA_TYPE_LABELS[type] : null;
+  const typeLabel = type
+    ? (filterTypes.find((item) => item.code === type)?.label ?? type)
+    : null;
 
   return (
     <section className="feed">
@@ -166,17 +183,17 @@ export function Feed() {
             >
               Все типы
             </button>
-            {FILTER_TYPES.map((mediaType) => (
+            {filterTypes.map((item) => (
               <button
-                key={mediaType}
+                key={item.code}
                 type="button"
                 className={
-                  type === mediaType ? "feed__chip feed__chip--active" : "feed__chip"
+                  type === item.code ? "feed__chip feed__chip--active" : "feed__chip"
                 }
-                aria-pressed={type === mediaType}
-                onClick={() => toggleType(mediaType)}
+                aria-pressed={type === item.code}
+                onClick={() => toggleType(item.code)}
               >
-                {MEDIA_TYPE_LABELS[mediaType]}
+                <TypeContent item={item} />
               </button>
             ))}
           </div>
@@ -190,6 +207,7 @@ export function Feed() {
           </button>
         </div>
       </div>
+      <div className="feed__types-status">{filtersOpen ? null : typesStatus}</div>
 
       <Modal
         open={filtersOpen}
@@ -197,22 +215,22 @@ export function Feed() {
         title="Тип произведения"
         className="feed__filters-modal"
       >
-        <div className="feed__filter-grid" role="list">
-          {FILTER_TYPES.map((mediaType) => {
-            const active = type === mediaType;
+        {typesStatus}
+        <div className="feed__filter-grid" role="group" aria-label="Тип произведения">
+          {filterTypes.map((item) => {
+            const active = type === item.code;
             return (
               <button
-                key={mediaType}
+                key={item.code}
                 type="button"
-                role="listitem"
                 className={active ? "feed__chip feed__chip--active" : "feed__chip"}
                 aria-pressed={active}
                 onClick={() => {
-                  toggleType(mediaType);
+                  toggleType(item.code);
                   setFiltersOpen(false);
                 }}
               >
-                {MEDIA_TYPE_LABELS[mediaType]}
+                <TypeContent item={item} />
               </button>
             );
           })}
@@ -281,6 +299,27 @@ export function Feed() {
         </p>
       ) : null}
     </section>
+  );
+}
+
+function TypeContent({ item }: { item: ReviewType }) {
+  return (
+    <>
+      {item.imageUrl ? (
+        <img
+          className="feed__type-image"
+          src={item.imageUrl}
+          alt=""
+          width={24}
+          height={24}
+          loading="lazy"
+          onError={(event) => {
+            event.currentTarget.hidden = true;
+          }}
+        />
+      ) : null}
+      <span>{item.label}</span>
+    </>
   );
 }
 
