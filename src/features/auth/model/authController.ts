@@ -46,6 +46,7 @@ export type AuthSnapshot = {
 const listeners = new Set<() => void>();
 
 let generation = 0;
+let profileRevision = 0;
 let bootstrapped = false;
 let browserLoginInFlight = false;
 let miniAppReauthBudget = 1;
@@ -126,10 +127,11 @@ export function retryMiniAppLogin(): void {
 export function refreshSessionProfile(): void {
   if (!getAccessToken() || snapshot.phase !== "authenticated") return;
   const gen = generation;
+  const revision = ++profileRevision;
   void (async () => {
     try {
       const profile = await fetchProfile();
-      if (gen !== generation) return;
+      if (gen !== generation || revision !== profileRevision) return;
       setSnapshot({
         phase: "authenticated",
         profile,
@@ -141,6 +143,22 @@ export function refreshSessionProfile(): void {
       // оставляем текущий профиль
     }
   })();
+}
+
+/** Применять только к той сессии, которая отправила запрос. */
+export function updateSessionOnboarding(
+  accountId: string,
+  token: string | null,
+  needsOnboarding: boolean,
+): void {
+  if (
+    snapshot.phase !== "authenticated" ||
+    snapshot.profile?.id !== accountId ||
+    getAccessToken() !== token
+  )
+    return;
+  profileRevision += 1;
+  setSnapshot({ ...snapshot, profile: { ...snapshot.profile, needsOnboarding } });
 }
 
 /** Локально сдвинуть followingCount сессии (follow/unfollow другого пользователя). */

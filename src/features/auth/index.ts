@@ -1,5 +1,6 @@
 export { useAuthSession } from "./model/useAuthSession";
 export {
+  updateSessionOnboarding,
   adjustSessionFollowingCount,
   refreshSessionProfile,
 } from "./model/authController";

@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { ContentPreferencesOnboarding } from "@/features/content-preferences/ContentPreferences";
 import logoUrl from "@/assets/review-hub-logo.png";
 import { refreshSessionProfile } from "@/features/auth";
 import { usePageMeta } from "@/shared/hooks";
@@ -107,6 +108,7 @@ export function AppShell() {
         <Outlet />
       </main>
       <BottomNavigation hideOnMobile={hideNav} />
+      <ContentPreferencesOnboarding />
     </div>
   );
 }

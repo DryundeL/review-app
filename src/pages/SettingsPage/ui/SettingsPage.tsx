@@ -1,3 +1,4 @@
+import { ContentPreferencesSettings } from "@/features/content-preferences/ContentPreferences";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
@@ -53,6 +54,7 @@ export function SettingsPage() {
   return (
     <section className="settings-page screen" aria-busy={settingsQuery.isLoading}>
       <h1>Настройки</h1>
+      <ContentPreferencesSettings key={profile?.id} />
 
       {settingsQuery.isLoading ? <p className="settings-page__muted">Загрузка…</p> : null}
 

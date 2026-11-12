@@ -97,7 +97,7 @@ describe("auth boundary", { concurrency: 1 }, () => {
 
     const telegramId = "1234567890123456789";
     const profile = parseProfileText(
-      `{"id":"11111111-1111-4111-8111-111111111111","telegramId":${telegramId},"username":"","firstName":"Ada","lastName":"","languageCode":"","isPremium":false,"photoUrl":"https://cdn.example/a.jpg"}`,
+      `{"needsOnboarding":false,"id":"11111111-1111-4111-8111-111111111111","telegramId":${telegramId},"username":"","firstName":"Ada","lastName":"","languageCode":"","isPremium":false,"photoUrl":"https://cdn.example/a.jpg"}`,
     );
     assert.equal(profile.telegramId, telegramId);
     assert.equal(profile.id, "11111111-1111-4111-8111-111111111111");
@@ -106,12 +106,12 @@ describe("auth boundary", { concurrency: 1 }, () => {
     assert.notEqual(String(Number(telegramId)), telegramId);
 
     const withEmail = parseProfileText(
-      `{"id":"11111111-1111-4111-8111-111111111111","telegramId":${telegramId},"username":"","firstName":"Ada","lastName":"","languageCode":"","isPremium":false,"email":"User@Example.com"}`,
+      `{"needsOnboarding":false,"id":"11111111-1111-4111-8111-111111111111","telegramId":${telegramId},"username":"","firstName":"Ada","lastName":"","languageCode":"","isPremium":false,"email":"User@Example.com"}`,
     );
     assert.equal(withEmail.email, "user@example.com");
 
     const droppedEmail = parseProfileText(
-      `{"id":"11111111-1111-4111-8111-111111111111","telegramId":${telegramId},"username":"","firstName":"Ada","lastName":"","languageCode":"","isPremium":false,"email":"not an email"}`,
+      `{"needsOnboarding":false,"id":"11111111-1111-4111-8111-111111111111","telegramId":${telegramId},"username":"","firstName":"Ada","lastName":"","languageCode":"","isPremium":false,"email":"not an email"}`,
     );
     assert.equal(droppedEmail.email, undefined);
     assert.equal(droppedEmail.firstName, "Ada");
@@ -185,6 +185,7 @@ test("session profile preserves direct cosmetic URLs without catalog codes", () 
   const value = parseProfileText(
     JSON.stringify({
       id: "11111111-1111-4111-8111-111111111111",
+      needsOnboarding: false,
       telegramId: 123,
       username: "ann",
       firstName: "Ann",
@@ -199,4 +200,30 @@ test("session profile preserves direct cosmetic URLs without catalog codes", () 
   assert.equal(value.avatarFrame, "/storage/gemification/frame.webp");
   assert.equal(value.backdrop, "/storage/gemification/list.webp");
   assert.equal(value.background, "/storage/gemification/bg.webp");
+});
+
+test("own profile requires explicit boolean onboarding state", () => {
+  const payload = {
+    id: "11111111-1111-4111-8111-111111111111",
+    telegramId: 123,
+    username: "",
+    firstName: "",
+    lastName: "",
+    languageCode: "ru",
+    isPremium: false,
+  };
+  assert.throws(() => parseProfileText(JSON.stringify(payload)));
+  assert.throws(() =>
+    parseProfileText(JSON.stringify({ ...payload, needsOnboarding: "true" })),
+  );
+  assert.equal(
+    parseProfileText(JSON.stringify({ ...payload, needsOnboarding: true }))
+      .needsOnboarding,
+    true,
+  );
+  assert.equal(
+    parseProfileText(JSON.stringify({ ...payload, needsOnboarding: false }))
+      .needsOnboarding,
+    false,
+  );
 });

@@ -1,4 +1,5 @@
 export type SessionProfile = {
+  needsOnboarding: boolean;
   isProfilePrivate?: boolean;
   followStatus?: FollowState["followStatus"];
   id: string;
@@ -24,6 +25,7 @@ export type SessionProfile = {
 
 /** Карточка профиля из GET /v1/profiles/:id (и свой /v1/profile). */
 export type PublicProfile = {
+  needsOnboarding?: boolean;
   isProfilePrivate: boolean;
   followStatus?: FollowState["followStatus"];
   id: string;

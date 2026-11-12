@@ -11,6 +11,7 @@ import type {
 const uuid = z.string().uuid();
 
 const publicProfileSchema = z.object({
+  needsOnboarding: z.boolean().optional(),
   id: uuid,
   username: z.string(),
   firstName: z.string(),

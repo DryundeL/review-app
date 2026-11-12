@@ -32,6 +32,7 @@ const pollSchema = z.object({
 });
 
 const profileSchema = z.object({
+  needsOnboarding: z.boolean(),
   id: z.string().uuid(),
   telegramId: z.number(),
   username: z.string(),
@@ -62,6 +63,7 @@ export type PollResult =
   { status: "pending" } | { status: "denied" } | { status: "confirmed"; token: string };
 
 export type AuthProfile = {
+  needsOnboarding: boolean;
   id: string;
   telegramId: string;
   username: string;
@@ -145,6 +147,7 @@ export function parseProfileText(text: string): AuthProfile {
   const photoUrl = safeHttpsUrl(parsed.data.photoUrl ?? undefined);
   const email = normalizeEmail(parsed.data.email ?? "");
   return {
+    needsOnboarding: parsed.data.needsOnboarding,
     id: parsed.data.id,
     telegramId,
     username: parsed.data.username,

@@ -18,3 +18,9 @@ export {
   patchNotificationSettings,
   patchSettings,
 } from "./api/settingsApi";
+export {
+  fetchReviewTypes,
+  fetchContentPreferences,
+  saveContentPreferences,
+} from "./api/contentPreferencesApi";
+export type { ContentPreferences, ReviewType } from "./api/parseContentPreferences";
