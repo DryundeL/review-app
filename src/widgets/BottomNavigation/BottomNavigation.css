@@ -53,8 +53,8 @@
   border-radius: var(--radius-pill);
   position: relative;
   transition:
-    transform 350ms var(--glass-ease),
-    color 200ms ease;
+    transform var(--motion-duration-normal) var(--motion-ease),
+    color var(--motion-duration-normal) var(--motion-ease);
   color: #fff;
   text-shadow: 0 1px 4px rgb(0 0 0 / 80%);
 }
@@ -166,8 +166,8 @@
   opacity: 1;
   pointer-events: none;
   transition:
-    transform 480ms cubic-bezier(0.22, 1.2, 0.36, 1),
-    opacity 200ms ease;
+    transform var(--motion-duration-slow) var(--motion-ease),
+    opacity var(--motion-duration-normal) var(--motion-ease);
 }
 
 .bottom-nav__indicator[data-visible="false"] {
@@ -185,7 +185,7 @@
 }
 
 .bottom-nav__icon-wrap {
-  transition: transform 350ms var(--glass-ease);
+  transition: transform var(--motion-duration-normal) var(--motion-ease);
 }
 
 .bottom-nav__label {

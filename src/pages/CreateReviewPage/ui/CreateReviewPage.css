@@ -282,8 +282,8 @@
     min-height: 48px;
     background: var(--glass-bg);
     transition:
-      border-color 200ms ease,
-      transform 200ms var(--glass-ease);
+      border-color var(--motion-duration-normal) var(--motion-ease),
+      transform var(--motion-duration-normal) var(--motion-ease);
   }
 
   .create-review__score:hover {

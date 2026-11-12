@@ -41,7 +41,13 @@
   --glass-shadow: inset 0 1px 1px rgb(255 255 255 / 28%),
     inset 1px 0 1px rgb(255 255 255 / 10%),
     inset 0 -1px 1px rgb(255 255 255 / 12%), 0 4px 16px rgb(0 0 0 / 12%);
-  --glass-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Motion: press feedback, state changes, and larger transitions. */
+  --motion-duration-fast: 160ms;
+  --motion-duration-normal: 240ms;
+  --motion-duration-slow: 400ms;
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --glass-ease: var(--motion-ease);
   --nav-height: 64px;
   --fab-size: 56px;
 }
@@ -250,7 +256,7 @@ p {
   border-radius: 999px;
   background: color-mix(in srgb, var(--color-muted) 35%, var(--color-border));
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background var(--motion-duration-fast) var(--motion-ease);
 }
 
 .ui-switch:hover:not(:disabled),
@@ -277,7 +283,7 @@ p {
   border-radius: 50%;
   background: var(--color-bg);
   box-shadow: 0 1px 2px rgb(0 0 0 / 18%);
-  transition: transform 0.15s ease;
+  transition: transform var(--motion-duration-fast) var(--motion-ease);
 }
 
 .ui-switch[aria-checked="true"] .ui-switch__thumb {
@@ -302,8 +308,12 @@ p {
   box-shadow: var(--glass-shadow);
   -webkit-backdrop-filter: blur(6px) saturate(160%);
   backdrop-filter: blur(6px) saturate(160%);
-  transition: transform 300ms var(--glass-ease), border-color 200ms ease,
-    color 200ms ease, box-shadow 300ms ease, background-position 500ms ease;
+  transition:
+    transform var(--motion-duration-normal) var(--motion-ease),
+    border-color var(--motion-duration-normal) var(--motion-ease),
+    color var(--motion-duration-normal) var(--motion-ease),
+    box-shadow var(--motion-duration-normal) var(--motion-ease),
+    background-position var(--motion-duration-slow) var(--motion-ease);
   background-size: 200% 200%;
   background-position: 100% 100%;
 }

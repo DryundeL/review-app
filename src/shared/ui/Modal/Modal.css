@@ -99,11 +99,11 @@
   box-shadow:
     var(--glass-shadow),
     0 24px 80px rgb(0 0 0 / 45%);
-  animation: desktop-modal-in 180ms ease-out;
+  animation: desktop-modal-in var(--motion-duration-normal) var(--motion-ease);
 }
 
 .ui-modal__content--dialog[data-state="closed"] {
-  animation: desktop-modal-out 150ms ease-in forwards;
+  animation: desktop-modal-out var(--motion-duration-fast) var(--motion-ease-exit) forwards;
   pointer-events: none;
 }
 

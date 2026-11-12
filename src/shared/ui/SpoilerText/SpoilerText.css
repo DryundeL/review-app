@@ -20,8 +20,8 @@
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
   transition:
-    background 0.15s ease,
-    color 0.15s ease;
+    background var(--motion-duration-fast) var(--motion-ease),
+    color var(--motion-duration-fast) var(--motion-ease);
 }
 
 .spoiler-plaque:hover,

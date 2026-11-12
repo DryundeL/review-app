@@ -9,8 +9,12 @@
   border-radius: var(--radius-pill);
   font-weight: 700;
   cursor: pointer;
-  transition: transform 300ms var(--glass-ease), border-color 200ms ease,
-    color 200ms ease, box-shadow 300ms ease, background-position 500ms ease;
+  transition:
+    transform var(--motion-duration-normal) var(--motion-ease),
+    border-color var(--motion-duration-normal) var(--motion-ease),
+    color var(--motion-duration-normal) var(--motion-ease),
+    box-shadow var(--motion-duration-normal) var(--motion-ease),
+    background-position var(--motion-duration-slow) var(--motion-ease);
 }
 
 .ui-button:disabled {

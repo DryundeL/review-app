@@ -330,8 +330,8 @@ a.search-page__row {
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     transition:
-      border-color 200ms ease,
-      background-color 200ms ease;
+      border-color var(--motion-duration-normal) var(--motion-ease),
+      background-color var(--motion-duration-normal) var(--motion-ease);
   }
 
   .search-page__row--backdrop {
