@@ -210,7 +210,13 @@ export function ReviewPage() {
         )}
       </div>
 
-      {!isOwn ? (
+      {!profile ? (
+        <div className="review-page__vote">
+          <Button asChild>
+            <Link to="/profile">Войти</Link>
+          </Button>
+        </div>
+      ) : !isOwn ? (
         <div className="review-page__vote" role="group" aria-label="Оценка обзора">
           <Button
             type="button"

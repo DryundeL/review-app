@@ -178,6 +178,18 @@ test("SSR renders guest page data and SEO metadata in the HTML response", async 
   assert.ok(html.includes('property="og:title" content="Матрица SSR · Review Hub"'));
 });
 
+test("guest can read a review and sees login instead of voting controls", async () => {
+  const response = await fetch(`${base}/reviews/${reviewId}`);
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.ok(html.includes("Текст рецензии доступен без JavaScript"));
+  assert.match(
+    html,
+    /class="review-page__vote"[^>]*>\s*<a[^>]*href="\/profile"[^>]*>Войти<\/a>/,
+  );
+  assert.doesNotMatch(html, /aria-label="(?:Нравится|Не нравится)"/);
+});
+
 test("internal search is rendered but not indexable, including query variations", async () => {
   for (const path of ["/search", "/search?q=Матрица"]) {
     const { response, html } = await page(path);
