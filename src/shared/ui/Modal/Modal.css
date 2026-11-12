@@ -7,12 +7,17 @@
 
 .ui-modal__content {
   position: fixed;
-  right: 0;
-  bottom: 0;
-  left: 0;
   z-index: 41;
   display: flex;
   flex-direction: column;
+  background: var(--color-surface);
+  outline: none;
+}
+
+.ui-modal__content--drawer {
+  right: 0;
+  bottom: 0;
+  left: 0;
   width: min(100%, var(--shell));
   height: 100%;
   max-height: 96dvh;
@@ -21,9 +26,6 @@
   border: 1px solid var(--color-border);
   border-bottom: 0;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  background: var(--color-surface);
-  outline: none;
-  /* vaul сам двигает через transform */
   touch-action: none;
 }
 
@@ -79,62 +81,55 @@
   flex: 1;
   overflow: auto;
   overscroll-behavior: contain;
-  /* скролл контента не перехватывает drag закрытия */
+}
+
+.ui-modal__content--drawer .ui-modal__body {
   touch-action: pan-y;
 }
 
-@media (min-width: 768px) {
-  .ui-modal__content {
-    inset: 0;
-    width: min(560px, calc(100% - 48px));
-    height: fit-content;
-    max-height: calc(100dvh - 64px);
-    margin: auto;
-    padding: 24px;
-    border: 1px solid var(--glass-border);
-    border-radius: 24px;
-    box-shadow:
-      var(--glass-shadow),
-      0 24px 80px rgb(0 0 0 / 45%);
-    /* Vaul задаёт transform для мобильных snap points инлайн. */
-    transform: none !important;
-    touch-action: auto;
-    animation: desktop-modal-in 180ms ease-out;
-  }
+.ui-modal__content--dialog {
+  inset: 0;
+  width: min(560px, calc(100% - 48px));
+  height: fit-content;
+  max-height: calc(100dvh - 64px);
+  margin: auto;
+  padding: 24px;
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  box-shadow:
+    var(--glass-shadow),
+    0 24px 80px rgb(0 0 0 / 45%);
+  animation: desktop-modal-in 180ms ease-out;
+}
 
-  .ui-modal__content[data-state="closed"] {
-    animation: desktop-modal-out 150ms ease-in forwards;
-    pointer-events: none;
-  }
+.ui-modal__content--dialog[data-state="closed"] {
+  animation: desktop-modal-out 150ms ease-in forwards;
+  pointer-events: none;
+}
 
-  .ui-modal__handle {
-    display: none;
-  }
+.ui-modal__content--dialog .ui-modal__head {
+  grid-template-columns: minmax(0, 1fr) 44px;
+  margin-bottom: 20px;
+  gap: 16px;
+}
 
-  .ui-modal__head {
-    grid-template-columns: minmax(0, 1fr) 44px;
-    margin-bottom: 20px;
-    gap: 16px;
-  }
+.ui-modal__content--dialog .ui-modal__title {
+  grid-column: 1;
+  text-align: left;
+  font-size: 1.25rem;
+  overflow-wrap: anywhere;
+}
 
-  .ui-modal__title {
-    grid-column: 1;
-    text-align: left;
-    font-size: 1.25rem;
-    overflow-wrap: anywhere;
-  }
+.ui-modal__content--dialog .ui-modal__close {
+  grid-column: 2;
+  width: 44px;
+  height: 44px;
+}
 
-  .ui-modal__close {
-    grid-column: 2;
-    width: 44px;
-    height: 44px;
-  }
-
-  .ui-modal__body {
-    flex: 0 1 auto;
-    overflow-wrap: anywhere;
-    scrollbar-gutter: stable;
-  }
+.ui-modal__content--dialog .ui-modal__body {
+  flex: 0 1 auto;
+  overflow-wrap: anywhere;
+  scrollbar-gutter: stable;
 }
 
 @keyframes desktop-modal-in {

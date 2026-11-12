@@ -1,16 +1,11 @@
-import {
-  useEffect,
-  useState,
-  useSyncExternalStore,
-  type ComponentProps,
-  type ReactNode,
-} from "react";
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { Drawer } from "vaul";
 import { cn } from "@/shared/lib/cn";
 
 const SNAP_COMPACT = 0.52;
 const SNAP_EXPANDED = 0.92;
-const SNAP_POINTS = [SNAP_COMPACT, SNAP_EXPANDED] as const;
+const SNAP_POINTS = [SNAP_COMPACT, SNAP_EXPANDED];
 
 const DESKTOP_QUERY = "(min-width: 768px)";
 
@@ -44,12 +39,11 @@ export function Modal({ open, onOpenChange, title, children, className }: ModalP
     if (open) setSnap(SNAP_COMPACT);
   }, [open]);
 
-  const rootProps: ComponentProps<typeof Drawer.Root> = desktop
-    ? { open, onOpenChange, handleOnly: true, autoFocus: true, repositionInputs: false }
+  const Window = desktop ? Dialog : Drawer;
+  const drawerProps = desktop
+    ? {}
     : {
-        open,
-        onOpenChange,
-        snapPoints: [...SNAP_POINTS],
+        snapPoints: SNAP_POINTS,
         activeSnapPoint: snap,
         setActiveSnapPoint: setSnap,
         fadeFromIndex: 0,
@@ -57,22 +51,29 @@ export function Modal({ open, onOpenChange, title, children, className }: ModalP
       };
 
   return (
-    <Drawer.Root {...rootProps}>
-      <Drawer.Portal>
-        <Drawer.Overlay className="ui-modal__overlay" />
-        <Drawer.Content className={cn("ui-modal__content", className)}>
-          <div className="ui-modal__handle" aria-hidden />
+    <Window.Root open={open} onOpenChange={onOpenChange} {...drawerProps}>
+      <Window.Portal>
+        <Window.Overlay className="ui-modal__overlay" />
+        <Window.Content
+          className={cn(
+            "ui-modal__content",
+            desktop ? "ui-modal__content--dialog" : "ui-modal__content--drawer",
+            className,
+          )}
+          aria-describedby={undefined}
+        >
+          {!desktop && <div className="ui-modal__handle" aria-hidden />}
           <div className="ui-modal__head">
-            <Drawer.Title className="ui-modal__title">{title}</Drawer.Title>
-            <Drawer.Close className="ui-modal__close" aria-label="Закрыть">
+            <Window.Title className="ui-modal__title">{title}</Window.Title>
+            <Window.Close className="ui-modal__close" aria-label="Закрыть">
               ×
-            </Drawer.Close>
+            </Window.Close>
           </div>
-          <div className="ui-modal__body" data-vaul-no-drag="">
+          <div className="ui-modal__body" data-vaul-no-drag={desktop ? undefined : ""}>
             {children}
           </div>
-        </Drawer.Content>
-      </Drawer.Portal>
-    </Drawer.Root>
+        </Window.Content>
+      </Window.Portal>
+    </Window.Root>
   );
 }
