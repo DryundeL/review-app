@@ -21,6 +21,7 @@ export function FollowButton({ userId }: { userId: string }) {
         className="follow-control__button"
         type="button"
         variant={state?.followStatus === "none" ? "primary" : "secondary"}
+        aria-busy={stateQuery.isLoading || mutation.isPending}
         disabled={!state || stateQuery.isError || mutation.isPending}
         onClick={() =>
           mutation.mutate({ userId, nextFollowing: state?.followStatus === "none" })

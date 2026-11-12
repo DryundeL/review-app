@@ -5,6 +5,16 @@
   background: rgb(0 0 0 / 55%);
 }
 
+/* Vaul owns drawer transforms and overlay opacity, including drag gestures. */
+.ui-modal__overlay--dialog[data-state="open"] {
+  animation: modal-overlay-in var(--motion-duration-normal) var(--motion-ease) both;
+}
+
+.ui-modal__overlay--dialog[data-state="closed"] {
+  animation: modal-overlay-out var(--motion-duration-fast) var(--motion-ease-exit) both;
+  pointer-events: none;
+}
+
 .ui-modal__content {
   position: fixed;
   z-index: 41;
@@ -99,11 +109,14 @@
   box-shadow:
     var(--glass-shadow),
     0 24px 80px rgb(0 0 0 / 45%);
-  animation: desktop-modal-in var(--motion-duration-normal) var(--motion-ease);
+}
+
+.ui-modal__content--dialog[data-state="open"] {
+  animation: desktop-modal-in var(--motion-duration-normal) var(--motion-ease) both;
 }
 
 .ui-modal__content--dialog[data-state="closed"] {
-  animation: desktop-modal-out var(--motion-duration-fast) var(--motion-ease-exit) forwards;
+  animation: desktop-modal-out var(--motion-duration-fast) var(--motion-ease-exit) both;
   pointer-events: none;
 }
 
@@ -135,17 +148,47 @@
 @keyframes desktop-modal-in {
   from {
     opacity: 0;
+    transform: translateY(8px) scale(0.98);
   }
   to {
     opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
 @keyframes desktop-modal-out {
   from {
     opacity: 1;
+    transform: translateY(0) scale(1);
   }
   to {
     opacity: 0;
+    transform: translateY(4px) scale(0.99);
+  }
+}
+
+@keyframes modal-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-overlay-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-modal__overlay,
+  .ui-modal__content {
+    animation: none !important;
+    transition: none !important;
   }
 }

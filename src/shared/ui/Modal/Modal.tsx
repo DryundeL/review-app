@@ -53,7 +53,9 @@ export function Modal({ open, onOpenChange, title, children, className }: ModalP
   return (
     <Window.Root open={open} onOpenChange={onOpenChange} {...drawerProps}>
       <Window.Portal>
-        <Window.Overlay className="ui-modal__overlay" />
+        <Window.Overlay
+          className={cn("ui-modal__overlay", desktop && "ui-modal__overlay--dialog")}
+        />
         <Window.Content
           className={cn(
             "ui-modal__content",

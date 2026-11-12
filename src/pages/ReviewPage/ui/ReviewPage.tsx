@@ -224,6 +224,7 @@ export function ReviewPage() {
             variant={myVote === true ? "primary" : "secondary"}
             aria-label="Нравится"
             aria-pressed={myVote === true}
+            aria-busy={voteMutation.isPending}
             disabled={!profile || voteMutation.isPending}
             onClick={() => voteMutation.mutate(true)}
           >
@@ -236,6 +237,7 @@ export function ReviewPage() {
             variant="secondary"
             aria-label="Не нравится"
             aria-pressed={myVote === false}
+            aria-busy={voteMutation.isPending}
             disabled={!profile || voteMutation.isPending}
             onClick={() => voteMutation.mutate(false)}
           >

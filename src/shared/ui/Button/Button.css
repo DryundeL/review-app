@@ -14,7 +14,9 @@
     border-color var(--motion-duration-normal) var(--motion-ease),
     color var(--motion-duration-normal) var(--motion-ease),
     box-shadow var(--motion-duration-normal) var(--motion-ease),
-    background-position var(--motion-duration-slow) var(--motion-ease);
+    background-position var(--motion-duration-slow) var(--motion-ease),
+    opacity var(--motion-duration-normal) var(--motion-ease),
+    background-color var(--motion-duration-normal) var(--motion-ease);
 }
 
 .ui-button:disabled {
@@ -37,4 +39,34 @@
 .ui-button--ghost {
   background: var(--glass-bg);
   color: var(--color-muted);
+}
+
+.ui-button[aria-busy="true"] {
+  cursor: progress;
+  animation: button-pending 1.2s ease-in-out infinite;
+}
+
+.ui-button > svg {
+  flex-shrink: 0;
+  transition: transform var(--motion-duration-normal) var(--motion-ease);
+}
+
+.ui-button[aria-pressed="true"] > svg {
+  transform: scale(1.1);
+}
+
+@keyframes button-pending {
+  0%,
+  100% {
+    opacity: 0.65;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-button[aria-pressed="true"] > svg {
+    transform: none;
+  }
 }
