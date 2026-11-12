@@ -27,6 +27,7 @@ function isExactTab(pathname: string, to: string): boolean {
 export function BottomNavigation({ hideOnMobile = false }: { hideOnMobile?: boolean }) {
   const location = useLocation();
   const { profile } = useAuthSession();
+  const visibleLinks = profile ? links : links.slice(0, 2);
   const queryClient = useQueryClient();
 
   const unreadQuery = useQuery({
@@ -36,7 +37,9 @@ export function BottomNavigation({ hideOnMobile = false }: { hideOnMobile?: bool
     enabled: Boolean(profile),
   });
 
-  const activeIndex = links.findIndex((link) => isExactTab(location.pathname, link.to));
+  const activeIndex = visibleLinks.findIndex((link) =>
+    isExactTab(location.pathname, link.to),
+  );
 
   const unreadCount = unreadQuery.data?.count ?? 0;
   const badgeLabel = unreadCount > 99 ? "99+" : String(unreadCount);
@@ -57,7 +60,12 @@ export function BottomNavigation({ hideOnMobile = false }: { hideOnMobile?: bool
         </NavLink>
         <div
           className="bottom-nav__items"
-          style={{ "--active-tab": Math.max(0, activeIndex) } as CSSProperties}
+          style={
+            {
+              "--active-tab": Math.max(0, activeIndex),
+              "--tab-count": visibleLinks.length,
+            } as CSSProperties
+          }
         >
           <div className="bottom-nav__bar" aria-hidden="true" />
           <span
@@ -65,7 +73,7 @@ export function BottomNavigation({ hideOnMobile = false }: { hideOnMobile?: bool
             data-visible={activeIndex >= 0}
             aria-hidden="true"
           />
-          {links.map((link) => {
+          {visibleLinks.map((link) => {
             const showBadge = link.icon === "bell" && unreadCount > 0;
             return (
               <NavLink
@@ -107,39 +115,47 @@ export function BottomNavigation({ hideOnMobile = false }: { hideOnMobile?: bool
             );
           })}
         </div>
-        <div className="bottom-nav__secondary">
-          {secondaryLinks.map((link) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              end
-              aria-label={link.label}
-              className={({ isActive }) =>
-                `bottom-nav__link${isActive ? " bottom-nav__link--active" : ""}`
-              }
-            >
-              <span className="bottom-nav__icon-wrap">
-                <NavIcon name={link.icon} />
-              </span>
-              <span className="bottom-nav__label">{link.label}</span>
-            </NavLink>
-          ))}
-        </div>
+        {profile ? (
+          <div className="bottom-nav__secondary">
+            {secondaryLinks.map((link) => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                end
+                aria-label={link.label}
+                className={({ isActive }) =>
+                  `bottom-nav__link${isActive ? " bottom-nav__link--active" : ""}`
+                }
+              >
+                <span className="bottom-nav__icon-wrap">
+                  <NavIcon name={link.icon} />
+                </span>
+                <span className="bottom-nav__label">{link.label}</span>
+              </NavLink>
+            ))}
+          </div>
+        ) : null}
       </div>
       <NavLink
-        to="/create"
+        to={profile ? "/create" : "/profile"}
         end
-        aria-label="Добавить обзор"
+        aria-label={profile ? "Добавить обзор" : "Войти"}
         className={({ isActive }) =>
           `bottom-nav__link bottom-nav__create${isActive ? " bottom-nav__link--active" : ""}`
         }
       >
         <span className="bottom-nav__icon-wrap">
-          <NavIcon name="plus" />
+          <NavIcon name={profile ? "plus" : "user"} />
         </span>
         <span className="bottom-nav__label bottom-nav__label--create">
-          <span className="bottom-nav__create-short">Обзор</span>
-          <span className="bottom-nav__create-full">Добавить обзор</span>
+          {profile ? (
+            <>
+              <span className="bottom-nav__create-short">Обзор</span>
+              <span className="bottom-nav__create-full">Добавить обзор</span>
+            </>
+          ) : (
+            "Войти"
+          )}
         </span>
       </NavLink>
     </nav>

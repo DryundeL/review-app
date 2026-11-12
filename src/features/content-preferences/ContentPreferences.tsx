@@ -242,8 +242,8 @@ function PreferencesDialog({
                       className="content-preferences__image"
                       src={item.imageUrl}
                       alt=""
-                      width={40}
-                      height={40}
+                      width={64}
+                      height={64}
                       loading="lazy"
                       onError={(event) => {
                         event.currentTarget.hidden = true;

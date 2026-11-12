@@ -154,8 +154,9 @@ test("SSR renders guest page data and SEO metadata in the HTML response", async 
     const body = html.split('<div id="root">')[1].split('<script id="__REVIEW_SSR__"')[0];
     assert.ok(body.includes(text), path);
     assert.match(body, /aria-label="Основная навигация"/, path);
-    assert.match(body, /aria-label="Добавить обзор"/, path);
-    assert.match(body, /class="bottom-nav__secondary"/, path);
+    assert.match(body, /aria-label="Войти"/, path);
+    assert.doesNotMatch(body, /aria-label="Добавить обзор"/, path);
+    assert.doesNotMatch(body, /class="bottom-nav__secondary"/, path);
     if (path.startsWith("/reviews/") || path.startsWith("/media-objects/")) {
       assert.match(body, /bottom-nav--desktop-only/, path);
     }

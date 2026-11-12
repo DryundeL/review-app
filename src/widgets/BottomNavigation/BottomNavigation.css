@@ -33,7 +33,7 @@
   display: grid;
   flex: 1;
   min-width: 0;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--tab-count, 4), minmax(0, 1fr));
   align-items: center;
   height: var(--nav-height);
   gap: 0;
@@ -157,7 +157,7 @@
   top: 6px;
   bottom: 6px;
   left: 4px;
-  width: calc((100% - 8px) / 4);
+  width: calc((100% - 8px) / var(--tab-count, 4));
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-pill);
   background: var(--glass-bg);
