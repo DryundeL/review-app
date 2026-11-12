@@ -1,6 +1,7 @@
 import { createRoot, hydrateRoot } from "react-dom/client";
 import { App } from "@/app/App";
 import { readTelegramInitData } from "@/shared/platform";
+import { getAccessToken } from "@/shared/api/session";
 import "@/app/styles/index.css";
 
 const rootElement = document.getElementById("root");
@@ -10,8 +11,8 @@ if (!rootElement) {
 }
 
 const stateElement = document.getElementById("__REVIEW_SSR__");
-if (readTelegramInitData()) {
-  // Mini App starts with auth, without hydrating or reusing the guest feed.
+if (readTelegramInitData() || getAccessToken()) {
+  // Авторизация начинается с прелоудера, без гидратации гостевого интерфейса.
   rootElement.replaceChildren();
   createRoot(rootElement).render(<App />);
 } else if (stateElement?.textContent) {

@@ -34,7 +34,12 @@ export function AuthGate({ children }: AuthGateProps) {
     queryClient.clear();
   }, [queryClient, session.profile?.id]);
 
-  const screen = authScreen(session.phase, session.isMiniApp, requiresLogin);
+  const screen = authScreen(
+    session.phase,
+    session.isMiniApp,
+    requiresLogin,
+    session.hasToken,
+  );
   if (screen === "loading") return <AuthLoadingScreen />;
   if (screen === "login") return <LoginScreen />;
   return children;

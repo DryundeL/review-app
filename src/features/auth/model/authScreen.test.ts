@@ -30,6 +30,49 @@ test("browser guests keep public SSR content, private routes still require login
   assert.equal(authScreen("authenticated", false, true), "content");
 });
 
+test("browser session waits for profile on both public and private routes", () => {
+  for (const requiresLogin of [false, true]) {
+    for (const phase of ["booting", "authenticating"] as const) {
+      assert.equal(authScreen(phase, false, requiresLogin, true), "loading");
+    }
+    assert.equal(authScreen("authenticated", false, requiresLogin, true), "content");
+    assert.notEqual(authScreen("failed", false, requiresLogin, true), "loading");
+  }
+});
+
+test("startup guard covers stored browser sessions and tolerates blocked storage", () => {
+  const script = readFileSync(
+    new URL("../../../../public/telegram-bootstrap.js", import.meta.url),
+    "utf8",
+  );
+  for (const token of [null, "", "stored-token"]) {
+    const attributes = new Map<string, string>();
+    runInNewContext(script, {
+      window: {
+        sessionStorage: {
+          getItem: (key: string) => {
+            assert.equal(key, "review.auth.token");
+            return token;
+          },
+        },
+      },
+      document: {
+        documentElement: {
+          setAttribute: (key: string, value: string) => attributes.set(key, value),
+        },
+      },
+    });
+    assert.equal(attributes.has("data-telegram-startup"), Boolean(token));
+  }
+  runInNewContext(script, {
+    window: {
+      get sessionStorage() {
+        throw new Error("blocked");
+      },
+    },
+  });
+});
+
 test("pre-render guard hides SSR only when Telegram initData is present", () => {
   const script = readFileSync(
     new URL("../../../../public/telegram-bootstrap.js", import.meta.url),
@@ -52,7 +95,6 @@ test("pre-render guard hides SSR only when Telegram initData is present", () => 
   }
   runInNewContext(script, { window: {} });
 });
-
 
 test("startup guard and stylesheet load before SSR content", () => {
   const html = readFileSync(new URL("../../../../index.html", import.meta.url), "utf8");
