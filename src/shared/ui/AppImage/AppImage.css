@@ -38,6 +38,11 @@ span.app-image[data-state="loading"] .app-image__loader,
   animation: app-image-pulse 1.2s ease-in-out infinite;
 }
 
+/* После загрузки заливку убираем: у прозрачных PNG она оставалась прямоугольником. */
+span.app-image[data-state="ready"] .app-image__loader {
+  display: none;
+}
+
 span.app-image[data-state="error"] {
   display: none;
 }
