@@ -64,7 +64,8 @@ test("feed shares backend type choices and images between desktop and drawer", a
           if (id === "\0/test-ui")
             return `import React from "react";
           export function Button({children, ...props}) { return React.createElement("button", props, children); }
-          export function Modal({open, children}) { return open ? React.createElement("div", {role: "dialog"}, children) : null; }`;
+          export function Modal({open, children}) { return open ? React.createElement("div", {role: "dialog"}, children) : null; }
+          export function AppImage({src, alt, className, width, height}) { return React.createElement("img", {src, alt, className, width, height}); }`;
         },
       },
     ],
