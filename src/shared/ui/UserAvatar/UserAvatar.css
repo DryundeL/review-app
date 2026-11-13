@@ -39,3 +39,13 @@
   pointer-events: none;
   object-fit: contain;
 }
+
+span.app-image.user-avatar-frame__ring {
+  overflow: visible;
+  background: transparent;
+}
+
+/* PNG рамки прозрачный: заливка лоадера рисовала квадрат вокруг кольца. */
+.user-avatar-frame__ring .app-image__loader {
+  display: none;
+}
