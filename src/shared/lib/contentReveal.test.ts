@@ -82,6 +82,26 @@ test("reveals new visible items once, skips cached items, and cleans up animatio
     await new Promise((resolve) => setTimeout(resolve, 0));
     intersect([{ target: next, isIntersecting: true }]);
     assert.equal(played.length, 1);
+    reduced = false;
+    const focusedRow = dom.window.document.createElement("li");
+    focusedRow.dataset.revealId = "focused";
+    const focusTarget = dom.window.document.createElement("button");
+    focusedRow.append(focusTarget);
+    root.append(focusedRow);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    focusTarget.focus();
+    intersect([{ target: focusedRow, isIntersecting: true }]);
+    assert.equal(played.length, 1, "keyboard focus must remain immediately visible");
+
+    const laterRow = dom.window.document.createElement("li");
+    laterRow.dataset.revealId = "later";
+    root.append(laterRow);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    intersect([{ target: laterRow, isIntersecting: true }]);
+    assert.equal(played.length, 2);
+    focusTarget.blur();
+    focusTarget.focus();
+    assert.equal(cancelled, 2, "keyboard navigation must cancel active reveals");
   } finally {
     dispose();
     assert.equal(observed.size, 0);

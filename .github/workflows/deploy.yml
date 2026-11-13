@@ -30,11 +30,11 @@ jobs:
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         run: |
           mkdir -p "$RUNNER_TEMP/release"
-          docker save "review-app:$GITHUB_SHA" | gzip > "$RUNNER_TEMP/release/image.tar.gz"
+          docker save -o "$RUNNER_TEMP/release/image.tar" "review-app:$GITHUB_SHA"
           cp compose.yaml "$RUNNER_TEMP/release/"
           cp deploy/pull.sh "$RUNNER_TEMP/release/"
           printf '%s\n' "$GITHUB_SHA" > "$RUNNER_TEMP/release/.release-version"
-          tar -czf "$RUNNER_TEMP/release.tar.gz" -C "$RUNNER_TEMP/release" .
+          tar -I 'gzip -1' -cf "$RUNNER_TEMP/release.tar.gz" -C "$RUNNER_TEMP/release" .
       - name: Deploy to server
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         env:

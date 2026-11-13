@@ -4,6 +4,7 @@ import path from "node:path";
 
 export default defineConfig({
   plugins: [react()],
+  build: { reportCompressedSize: false },
   ssr: { resolve: { externalConditions: ["node", "module-sync"] } },
   resolve: {
     alias: {
