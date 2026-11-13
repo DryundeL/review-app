@@ -4,6 +4,7 @@ import { listFeed, type FeedSort } from "@/entities/review";
 import { fetchReviewTypes, type ReviewType } from "@/entities/settings";
 import { useAuthSession } from "@/features/auth";
 import { setFeedFilterOwner, useFilterFeedStore } from "@/features/filter-feed";
+import { useContentReveal } from "@/shared/hooks/useContentReveal";
 import { Button, Modal } from "@/shared/ui";
 import { FeedReviewItem } from "./FeedReviewItem";
 import "./Feed.css";
@@ -76,6 +77,8 @@ export function Feed() {
   });
 
   const items = feedQuery.data?.pages.flatMap((page) => page.items) ?? [];
+  const contentRef = useRef<HTMLElement>(null);
+  useContentReveal(contentRef, items.length > 0);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const hasNextPage = feedQuery.hasNextPage;
   const isFetchingNextPage = feedQuery.isFetchingNextPage;
@@ -105,7 +108,7 @@ export function Feed() {
     : null;
 
   return (
-    <section className="feed">
+    <section className="feed" ref={contentRef}>
       <div className="feed__tabs" role="tablist" aria-label="Режим ленты">
         <button
           type="button"
@@ -283,7 +286,7 @@ export function Feed() {
         <ul className="feed__list">
           {items.map((review) => {
             return (
-              <li key={review.id}>
+              <li key={review.id} data-reveal-id={`review:${review.id}`}>
                 <FeedReviewItem review={review} viewerId={profile?.id ?? null} />
               </li>
             );

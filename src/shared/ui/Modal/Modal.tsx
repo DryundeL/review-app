@@ -1,11 +1,7 @@
-import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Drawer } from "vaul";
 import { cn } from "@/shared/lib/cn";
-
-const SNAP_COMPACT = 0.52;
-const SNAP_EXPANDED = 0.92;
-const SNAP_POINTS = [SNAP_COMPACT, SNAP_EXPANDED];
 
 const DESKTOP_QUERY = "(min-width: 768px)";
 
@@ -33,20 +29,10 @@ type ModalProps = {
 
 export function Modal({ open, onOpenChange, title, children, className }: ModalProps) {
   const desktop = useSyncExternalStore(subscribeDesktop, isDesktop, serverDesktop);
-  const [snap, setSnap] = useState<number | string | null>(SNAP_COMPACT);
-
-  useEffect(() => {
-    if (open) setSnap(SNAP_COMPACT);
-  }, [open]);
-
   const Window = desktop ? Dialog : Drawer;
   const drawerProps = desktop
     ? {}
     : {
-        snapPoints: SNAP_POINTS,
-        activeSnapPoint: snap,
-        setActiveSnapPoint: setSnap,
-        fadeFromIndex: 0,
         repositionInputs: false,
       };
 

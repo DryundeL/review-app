@@ -25,7 +25,10 @@ const ROUTE_REFRESHES: readonly RouteRefresh[] = [
 ];
 
 /** Сбросить кэш запросов, относящихся к pathname (без принудительного scroll). */
-export function invalidateQueriesForPath(queryClient: QueryClient, pathname: string): void {
+export function invalidateQueriesForPath(
+  queryClient: QueryClient,
+  pathname: string,
+): void {
   for (const route of ROUTE_REFRESHES) {
     if (!route.match(pathname)) continue;
     for (const queryKey of route.queryKeys) {
@@ -37,7 +40,12 @@ export function invalidateQueriesForPath(queryClient: QueryClient, pathname: str
 /** Повторный тап на вкладку / явное обновление экрана: invalidate + scroll вверх. */
 export function refreshQueriesForPath(queryClient: QueryClient, pathname: string): void {
   invalidateQueriesForPath(queryClient, pathname);
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  window.scrollTo({
+    top: 0,
+    behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? "instant"
+      : "smooth",
+  });
 }
 
 /** Повторный тап на «Главная»: обновить ленту и прокрутить вверх. */

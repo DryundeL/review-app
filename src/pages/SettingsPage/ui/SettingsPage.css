@@ -143,3 +143,14 @@
     min-height: 48px;
   }
 }
+
+.settings-page__save-status {
+  min-height: 1.45em;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.settings-page__save-status > span {
+  display: inline-block;
+  animation: content-state-in var(--motion-duration-fast) var(--motion-ease);
+}

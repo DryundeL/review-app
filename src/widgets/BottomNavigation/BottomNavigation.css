@@ -166,7 +166,7 @@
   opacity: 1;
   pointer-events: none;
   transition:
-    transform var(--motion-duration-slow) var(--motion-ease),
+    transform var(--motion-duration-normal) var(--motion-ease),
     opacity var(--motion-duration-normal) var(--motion-ease);
 }
 
@@ -175,7 +175,8 @@
 }
 
 .bottom-nav__link:active {
-  transform: scale(0.88);
+  transform: scale(0.96);
+  transition-duration: var(--motion-duration-fast);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -349,5 +350,12 @@
 
   .bottom-nav__create {
     justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bottom-nav__link:active,
+  .bottom-nav__link:hover .bottom-nav__icon-wrap {
+    transform: none;
   }
 }

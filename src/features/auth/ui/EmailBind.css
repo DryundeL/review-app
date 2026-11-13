@@ -69,3 +69,7 @@
   font-size: 0.875rem;
   line-height: 1.4;
 }
+
+.email-bind__form {
+  animation: form-step-in var(--motion-duration-normal) var(--motion-ease);
+}

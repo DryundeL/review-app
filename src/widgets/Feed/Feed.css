@@ -21,6 +21,8 @@
   font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
+  transition: color var(--motion-duration-normal) var(--motion-ease),
+    background-color var(--motion-duration-normal) var(--motion-ease);
 }
 
 .feed__tab:hover,
@@ -33,7 +35,7 @@
   color: var(--color-text);
 }
 
-.feed__tab--active::after {
+.feed__tab::after {
   content: "";
   position: absolute;
   right: 20%;
@@ -42,6 +44,15 @@
   height: 3px;
   border-radius: 3px 3px 0 0;
   background: var(--color-accent);
+  opacity: 0;
+  transform: scaleX(0.7);
+  transition: opacity var(--motion-duration-normal) var(--motion-ease),
+    transform var(--motion-duration-normal) var(--motion-ease);
+}
+
+.feed__tab--active::after {
+  opacity: 1;
+  transform: scaleX(1);
 }
 
 .feed__controls {

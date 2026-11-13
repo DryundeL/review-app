@@ -91,6 +91,7 @@ export function SettingsPage() {
               role="switch"
               aria-checked={settings.isProfilePrivate}
               aria-labelledby="settings-private-label"
+              aria-busy={saveMutation.isPending}
               disabled={saveMutation.isPending}
               onClick={() =>
                 saveMutation.mutate({ isProfilePrivate: !settings.isProfilePrivate })
@@ -109,6 +110,7 @@ export function SettingsPage() {
               <select
                 value={settings.language}
                 aria-label="Язык"
+                aria-busy={saveMutation.isPending}
                 disabled={saveMutation.isPending}
                 onChange={(event) => {
                   saveMutation.mutate({ language: event.target.value });
@@ -143,6 +145,7 @@ export function SettingsPage() {
               role="switch"
               aria-checked={settings.allowNotifications}
               aria-labelledby="settings-mute-label"
+              aria-busy={saveMutation.isPending}
               disabled={saveMutation.isPending}
               onClick={() => {
                 saveMutation.mutate({ allowNotifications: !settings.allowNotifications });
@@ -153,6 +156,16 @@ export function SettingsPage() {
           </li>
         </ul>
       ) : null}
+
+      <p className="settings-page__save-status" role="status">
+        <span key={saveMutation.status}>
+          {saveMutation.isPending
+            ? "Сохранение…"
+            : saveMutation.isSuccess && !saveError
+              ? "Изменения сохранены."
+              : ""}
+        </span>
+      </p>
 
       {saveError ? (
         <p className="settings-page__error" role="alert">

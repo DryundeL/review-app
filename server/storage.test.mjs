@@ -36,6 +36,39 @@ test("storage serves images and isolates files from SSR and filesystem escapes",
     assert.equal(head.status, 200);
     assert.equal(Number(head.headers.get("content-length")), image.length);
     assert.equal(await head.text(), "");
+    assert.equal(
+      response.headers.get("cache-control"),
+      "public, max-age=3600, must-revalidate",
+    );
+    const etag = response.headers.get("etag");
+    assert.ok(etag);
+    assert.ok(response.headers.get("last-modified"));
+    const cached = await fetch(base + "/storage/photos/test%20image.png", {
+      headers: { "If-None-Match": etag },
+    });
+    assert.equal(cached.status, 304);
+    assert.equal(await cached.text(), "");
+    const cachedHead = await fetch(base + "/storage/photos/test%20image.png", {
+      method: "HEAD",
+      headers: { "If-None-Match": `"another-version", ${etag}` },
+    });
+    assert.equal(cachedHead.status, 304);
+    const dated = await fetch(base + "/storage/photos/test%20image.png", {
+      headers: { "If-Modified-Since": response.headers.get("last-modified") },
+    });
+    assert.equal(dated.status, 304);
+    const changedImage = Buffer.concat([image, Buffer.from([0])]);
+    await writeFile(join(storageRoot, "photos", "test image.png"), changedImage);
+    const changed = await fetch(base + "/storage/photos/test%20image.png", {
+      headers: {
+        "If-None-Match": etag,
+        "If-Modified-Since": new Date(Date.now() + 60000).toUTCString(),
+      },
+    });
+    assert.equal(changed.status, 200);
+    assert.notEqual(changed.headers.get("etag"), etag);
+    assert.deepEqual(Buffer.from(await changed.arrayBuffer()), changedImage);
+
     for (const path of [
       "/storage",
       "/storage/",

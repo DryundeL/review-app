@@ -340,6 +340,7 @@ export function CreateReviewPage() {
         <Button
           type="button"
           variant="secondary"
+          aria-busy={saveMutation.isPending && saveMutation.variables === "draft"}
           disabled={saveMutation.isPending || (isEdit && !hydrated)}
           onClick={() => saveMutation.mutate("draft")}
         >
@@ -347,6 +348,7 @@ export function CreateReviewPage() {
         </Button>
         <Button
           type="button"
+          aria-busy={saveMutation.isPending && saveMutation.variables === "published"}
           disabled={saveMutation.isPending || (isEdit && !hydrated)}
           onClick={() => saveMutation.mutate("published")}
         >

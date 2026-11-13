@@ -399,3 +399,22 @@ a.search-page__row {
     border-radius: var(--radius-md);
   }
 }
+
+:is(a, button).search-page__row,
+.search-page__author-link {
+  transition:
+    background-color var(--motion-duration-normal) var(--motion-ease),
+    color var(--motion-duration-normal) var(--motion-ease);
+}
+
+:is(a, button).search-page__row:focus-visible,
+.search-page__author-link:focus-visible {
+  background-color: color-mix(in srgb, var(--color-accent) 6%, transparent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :is(a, button).search-page__row:hover,
+  .search-page__author-link:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  }
+}

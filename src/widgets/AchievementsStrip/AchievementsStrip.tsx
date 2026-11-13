@@ -1,9 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import {
-  fetchProfileAchievements,
-  type Achievement,
-} from "@/entities/achievement";
+import { useRef, useState } from "react";
+import { fetchProfileAchievements, type Achievement } from "@/entities/achievement";
+import { useContentReveal } from "@/shared/hooks/useContentReveal";
 import { Modal } from "@/shared/ui";
 import "./AchievementsStrip.css";
 
@@ -121,17 +119,20 @@ export function AchievementsBoardPage({ profileId }: AchievementsBoardPageProps)
 }
 
 function AchievementsBoard({ achievements }: { achievements: Achievement[] }) {
-  if (achievements.length === 0) {
-    return <p className="achievements-board__empty">Пока нет достижений.</p>;
-  }
+  const boardRef = useRef<HTMLUListElement>(null);
+  useContentReveal(boardRef, false);
 
   return (
-    <ul className="achievements-board" role="list">
+    <ul className="achievements-board" role="list" ref={boardRef}>
+      {achievements.length === 0 ? (
+        <li className="achievements-board__empty">Пока нет достижений.</li>
+      ) : null}
       {achievements.map((item) => {
         const unlocked = Boolean(item.unlockedAt);
         return (
           <li
             key={item.code}
+            data-reveal-id={`achievement:${item.code}`}
             className={
               unlocked
                 ? "achievements-board__item"
@@ -158,7 +159,7 @@ function AchievementsBoard({ achievements }: { achievements: Achievement[] }) {
               >
                 <div
                   className="achievements-board__bar-fill"
-                  style={{ width: `${item.progress}%` }}
+                  style={{ transform: `scaleX(${item.progress / 100})` }}
                 />
               </div>
               <span className="achievements-board__stats">

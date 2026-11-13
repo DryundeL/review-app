@@ -160,6 +160,7 @@ export function EmailBind({ email: savedEmail }: EmailBindProps) {
 
       {pending ? (
         <form
+          key="code"
           className="email-bind__form"
           onSubmit={(event) => void confirm(event)}
           noValidate
@@ -184,7 +185,7 @@ export function EmailBind({ email: savedEmail }: EmailBindProps) {
           </label>
           <Messages error={error} info={info} />
           <div className="email-bind__actions">
-            <Button type="submit" disabled={busy || code.length !== 6}>
+            <Button type="submit" aria-busy={busy} disabled={busy || code.length !== 6}>
               Подтвердить
             </Button>
             <Button
@@ -222,6 +223,7 @@ export function EmailBind({ email: savedEmail }: EmailBindProps) {
         </>
       ) : (
         <form
+          key="email"
           className="email-bind__form"
           onSubmit={(event) => void sendAddress(event)}
           noValidate
@@ -255,7 +257,7 @@ export function EmailBind({ email: savedEmail }: EmailBindProps) {
             />
           </label>
           <Messages error={error} info={info} />
-          <Button type="submit" disabled={busy || cooling}>
+          <Button type="submit" aria-busy={busy} disabled={busy || cooling}>
             {cooling ? `Повторить через ${secondsLeft}` : "Отправить код"}
           </Button>
         </form>

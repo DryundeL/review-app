@@ -5,7 +5,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   deleteReview,
@@ -24,6 +24,7 @@ import {
 } from "@/entities/user";
 import { useAuthSession } from "@/features/auth";
 import { ApiError } from "@/shared/api";
+import { useContentReveal } from "@/shared/hooks/useContentReveal";
 import { usePageMeta } from "@/shared/hooks";
 import { truncateMeta, type PageMeta } from "@/shared/lib/pageMeta";
 import { safeHttpsUrl } from "@/shared/lib/safeHttpsUrl";
@@ -573,12 +574,14 @@ function ReviewsBlock({
   emptyTab: ReviewTab;
   backdrop?: string;
 }) {
+  const contentRef = useRef<HTMLDivElement>(null);
+  useContentReveal(contentRef, reviews.length > 0);
   const backdropStyle: CSSProperties | undefined = backdrop
     ? { ["--shop-list-backdrop" as string]: `url("${backdrop}")` }
     : undefined;
 
   return (
-    <div className="profile-page__reviews">
+    <div className="profile-page__reviews" ref={contentRef}>
       {reviewsQuery.isLoading ? (
         <div
           className="profile-page__skeleton"
@@ -622,7 +625,7 @@ function ReviewsBlock({
       {reviews.length > 0 ? (
         <ul className="profile-page__list">
           {reviews.map((review) => (
-            <li key={review.id}>
+            <li key={review.id} data-reveal-id={`review:${review.id}`}>
               <div
                 className={backdrop ? "shop-list-backdrop" : undefined}
                 style={backdropStyle}

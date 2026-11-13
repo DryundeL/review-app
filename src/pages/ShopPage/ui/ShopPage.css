@@ -228,3 +228,16 @@
     line-height: 1.5;
   }
 }
+
+.shop-page__card {
+  transition: border-color var(--motion-duration-normal) var(--motion-ease),
+    background-color var(--motion-duration-normal) var(--motion-ease);
+}
+
+.shop-page__card[data-equipped="true"] {
+  border-color: color-mix(in srgb, var(--color-accent) 65%, var(--color-border));
+}
+
+.shop-page__help[open] .shop-page__help-text {
+  animation: content-state-in var(--motion-duration-normal) var(--motion-ease);
+}

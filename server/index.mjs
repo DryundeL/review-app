@@ -129,13 +129,36 @@ export async function createAppServer({
             if (!actual.startsWith(actualRoot + sep)) return finish(404, "Not found");
             const info = await stat(actual);
             if (!info.isFile()) return finish(404, "Not found");
+            const etag = `W/"${info.size.toString(16)}-${info.mtimeMs.toString(16)}-${info.ctimeMs.toString(16)}"`;
+            const modified = info.mtime.toUTCString();
+            const cacheControl =
+              !isStorage && location.pathname.startsWith("/assets/")
+                ? "public, max-age=31536000, immutable"
+                : type.startsWith("image/")
+                  ? "public, max-age=3600, must-revalidate"
+                  : "no-cache";
+            res.setHeader("Cache-Control", cacheControl);
+            res.setHeader("ETag", etag);
+            res.setHeader("Last-Modified", modified);
+            const requestedTag = req.headers["if-none-match"];
+            const unchanged =
+              requestedTag !== undefined
+                ? requestedTag
+                    .split(",")
+                    .some(
+                      (tag) =>
+                        tag.trim() === "*" ||
+                        tag.trim().replace(/^W\//, "") === etag.replace(/^W\//, ""),
+                    )
+                : Date.parse(req.headers["if-modified-since"] ?? "") >=
+                  Math.floor(info.mtimeMs / 1000) * 1000;
+            if (unchanged) {
+              res.writeHead(304);
+              return res.end();
+            }
             res.writeHead(200, {
               "Content-Type": type,
               "Content-Length": info.size,
-              "Cache-Control":
-                !isStorage && location.pathname.startsWith("/assets/")
-                  ? "public, max-age=31536000, immutable"
-                  : "no-cache",
             });
             if (req.method === "HEAD") return res.end();
             const stream = createReadStream(actual);

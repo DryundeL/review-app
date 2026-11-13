@@ -114,7 +114,7 @@ export function EmailLogin({ onClose }: EmailLoginProps) {
   return (
     <div className="login-screen__form">
       {pending ? (
-        <form onSubmit={(event) => void confirm(event)} noValidate>
+        <form key="code" onSubmit={(event) => void confirm(event)} noValidate>
           <Field id="email-login-code" label="Код из письма">
             <Input
               id="email-login-code"
@@ -136,6 +136,7 @@ export function EmailLogin({ onClose }: EmailLoginProps) {
           <div className="login-screen__form-actions">
             <Button
               type="submit"
+              aria-busy={busy}
               className="login-screen__action"
               disabled={busy || code.length !== 6}
             >
@@ -146,6 +147,7 @@ export function EmailLogin({ onClose }: EmailLoginProps) {
               variant="secondary"
               className="login-screen__action"
               disabled={busy || secondsLeft > 0}
+              aria-busy={busy}
               onClick={() => void resend()}
             >
               {secondsLeft > 0 ? `Повторить через ${secondsLeft}` : "Отправить снова"}
@@ -165,7 +167,7 @@ export function EmailLogin({ onClose }: EmailLoginProps) {
           </div>
         </form>
       ) : (
-        <form onSubmit={(event) => void sendAddress(event)} noValidate>
+        <form key="email" onSubmit={(event) => void sendAddress(event)} noValidate>
           <Field id="email-login-address" label="Почта">
             <Input
               id="email-login-address"
@@ -192,6 +194,7 @@ export function EmailLogin({ onClose }: EmailLoginProps) {
           <div className="login-screen__form-actions">
             <Button
               type="submit"
+              aria-busy={busy}
               className="login-screen__action"
               disabled={busy || cooling}
             >

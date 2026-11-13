@@ -1,6 +1,6 @@
 import { FollowButton } from "@/features/follow-user";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { MEDIA_TYPE_LABELS, isMediaType } from "@/shared/types";
 import {
@@ -16,6 +16,7 @@ import {
 } from "@/entities/search";
 import { useAuthSession } from "@/features/auth";
 import { useFilterFeedStore } from "@/features/filter-feed";
+import { useContentReveal } from "@/shared/hooks/useContentReveal";
 import { useDebouncedValue } from "@/shared/hooks";
 import { ruPlural } from "@/shared/lib/ruPlural";
 import { Button, Input, MediaPoster, UserAvatar } from "@/shared/ui";
@@ -58,6 +59,9 @@ export function SearchPage() {
     enabled: searching,
   });
 
+  const contentRef = useRef<HTMLElement>(null);
+  useContentReveal(contentRef, Boolean(searching ? searchQuery.data : trendsQuery.data));
+
   const openTypeInFeed = (code: string) => {
     if (!isMediaType(code)) return;
     setFeedType(code);
@@ -65,7 +69,7 @@ export function SearchPage() {
   };
 
   return (
-    <section className="search-page">
+    <section className="search-page" ref={contentRef}>
       <header className="search-page__header">
         <h1 className="search-page__title">Поиск</h1>
         <div className="search-page__field">
@@ -212,7 +216,7 @@ function TrendsList({
     return (
       <ul className="search-page__list">
         {data.items.map((item, index) => (
-          <li key={item.id}>
+          <li key={item.id} data-reveal-id={`media:${item.id}`}>
             <MediaTrendRow
               item={item}
               rank={index + 1}
@@ -228,7 +232,7 @@ function TrendsList({
     return (
       <ul className="search-page__list">
         {data.items.map((item) => (
-          <li key={item.id}>
+          <li key={item.id} data-reveal-id={`author:${item.id}`}>
             <AuthorRow item={item} viewerId={viewerId} />
           </li>
         ))}
@@ -239,7 +243,7 @@ function TrendsList({
   return (
     <ul className="search-page__list">
       {data.items.map((item, index) => (
-        <li key={item.code}>
+        <li key={item.code} data-reveal-id={`type:${item.code}`}>
           <TypeTrendRow
             item={item}
             rank={index + 1}
@@ -280,7 +284,7 @@ function SearchResults({
           <h2 className="search-page__section-title">Люди</h2>
           <ul className="search-page__list">
             {users.map((item) => (
-              <li key={item.id}>
+              <li key={item.id} data-reveal-id={`author:${item.id}`}>
                 <AuthorRow item={item} viewerId={viewerId} />
               </li>
             ))}
@@ -293,7 +297,7 @@ function SearchResults({
           <h2 className="search-page__section-title">Обзоры</h2>
           <ul className="search-page__list">
             {reviews.map((item) => (
-              <li key={item.id}>
+              <li key={item.id} data-reveal-id={`review:${item.id}`}>
                 <ReviewRow item={item} />
               </li>
             ))}
@@ -306,7 +310,7 @@ function SearchResults({
           <h2 className="search-page__section-title">Тайтлы</h2>
           <ul className="search-page__list">
             {mediaObjects.map((item) => (
-              <li key={item.id}>
+              <li key={item.id} data-reveal-id={`media:${item.id}`}>
                 <MediaHitRow item={item} onPick={() => onPickMedia(item.id)} />
               </li>
             ))}

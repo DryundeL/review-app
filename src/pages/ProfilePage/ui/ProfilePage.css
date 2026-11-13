@@ -235,7 +235,7 @@
   color: var(--color-text);
 }
 
-.profile-page__tab--active::after {
+.profile-page__tab::after {
   content: "";
   position: absolute;
   right: 16%;
@@ -244,6 +244,15 @@
   height: 3px;
   border-radius: 3px 3px 0 0;
   background: var(--color-accent);
+  opacity: 0;
+  transform: scaleX(0.7);
+  transition: transform var(--motion-duration-normal) var(--motion-ease),
+    opacity var(--motion-duration-normal) var(--motion-ease);
+}
+
+.profile-page__tab--active::after {
+  opacity: 1;
+  transform: scaleX(1);
 }
 
 .profile-page__tab-count {
@@ -567,4 +576,14 @@
     min-height: 44px;
     margin-top: 20px;
   }
+}
+
+.profile-page__tab,
+.profile-page__tab-count {
+  transition: color var(--motion-duration-normal) var(--motion-ease),
+    background-color var(--motion-duration-normal) var(--motion-ease);
+}
+
+:is(.profile-page__empty, .profile-page__error, .profile-page__skeleton) {
+  animation: content-state-in var(--motion-duration-normal) var(--motion-ease);
 }

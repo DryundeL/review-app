@@ -36,7 +36,11 @@
   border: 1px solid var(--color-border);
   border-bottom: 0;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  touch-action: none;
+}
+
+/* Allow body scrolling through Vaul's drawer-level touch-action override. */
+.ui-modal__content--drawer[data-vaul-drawer] {
+  touch-action: pan-y;
 }
 
 .ui-modal__handle {

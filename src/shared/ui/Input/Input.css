@@ -18,3 +18,8 @@
 .ui-input::placeholder {
   color: var(--color-muted);
 }
+
+.ui-input {
+  transition: border-color var(--motion-duration-normal) var(--motion-ease),
+    background-color var(--motion-duration-normal) var(--motion-ease);
+}

@@ -1,12 +1,19 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useLayoutEffect, useRef } from "react";
+import {
+  NavLink,
+  Outlet,
+  useLocation,
+  useNavigate,
+  useNavigationType,
+} from "react-router-dom";
 import { ContentPreferencesOnboarding } from "@/features/content-preferences/ContentPreferences";
 import logoUrl from "@/assets/review-hub-logo.png";
 import { refreshSessionProfile } from "@/features/auth";
 import { usePageMeta } from "@/shared/hooks";
 import { metaForPath } from "@/shared/lib/pageMeta";
 import { refreshHomeFeed } from "@/shared/lib/refreshHome";
+import { createRouteScrollRestoration } from "@/shared/lib/routeScroll";
 import { BottomNavigation } from "@/widgets/BottomNavigation";
 import "./AppShell.css";
 
@@ -29,7 +36,13 @@ function canNavigateBack(): boolean {
 }
 
 export function AppShell() {
-  const { pathname } = useLocation();
+  const { pathname, key: locationKey } = useLocation();
+  const navigationType = useNavigationType();
+  const mainRef = useRef<HTMLElement>(null);
+  const previousPathRef = useRef(pathname);
+  const scrollRestorationRef = useRef<ReturnType<
+    typeof createRouteScrollRestoration
+  > | null>(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const refreshAfterBackRef = useRef(false);
@@ -44,6 +57,49 @@ export function AppShell() {
     pathname.startsWith("/media-objects/") ||
     pathname.startsWith("/reviews/");
   const showBack = showBackButton(pathname);
+
+  useLayoutEffect(() => {
+    const restoration = createRouteScrollRestoration();
+    scrollRestorationRef.current = restoration;
+    return () => {
+      restoration.dispose();
+      scrollRestorationRef.current = null;
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    scrollRestorationRef.current?.navigate(locationKey, navigationType, pathname);
+  }, [locationKey, navigationType, pathname]);
+
+  useLayoutEffect(() => {
+    const previousPath = previousPathRef.current;
+    previousPathRef.current = pathname;
+    const main = mainRef.current;
+    if (
+      previousPath === pathname ||
+      !main?.animate ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    )
+      return;
+    const styles = getComputedStyle(main);
+    const animation = main.animate(
+      [
+        { opacity: 0, transform: "translateY(8px)" },
+        { opacity: 1, transform: "translateY(0)" },
+      ],
+      {
+        duration: parseFloat(styles.getPropertyValue("--motion-duration-normal")) || 240,
+        easing: styles.getPropertyValue("--motion-ease").trim() || "ease-out",
+      },
+    );
+    const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const cancel = () => animation.cancel();
+    motionPreference.addEventListener("change", cancel);
+    return () => {
+      animation.cancel();
+      motionPreference.removeEventListener("change", cancel);
+    };
+  }, [pathname]);
 
   useEffect(() => {
     if (!refreshAfterBackRef.current) return;
@@ -91,6 +147,7 @@ export function AppShell() {
         </div>
       </header>
       <main
+        ref={mainRef}
         className={hideNav ? "app-shell__main app-shell__main--solo" : "app-shell__main"}
       >
         {showBack ? (

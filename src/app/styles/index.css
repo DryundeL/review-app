@@ -356,24 +356,61 @@ p {
 /* Compact actions share the same feedback without changing their surfaces. */
 :is(.back, .app-shell__back, .search-page__clear, .ui-modal__close) {
   transition:
-    transform var(--motion-duration-normal) var(--motion-ease),
+    scale var(--motion-duration-normal) var(--motion-ease),
     color var(--motion-duration-normal) var(--motion-ease),
     background-color var(--motion-duration-normal) var(--motion-ease);
 }
 
 :is(.back, .app-shell__back, .search-page__clear, .ui-modal__close):active:not(:disabled):not([aria-disabled="true"]) {
-  transform: scale(0.94);
+  scale: 0.94;
   transition-duration: var(--motion-duration-fast);
 }
 
 :is(.ui-button, .chip, .feed__filter-btn, .feed__chip, .search-page__tab,
-  .back, .app-shell__back, .search-page__clear, .ui-modal__close):is(:disabled, [aria-disabled="true"], [aria-busy="true"]) {
+  .back, .app-shell__back, .ui-modal__close):is(:disabled, [aria-disabled="true"], [aria-busy="true"]) {
   transform: none;
+  scale: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :is(.ui-button, .chip, .feed__filter-btn, .feed__chip, .search-page__tab,
-    .back, .app-shell__back, .search-page__clear, .ui-modal__close) {
-    transform: none !important;
+  .search-page__clear {
+    scale: 1 !important;
   }
+  :is(.ui-button, .chip, .feed__filter-btn, .feed__chip, .search-page__tab,
+    .back, .app-shell__back, .ui-modal__close) {
+    transform: none !important;
+    scale: 1 !important;
+  }
+}
+
+:is(.feed__skeleton, .feed__empty, .feed__error, .feed__loading-more,
+  .search-page__skeleton, .search-page__empty, .search-page__error) {
+  animation: content-state-in var(--motion-duration-normal) var(--motion-ease);
+}
+
+@keyframes content-state-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+:is(.settings-page__error, .settings-page__muted, .settings-page__list, .login-screen__status,
+  .login-screen__error, .email-bind__status, .email-bind__error,
+  .create-review__error, .create-review__ok, .notifications-page__error,
+  .notifications-page__prefs-error, .notifications-page__prefs-list,
+  .notifications-page__muted, .shop-page__error, .shop-page__muted) {
+  animation: content-state-in var(--motion-duration-normal) var(--motion-ease);
+}
+
+.ui-switch {
+  transition: background-color var(--motion-duration-fast) var(--motion-ease),
+    opacity var(--motion-duration-normal) var(--motion-ease);
+}
+
+.ui-switch[aria-busy="true"] {
+  cursor: progress;
+}
+
+@keyframes form-step-in {
+  from { opacity: 0.7; }
+  to { opacity: 1; }
 }

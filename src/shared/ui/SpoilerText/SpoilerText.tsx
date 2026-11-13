@@ -89,7 +89,7 @@ function SpoilerPlaque({ text, lockedOpen }: { text: ReactNode; lockedOpen: bool
           : "Скрытый спойлер. Нажмите, чтобы показать."}
       </span>
       {isOpen ? (
-        text
+        <span className="spoiler-plaque__content">{text}</span>
       ) : (
         <span aria-hidden className="spoiler-plaque__label">
           Спойлер

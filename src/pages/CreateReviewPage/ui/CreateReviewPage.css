@@ -408,3 +408,14 @@
   background: color-mix(in srgb, var(--color-accent) 18%, var(--color-surface));
   color: var(--color-accent);
 }
+
+.create-review__block {
+  animation: form-step-in var(--motion-duration-normal) var(--motion-ease);
+  transition: border-color var(--motion-duration-normal) var(--motion-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .create-review__score:active {
+    transform: none;
+  }
+}

@@ -224,3 +224,8 @@
     white-space: normal;
   }
 }
+
+.login-screen__content,
+.login-screen__form > form {
+  animation: form-step-in var(--motion-duration-normal) var(--motion-ease);
+}

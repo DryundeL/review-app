@@ -1,3 +1,5 @@
+import { useRef } from "react";
+import { useContentReveal } from "@/shared/hooks/useContentReveal";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   equipCosmetics,
@@ -68,9 +70,12 @@ export function ShopPage() {
     },
   });
 
+  const contentRef = useRef<HTMLElement>(null);
+  useContentReveal(contentRef, Boolean(catalogQuery.data && meQuery.data));
+
   if (catalogQuery.isLoading || meQuery.isLoading) {
     return (
-      <section className="shop-page screen" aria-busy="true">
+      <section ref={contentRef} className="shop-page screen" aria-busy="true">
         <h1>Магазин</h1>
         <p className="shop-page__muted">Загрузка…</p>
       </section>
@@ -79,7 +84,7 @@ export function ShopPage() {
 
   if (catalogQuery.isError || meQuery.isError || !catalogQuery.data || !meQuery.data) {
     return (
-      <section className="shop-page screen" role="alert">
+      <section ref={contentRef} className="shop-page screen" role="alert">
         <h1>Магазин</h1>
         <p>{messageFromError(catalogQuery.error ?? meQuery.error)}</p>
         <Button
@@ -104,7 +109,7 @@ export function ShopPage() {
     purchaseMutation.error ?? equipMutation.error ?? unequipMutation.error;
 
   return (
-    <section className="shop-page screen">
+    <section ref={contentRef} className="shop-page screen">
       <header className="shop-page__head">
         <h1>Магазин</h1>
         <p className="shop-page__balance" aria-live="polite">
@@ -151,7 +156,12 @@ export function ShopPage() {
                   item.url && equippedUrl(me.equipped, kind) === item.url,
                 );
                 return (
-                  <li key={item.id} className="shop-page__card">
+                  <li
+                    key={item.id}
+                    className="shop-page__card"
+                    data-reveal-id={`shop:${item.id}`}
+                    data-equipped={isEquipped}
+                  >
                     <div
                       className={`shop-page__preview shop-page__preview--${kind}`}
                       style={
@@ -172,6 +182,10 @@ export function ShopPage() {
                         <Button
                           type="button"
                           className="shop-page__btn"
+                          aria-busy={
+                            purchaseMutation.isPending &&
+                            purchaseMutation.variables === item.id
+                          }
                           disabled={busy || me.pointsBalance < item.price}
                           onClick={() => purchaseMutation.mutate(item.id)}
                         >
@@ -183,6 +197,10 @@ export function ShopPage() {
                           className="shop-page__btn"
                           variant="secondary"
                           disabled={busy}
+                          aria-busy={
+                            unequipMutation.isPending &&
+                            unequipMutation.variables === kind
+                          }
                           onClick={() => unequipMutation.mutate(kind)}
                         >
                           Снять
@@ -193,6 +211,10 @@ export function ShopPage() {
                           className="shop-page__btn"
                           variant="secondary"
                           disabled={busy}
+                          aria-busy={
+                            equipMutation.isPending &&
+                            equipMutation.variables?.id === item.id
+                          }
                           onClick={() => equipMutation.mutate(item)}
                         >
                           Надеть

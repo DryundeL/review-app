@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   fetchNotificationSettings,
@@ -13,6 +13,7 @@ import {
   type InboxNotificationList,
   type UnreadNotificationsCount,
 } from "@/entities/settings";
+import { useContentReveal } from "@/shared/hooks/useContentReveal";
 import { ApiError } from "@/shared/api";
 import { Button, Modal } from "@/shared/ui";
 import "./NotificationsPage.css";
@@ -141,9 +142,11 @@ export function NotificationsPage() {
 
   const unreadCount = unreadQuery.data?.count ?? 0;
   const items = inboxQuery.data?.items ?? [];
+  const contentRef = useRef<HTMLElement>(null);
+  useContentReveal(contentRef, Boolean(inboxQuery.data));
 
   return (
-    <section className="screen notifications-page">
+    <section className="screen notifications-page" ref={contentRef}>
       <div className="notifications-page__header">
         <h1 className="notifications-page__title">Уведомления</h1>
         <div className="notifications-page__header-actions">
@@ -152,6 +155,7 @@ export function NotificationsPage() {
               type="button"
               variant="ghost"
               className="notifications-page__read-all"
+              aria-busy={readAllMutation.isPending}
               disabled={readAllMutation.isPending}
               onClick={() => readAllMutation.mutate()}
             >
@@ -205,7 +209,7 @@ export function NotificationsPage() {
 
             if (href) {
               return (
-                <li key={item.id}>
+                <li key={item.id} data-reveal-id={`notification:${item.id}`}>
                   <Link
                     className={className}
                     to={href}
@@ -220,7 +224,7 @@ export function NotificationsPage() {
             }
 
             return (
-              <li key={item.id}>
+              <li key={item.id} data-reveal-id={`notification:${item.id}`}>
                 <button
                   type="button"
                   className={`${className} notes__link--button`}
@@ -309,6 +313,7 @@ export function NotificationsPage() {
                       aria-checked={item.enabled}
                       aria-labelledby={`${id}-label`}
                       aria-describedby={`${id}-hint`}
+                      aria-busy={pending}
                       disabled={pending || prefsMutation.isPending}
                       onClick={() => {
                         prefsMutation.mutate({ name: item.name, enabled: !item.enabled });

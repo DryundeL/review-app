@@ -117,6 +117,7 @@
 }
 
 .user-header__stat-btn {
+  transition: color var(--motion-duration-normal) var(--motion-ease);
   cursor: pointer;
   text-align: left;
 }

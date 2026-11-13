@@ -295,3 +295,11 @@
     line-height: 1.5;
   }
 }
+
+.notes__link,
+.notes__body,
+.notes__title {
+  transition: color var(--motion-duration-normal) var(--motion-ease),
+    background-color var(--motion-duration-normal) var(--motion-ease),
+    border-color var(--motion-duration-normal) var(--motion-ease);
+}

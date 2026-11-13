@@ -20,8 +20,8 @@
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
   transition:
-    background var(--motion-duration-fast) var(--motion-ease),
-    color var(--motion-duration-fast) var(--motion-ease);
+    background var(--motion-duration-normal) var(--motion-ease),
+    color var(--motion-duration-normal) var(--motion-ease);
 }
 
 .spoiler-plaque:hover,
@@ -58,4 +58,13 @@
 .spoiler-text ul,
 .spoiler-text ol {
   padding-left: 1.5em;
+}
+
+.spoiler-plaque__content {
+  animation: spoiler-content-in var(--motion-duration-normal) var(--motion-ease);
+}
+
+@keyframes spoiler-content-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
