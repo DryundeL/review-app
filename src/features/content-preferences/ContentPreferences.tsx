@@ -14,7 +14,7 @@ import {
 } from "@/features/auth";
 import { ApiError } from "@/shared/api";
 import { getAccessToken } from "@/shared/api/session";
-import { Button, Modal } from "@/shared/ui";
+import { AppImage, Button, Modal } from "@/shared/ui";
 import "./ContentPreferences.css";
 
 export function ContentPreferencesOnboarding() {
@@ -238,16 +238,13 @@ function PreferencesDialog({
                     }
                   />
                   {item.imageUrl ? (
-                    <img
+                    <AppImage
                       className="content-preferences__image"
                       src={item.imageUrl}
                       alt=""
                       width={64}
                       height={64}
                       loading="lazy"
-                      onError={(event) => {
-                        event.currentTarget.hidden = true;
-                      }}
                     />
                   ) : null}
                   <span>{item.label}</span>

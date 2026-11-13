@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import authBgUrl from "@/assets/auth-background.webp";
 import logoUrl from "@/assets/review-hub-logo.png";
-import { Button } from "@/shared/ui";
+import { AppImage, Button, useImagePhase } from "@/shared/ui";
 import { usePageMeta } from "@/shared/hooks";
 import { metaForPath } from "@/shared/lib/pageMeta";
 import { useAuthSession } from "../model/useAuthSession";
@@ -33,6 +33,7 @@ export function LoginScreen() {
   const busy = session.phase === "booting" || session.phase === "authenticating";
   const status = messageFor(session.phase, session.message);
   const showCaption = showBrowserLogin && session.phase === "anonymous";
+  const backgroundPhase = useImagePhase(authBgUrl);
 
   useEffect(() => {
     if (emailLogin || (!showBrowserLogin && !showRetry)) return;
@@ -41,20 +42,33 @@ export function LoginScreen() {
 
   return (
     <main className="login-screen">
-      <div
-        className="login-screen__bg"
-        style={{ backgroundImage: `url(${authBgUrl})` }}
-        aria-hidden
-      />
+      <div className="login-screen__bg" aria-hidden>
+        <span
+          className={
+            backgroundPhase === "loading"
+              ? "login-screen__bg-loader"
+              : "login-screen__bg-loader login-screen__bg-loader--done"
+          }
+        />
+        <span
+          className={
+            backgroundPhase === "ready"
+              ? "login-screen__photo login-screen__photo--ready"
+              : "login-screen__photo"
+          }
+          style={{ backgroundImage: `url(${authBgUrl})` }}
+        />
+      </div>
       <div className="login-screen__content">
         <header className="login-screen__brand">
           <h1 className="login-screen__title">
-            <img
+            <AppImage
               className="login-screen__logo"
               src={logoUrl}
               alt="Review Hub"
               width={2172}
               height={724}
+              objectFit="contain"
             />
           </h1>
           {emailLogin ? null : <p className="login-screen__tagline">{TAGLINE}</p>}

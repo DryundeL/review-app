@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { fetchProfileAchievements, type Achievement } from "@/entities/achievement";
 import { useContentReveal } from "@/shared/hooks/useContentReveal";
-import { Modal } from "@/shared/ui";
+import { AppImage, Modal } from "@/shared/ui";
 import "./AchievementsStrip.css";
 
 const PREVIEW_LIMIT = 6;
@@ -218,7 +218,7 @@ function AchievementIcon({
   }
 
   return (
-    <img
+    <AppImage
       src={src}
       alt=""
       width={size === "sm" ? 28 : 48}

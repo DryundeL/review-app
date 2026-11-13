@@ -28,7 +28,7 @@ import { useContentReveal } from "@/shared/hooks/useContentReveal";
 import { usePageMeta } from "@/shared/hooks";
 import { truncateMeta, type PageMeta } from "@/shared/lib/pageMeta";
 import { safeHttpsUrl } from "@/shared/lib/safeHttpsUrl";
-import { Button, Modal, UserAvatar } from "@/shared/ui";
+import { Button, Modal, UserAvatar, useImagePhase } from "@/shared/ui";
 import { AchievementsStrip } from "@/widgets/AchievementsStrip";
 import { RemoteReviewCard } from "@/widgets/RemoteReviewCard";
 import { UserHeader } from "@/widgets/UserHeader";
@@ -664,6 +664,7 @@ function ProfileHero({
   background?: string;
   children: ReactNode;
 }) {
+  const phase = useImagePhase(background);
   const style: CSSProperties | undefined = background
     ? { ["--profile-hero-bg" as string]: `url("${background}")` }
     : undefined;
@@ -672,11 +673,23 @@ function ProfileHero({
     <div
       className={
         background
-          ? "profile-page__hero profile-page__hero--has-bg"
+          ? phase === "ready"
+            ? "profile-page__hero profile-page__hero--has-bg profile-page__hero--bg-ready"
+            : "profile-page__hero profile-page__hero--has-bg"
           : "profile-page__hero"
       }
       style={style}
     >
+      {background ? (
+        <span
+          className={
+            phase === "loading"
+              ? "profile-page__hero-loader"
+              : "profile-page__hero-loader profile-page__hero-loader--done"
+          }
+          aria-hidden
+        />
+      ) : null}
       {children}
     </div>
   );

@@ -142,6 +142,8 @@
 
 .feed__type-image {
   flex-shrink: 0;
+  width: 24px;
+  height: 24px;
   object-fit: cover;
   border-radius: var(--radius-sm);
 }

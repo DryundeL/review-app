@@ -1,5 +1,6 @@
 import { storageImageUrl } from "@/shared/lib/storageImageUrl";
 import { cn } from "@/shared/lib/cn";
+import { AppImage } from "../AppImage";
 import "./UserAvatar.css";
 
 type UserAvatarProps = {
@@ -19,7 +20,7 @@ export function UserAvatar({
   const frameUrl = storageImageUrl(rawFrameUrl);
 
   const avatar = photoUrl ? (
-    <img
+    <AppImage
       className={cn("user-avatar", !frameUrl && className)}
       src={photoUrl}
       alt=""
@@ -41,12 +42,13 @@ export function UserAvatar({
   return (
     <span className={cn("user-avatar-frame", className)}>
       {avatar}
-      <img
+      <AppImage
         className="user-avatar-frame__ring"
         src={frameUrl}
         alt=""
         aria-hidden
         decoding="async"
+        objectFit="contain"
       />
     </span>
   );

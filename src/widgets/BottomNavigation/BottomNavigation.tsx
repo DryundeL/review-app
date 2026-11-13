@@ -5,6 +5,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { fetchUnreadNotificationsCount } from "@/entities/settings";
 import { useAuthSession, refreshSessionProfile } from "@/features/auth";
 import { refreshQueriesForPath } from "@/shared/lib/refreshHome";
+import { AppImage } from "@/shared/ui";
 import "./BottomNavigation.css";
 
 const links = [
@@ -56,7 +57,14 @@ export function BottomNavigation({ hideOnMobile = false }: { hideOnMobile?: bool
           className="bottom-nav__brand"
           aria-label="Review Hub — главная"
         >
-          <img src={logoUrl} alt="Review Hub" width={2172} height={724} />
+          <AppImage
+            className="bottom-nav__logo"
+            src={logoUrl}
+            alt="Review Hub"
+            width={2172}
+            height={724}
+            objectFit="contain"
+          />
         </NavLink>
         <div
           className="bottom-nav__items"

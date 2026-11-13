@@ -11,7 +11,7 @@ import {
 } from "@/entities/gamification";
 import { refreshSessionProfile } from "@/features/auth";
 import { ApiError } from "@/shared/api";
-import { Button } from "@/shared/ui";
+import { AppImage, Button } from "@/shared/ui";
 import "./ShopPage.css";
 
 const KIND_LABEL: Record<ShopItemKind, string> = {
@@ -164,15 +164,16 @@ export function ShopPage() {
                   >
                     <div
                       className={`shop-page__preview shop-page__preview--${kind}`}
-                      style={
-                        preview
-                          ? {
-                              backgroundImage: `url("${preview}")`,
-                            }
-                          : undefined
-                      }
                       aria-hidden
-                    />
+                    >
+                      {preview ? (
+                        <AppImage
+                          src={preview}
+                          alt=""
+                          objectFit={kind === "avatar_frame" ? "contain" : "cover"}
+                        />
+                      ) : null}
+                    </div>
                     <div className="shop-page__meta">
                       <span className="shop-page__title">{item.title}</span>
                       <span className="shop-page__price">{item.price} очк.</span>

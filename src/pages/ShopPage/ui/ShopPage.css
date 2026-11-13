@@ -120,16 +120,21 @@
 }
 
 .shop-page__preview {
+  position: relative;
+  overflow: hidden;
   aspect-ratio: 1;
   border-radius: calc(var(--radius-md) - 2px);
   background-color: var(--color-bg);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+}
+
+.shop-page__preview .app-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .shop-page__preview--avatar_frame {
-  background-size: contain;
   background-color: color-mix(in srgb, var(--color-surface) 70%, #000);
 }
 

@@ -5,7 +5,7 @@ import { fetchReviewTypes, type ReviewType } from "@/entities/settings";
 import { useAuthSession } from "@/features/auth";
 import { setFeedFilterOwner, useFilterFeedStore } from "@/features/filter-feed";
 import { useContentReveal } from "@/shared/hooks/useContentReveal";
-import { Button, Modal } from "@/shared/ui";
+import { AppImage, Button, Modal } from "@/shared/ui";
 import { FeedReviewItem } from "./FeedReviewItem";
 import "./Feed.css";
 
@@ -309,16 +309,13 @@ function TypeContent({ item }: { item: ReviewType }) {
   return (
     <>
       {item.imageUrl ? (
-        <img
+        <AppImage
           className="feed__type-image"
           src={item.imageUrl}
           alt=""
           width={24}
           height={24}
           loading="lazy"
-          onError={(event) => {
-            event.currentTarget.hidden = true;
-          }}
         />
       ) : null}
       <span>{item.label}</span>

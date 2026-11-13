@@ -44,6 +44,7 @@
   display: block;
   height: 33px;
   width: auto;
+  aspect-ratio: 2172 / 724;
 }
 
 .app-shell__main {

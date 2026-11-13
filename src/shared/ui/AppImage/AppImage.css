@@ -1,0 +1,67 @@
+span.app-image {
+  display: grid;
+  min-width: 0;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.app-image__img,
+.app-image__loader {
+  grid-area: 1 / 1;
+}
+
+.app-image__img {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: var(--app-image-fit, cover);
+  opacity: 1;
+  transition: opacity var(--motion-duration-normal) var(--motion-ease);
+}
+
+span.app-image[data-state="loading"] .app-image__img {
+  opacity: 0;
+}
+
+.app-image__loader {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: color-mix(in srgb, var(--color-surface) 70%, var(--color-border));
+  pointer-events: none;
+}
+
+span.app-image[data-state="loading"] .app-image__loader,
+.login-screen__bg-loader:not(.login-screen__bg-loader--done),
+.profile-page__hero-loader:not(.profile-page__hero-loader--done) {
+  animation: app-image-pulse 1.2s ease-in-out infinite;
+}
+
+span.app-image[data-state="error"] {
+  display: none;
+}
+
+@media (scripting: none) {
+  span.app-image[data-state="loading"] .app-image__img,
+  .login-screen__photo,
+  .profile-page__hero--has-bg::before {
+    opacity: 1;
+  }
+
+  span.app-image[data-state="loading"] .app-image__loader,
+  .login-screen__bg-loader,
+  .profile-page__hero-loader {
+    display: none;
+  }
+}
+
+@keyframes app-image-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}

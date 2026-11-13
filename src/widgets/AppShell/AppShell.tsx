@@ -14,6 +14,7 @@ import { usePageMeta } from "@/shared/hooks";
 import { metaForPath } from "@/shared/lib/pageMeta";
 import { refreshHomeFeed } from "@/shared/lib/refreshHome";
 import { createRouteScrollRestoration } from "@/shared/lib/routeScroll";
+import { AppImage } from "@/shared/ui";
 import { BottomNavigation } from "@/widgets/BottomNavigation";
 import "./AppShell.css";
 
@@ -136,12 +137,13 @@ export function AppShell() {
               refreshHomeFeed(queryClient);
             }}
           >
-            <img
+            <AppImage
               className="app-shell__logo"
               src={logoUrl}
               alt="Review Hub"
               width={2172}
               height={724}
+              objectFit="contain"
             />
           </NavLink>
         </div>

@@ -13,13 +13,32 @@
   position: absolute;
   inset: 0;
   background-color: #000;
+}
+
+.login-screen__photo {
+  position: absolute;
+  inset: 0;
+  background-color: #000;
   background-position: center 28%;
   background-size: cover;
   background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity var(--motion-duration-slow) var(--motion-ease);
+}
+
+.login-screen__photo--ready {
+  opacity: 1;
+}
+
+.login-screen__bg-loader {
+  position: absolute;
+  inset: 0;
+  background: #141816;
 }
 
 .login-screen__bg::after {
   content: "";
+  z-index: 1;
   position: absolute;
   inset: 0;
   background: linear-gradient(
@@ -64,6 +83,7 @@
   display: block;
   width: min(100%, 15.5rem);
   height: auto;
+  aspect-ratio: 2172 / 724;
   margin: 0 auto;
 }
 

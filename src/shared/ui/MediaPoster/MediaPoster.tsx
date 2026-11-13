@@ -1,4 +1,5 @@
 import { cn } from "@/shared/lib/cn";
+import { AppImage } from "../AppImage";
 import "./MediaPoster.css";
 
 type MediaPosterProps = {
@@ -12,7 +13,7 @@ export function MediaPoster({ title, posterUrl, className }: MediaPosterProps) {
 
   if (posterUrl) {
     return (
-      <img
+      <AppImage
         className={cn("media-poster", className)}
         src={posterUrl}
         alt=""
