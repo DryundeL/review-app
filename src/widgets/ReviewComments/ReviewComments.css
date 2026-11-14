@@ -139,12 +139,12 @@
   border-color: var(--color-accent);
 }
 .comment-composer__canvas {
-  min-height: 100px;
+  min-height: 120px;
   max-height: 320px;
   overflow-y: auto;
   padding: var(--space-3);
   outline: none;
-  font-size: 0.9375rem;
+  font-size: 1rem;
   line-height: 1.65;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
