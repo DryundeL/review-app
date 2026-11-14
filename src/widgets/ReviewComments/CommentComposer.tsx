@@ -28,21 +28,72 @@ export function CommentComposer({
   const formRef = useRef<HTMLFormElement>(null);
   useEffect(() => {
     const viewport = window.visualViewport;
-    if (!viewport) return;
+    const webApp = window.Telegram?.WebApp;
+    const form = formRef.current;
+    if (!form) return;
+    let spacer: HTMLDivElement | null = null;
+    let blurTimer: ReturnType<typeof setTimeout> | undefined;
+    const clearSpacer = () => {
+      spacer?.remove();
+      spacer = null;
+    };
     const revealComposer = () => {
-      const form = formRef.current;
-      if (!form?.contains(document.activeElement)) return;
+      if (!form.contains(document.activeElement)) {
+        clearSpacer();
+        return;
+      }
+      const top = viewport?.offsetTop ?? 0;
+      const telegramHeight = webApp?.viewportHeight;
+      const height = Math.min(
+        viewport?.height ?? window.innerHeight,
+        telegramHeight && telegramHeight > 0 ? telegramHeight : window.innerHeight,
+      );
+      // WebViews may overlay the keyboard without shrinking the layout viewport.
+      const coveredHeight = Math.max(0, window.innerHeight - height);
+      if (coveredHeight > 0) {
+        if (!spacer) {
+          spacer = document.createElement("div");
+          spacer.className = "comment-composer-keyboard-space";
+          spacer.setAttribute("aria-hidden", "true");
+          document.body.append(spacer);
+        }
+        spacer.style.height = `${coveredHeight}px`;
+      } else {
+        clearSpacer();
+      }
       const bounds = form.getBoundingClientRect();
-      const overflow = bounds.bottom - (viewport.offsetTop + viewport.height) + 12;
+      const headerBottom = document.querySelector(".app-shell__header")?.getBoundingClientRect().bottom ?? 0;
+      const visibleTop = Math.max(top, headerBottom);
+      const overflow = bounds.bottom - (top + height) + 12;
       if (overflow > 0) {
         window.scrollBy({
-          top: Math.min(overflow, Math.max(0, bounds.top - viewport.offsetTop - 12)),
+          top: Math.min(overflow, Math.max(0, bounds.top - visibleTop - 12)),
           behavior: "instant",
         });
       }
     };
-    viewport.addEventListener("resize", revealComposer);
-    return () => viewport.removeEventListener("resize", revealComposer);
+    const onBlur = () => {
+      clearTimeout(blurTimer);
+      blurTimer = setTimeout(() => {
+        if (!form.contains(document.activeElement)) clearSpacer();
+      }, 0);
+    };
+    form.addEventListener("focusin", revealComposer);
+    form.addEventListener("focusout", onBlur);
+    window.addEventListener("resize", revealComposer);
+    viewport?.addEventListener("resize", revealComposer);
+    viewport?.addEventListener("scroll", revealComposer);
+    webApp?.onEvent?.("viewportChanged", revealComposer);
+    return () => {
+      clearTimeout(blurTimer);
+      clearSpacer();
+      form.removeEventListener("focusin", revealComposer);
+      form.removeEventListener("focusout", onBlur);
+      window.removeEventListener("resize", revealComposer);
+      viewport?.removeEventListener("resize", revealComposer);
+      viewport?.removeEventListener("scroll", revealComposer);
+      webApp?.offEvent?.("viewportChanged", revealComposer);
+    };
   }, []);
   const countId = useId();
   const errorId = useId();

@@ -152,6 +152,13 @@
 .comment-composer__canvas p {
   margin: 0;
 }
+.comment-composer__canvas:focus-visible {
+  outline: none;
+}
+.comment-composer-keyboard-space {
+  flex-shrink: 0;
+  pointer-events: none;
+}
 .comment-composer__canvas p + p {
   margin-top: 0;
 }

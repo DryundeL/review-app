@@ -263,6 +263,41 @@ try {
       delete window.visualViewport;
     }
   });
+  await test("Telegram viewport changes reveal the composer without visualViewport", async () => {
+    const handlers = new Map();
+    const webApp = {
+      viewportHeight: 768,
+      onEvent: (name, callback) => handlers.set(name, callback),
+      offEvent: (name, callback) => {
+        if (handlers.get(name) === callback) handlers.delete(name);
+      },
+    };
+    window.Telegram = { WebApp: webApp };
+    const originalScroll = window.scrollBy;
+    const scrolls = [];
+    window.scrollBy = (options) => scrolls.push(options);
+    try {
+      await render(CommentComposer, { reviewId, parentId: null, onCreated() {} });
+      await settle();
+      const form = document.querySelector("form");
+      form.getBoundingClientRect = () => ({ top: 350, bottom: 550 });
+      await act(async () => document.querySelector('[role="textbox"]').focus());
+      webApp.viewportHeight = 400;
+      assert.equal(typeof handlers.get("viewportChanged"), "function");
+      handlers.get("viewportChanged")();
+      assert.equal(scrolls.at(-1)?.top, 162);
+      const spacer = document.querySelector(".comment-composer-keyboard-space");
+      assert.equal(spacer?.style.height, "368px");
+      await act(async () => document.activeElement.blur());
+      await settle();
+      assert.equal(document.querySelector(".comment-composer-keyboard-space"), null);
+    } finally {
+      await cleanup();
+      assert.equal(handlers.size, 0);
+      window.scrollBy = originalScroll;
+      delete window.Telegram;
+    }
+  });
 } finally {
   await server.close();
   dom.window.close();
