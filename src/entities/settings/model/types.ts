@@ -32,6 +32,8 @@ export type InboxNotification = {
   body: string;
   actorId: string | null;
   reviewId: string | null;
+  commentId: string | null;
+  parentCommentId: string | null;
   isRead: boolean;
   createdAt: string;
 };

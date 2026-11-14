@@ -33,6 +33,8 @@ const inboxItemSchema = z.object({
   body: z.string().min(1).max(1024),
   actorId: uuid.nullish().transform((value) => value ?? null),
   reviewId: uuid.nullish().transform((value) => value ?? null),
+  commentId: uuid.nullish().transform((value) => value ?? null),
+  parentCommentId: uuid.nullish().transform((value) => value ?? null),
   isRead: z.boolean(),
   createdAt: z.string().min(1),
 });

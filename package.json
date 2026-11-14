@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build --outDir dist/client && vite build --ssr src/entry-server.tsx --outDir dist/server",
     "preview": "npm run start",
     "lint": "eslint .",
-    "test": "node --experimental-strip-types --test src/shared/api/*.test.ts src/shared/lib/*.test.ts src/shared/platform/*.test.ts src/features/auth/model/*.test.ts src/features/auth/api/*.test.ts src/features/report-review/api/*.test.ts src/entities/review/api/*.test.ts src/entities/review/model/*.test.ts src/entities/search/api/*.test.ts src/entities/settings/api/*.test.ts src/entities/user/api/*.test.ts src/entities/gamification/api/*.test.ts src/entities/achievement/api/*.test.ts src/widgets/ReviewEditor/*.test.ts",
+    "test": "node --experimental-strip-types --test src/shared/api/*.test.ts src/shared/lib/*.test.ts src/shared/platform/*.test.ts src/features/auth/model/*.test.ts src/features/auth/api/*.test.ts src/features/report-review/api/*.test.ts src/entities/review/api/*.test.ts src/entities/review/model/*.test.ts src/entities/search/api/*.test.ts src/entities/settings/api/*.test.ts src/entities/user/api/*.test.ts src/entities/gamification/api/*.test.ts src/entities/achievement/api/*.test.ts src/widgets/ReviewEditor/*.test.ts src/widgets/ReviewComments/*.test.mjs",
     "format": "prettier --write .",
     "start": "NODE_ENV=production node --env-file-if-exists=.env server/index.mjs",
     "test:ssr": "node --test server/*.test.mjs"

@@ -105,3 +105,33 @@ test("follow request notifications have actorId and no review", () => {
   assert.equal(result.items[0]?.reviewId, null);
   assert.equal(result.items[0]?.type, "follow_request");
 });
+
+test("comment notifications preserve navigation identifiers", () => {
+  const id = "11111111-1111-4111-8111-111111111111";
+  const item = {
+    id,
+    type: "comment_reply",
+    title: "Ответ",
+    body: "Новый ответ",
+    reviewId: id,
+    commentId: id,
+    parentCommentId: id,
+    isRead: false,
+    createdAt: "2026-11-14T05:00:00Z",
+  };
+  const parsed = parseInboxNotificationsText(JSON.stringify({ items: [item] })).items[0];
+  assert.equal(parsed.commentId, id);
+  assert.equal(parsed.parentCommentId, id);
+  assert.throws(() =>
+    parseInboxNotificationsText(
+      JSON.stringify({ items: [{ ...item, commentId: "bad" }] }),
+    ),
+  );
+  const legacy = parseInboxNotificationsText(
+    JSON.stringify({
+      items: [{ ...item, commentId: undefined, parentCommentId: undefined }],
+    }),
+  ).items[0];
+  assert.equal(legacy.commentId, null);
+  assert.equal(legacy.parentCommentId, null);
+});

@@ -19,6 +19,7 @@ import {
   UserAvatar,
   VoteCounts,
 } from "@/shared/ui";
+import { ReviewComments } from "@/widgets/ReviewComments/ReviewComments";
 import "./ReviewPage.css";
 
 export function ReviewPage() {
@@ -245,6 +246,9 @@ export function ReviewPage() {
             <span>{review.dislikesCount}</span>
           </Button>
         </div>
+      ) : null}
+      {review.status === "published" ? (
+        <ReviewComments key={review.id} reviewId={review.id} />
       ) : null}
     </article>
   );

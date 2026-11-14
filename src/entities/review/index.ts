@@ -47,3 +47,6 @@ export {
   viewReview,
   voteReview,
 } from "./api/reviewsApi";
+export { listComments, createComment } from "./api/commentsApi";
+export { mergeComments } from "./api/parseComments";
+export type { RemoteComment, CommentPage } from "./api/parseComments";

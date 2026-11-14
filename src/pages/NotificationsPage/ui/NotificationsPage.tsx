@@ -355,7 +355,14 @@ function NotificationRow({ item }: { item: InboxNotification }) {
 
 function notificationHref(item: InboxNotification): string | null {
   if (item.type === "follow_request") return "/profile?tab=requests";
-  if (item.reviewId) return `/reviews/${item.reviewId}`;
+  if (item.reviewId) {
+    const query = new URLSearchParams();
+    if (item.commentId) {
+      query.set("commentId", item.commentId);
+      if (item.parentCommentId) query.set("parentCommentId", item.parentCommentId);
+    }
+    return `/reviews/${item.reviewId}${query.size ? `?${query}` : ""}`;
+  }
   if (item.actorId) return `/profiles/${item.actorId}`;
   return null;
 }
