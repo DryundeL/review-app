@@ -237,6 +237,32 @@ try {
       await cleanup();
     }
   });
+  await test("keyboard resize reveals the whole focused composer", async () => {
+    const viewport = new dom.window.EventTarget();
+    Object.assign(viewport, { height: 400, offsetTop: 0 });
+    Object.defineProperty(window, "visualViewport", { configurable: true, value: viewport });
+    const scrolls = [];
+    const originalScroll = window.scrollBy;
+    window.scrollBy = (options) => scrolls.push(options);
+    try {
+      await render(CommentComposer, { reviewId, parentId: null, onCreated() {} });
+      await settle();
+      const canvas = document.querySelector('[role="textbox"]');
+      document.querySelector("form").getBoundingClientRect = () => ({ top: 350, bottom: 550 });
+      viewport.dispatchEvent(new dom.window.Event("resize"));
+      assert.equal(scrolls.length, 0);
+      await act(async () => canvas.focus());
+      viewport.dispatchEvent(new dom.window.Event("resize"));
+      assert.equal(scrolls.at(-1)?.top, 162);
+      await cleanup();
+      const count = scrolls.length;
+      viewport.dispatchEvent(new dom.window.Event("resize"));
+      assert.equal(scrolls.length, count);
+    } finally {
+      window.scrollBy = originalScroll;
+      delete window.visualViewport;
+    }
+  });
 } finally {
   await server.close();
   dom.window.close();

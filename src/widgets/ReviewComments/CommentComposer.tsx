@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -25,6 +25,25 @@ export function CommentComposer({
   onCancel,
 }: Props) {
   const [text, setText] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    const revealComposer = () => {
+      const form = formRef.current;
+      if (!form?.contains(document.activeElement)) return;
+      const bounds = form.getBoundingClientRect();
+      const overflow = bounds.bottom - (viewport.offsetTop + viewport.height) + 12;
+      if (overflow > 0) {
+        window.scrollBy({
+          top: Math.min(overflow, Math.max(0, bounds.top - viewport.offsetTop - 12)),
+          behavior: "instant",
+        });
+      }
+    };
+    viewport.addEventListener("resize", revealComposer);
+    return () => viewport.removeEventListener("resize", revealComposer);
+  }, []);
   const countId = useId();
   const errorId = useId();
   const editor = useEditor({
@@ -81,6 +100,7 @@ export function CommentComposer({
 
   return (
     <form
+      ref={formRef}
       className="comment-composer"
       onSubmit={(event) => {
         event.preventDefault();
