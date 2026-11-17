@@ -14,44 +14,74 @@ concurrency:
   group: review-app-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  IMAGE: ghcr.io/dryundel/review-app
+
 jobs:
-  verify-and-deploy:
+  verify:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
       - name: Build and verify image
-        run: docker build --tag "review-app:$GITHUB_SHA" .
+        run: docker build --tag "$IMAGE:$GITHUB_SHA" .
       - name: Smoke test container
-        run: sh deploy/smoke-test.sh "review-app:$GITHUB_SHA"
-      - name: Package release
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-        run: |
-          mkdir -p "$RUNNER_TEMP/release"
-          docker save -o "$RUNNER_TEMP/release/image.tar" "review-app:$GITHUB_SHA"
-          cp compose.yaml "$RUNNER_TEMP/release/"
-          cp deploy/pull.sh "$RUNNER_TEMP/release/"
-          printf '%s\n' "$GITHUB_SHA" > "$RUNNER_TEMP/release/.release-version"
-          tar -I 'gzip -1' -cf "$RUNNER_TEMP/release.tar.gz" -C "$RUNNER_TEMP/release" .
-      - name: Deploy to server
+        run: sh deploy/smoke-test.sh "$IMAGE:$GITHUB_SHA"
+      - name: Push image
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         env:
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$REGISTRY_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          # Unchanged layers (base image, node_modules) are already in the registry.
+          docker push --quiet "$IMAGE:$GITHUB_SHA"
+          docker logout ghcr.io
+
+  deploy:
+    needs: verify
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    # Read-only token: the server receives it only to pull this release.
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Deploy to server
+        env:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           test -n "$DEPLOY_SSH_KEY"
           umask 077
-          ssh_dir=$(mktemp -d "$RUNNER_TEMP/deploy-ssh.XXXXXX")
-          trap 'rm -rf "$ssh_dir"' EXIT
-          printf '%s\n' "$DEPLOY_SSH_KEY" > "$ssh_dir/key"
-          cp deploy/known_hosts "$ssh_dir/known_hosts"
-          options=(-i "$ssh_dir/key" -o "UserKnownHostsFile=$ssh_dir/known_hosts"
-            -o StrictHostKeyChecking=yes -o IdentitiesOnly=yes -o BatchMode=yes
-            -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=4)
-          target=wapp@194.146.223.221
-          ssh "${options[@]}" "$target" "mkdir -p /home/wapp/.local/share/review-app/incoming/$GITHUB_SHA"
-          scp "${options[@]}" "$RUNNER_TEMP/release.tar.gz" \
-            "$target:/home/wapp/.local/share/review-app/incoming/$GITHUB_SHA/release.tar.gz"
-          ssh "${options[@]}" "$target" "sh -s -- $GITHUB_SHA" < deploy/activate.sh
+          work=$(mktemp -d "$RUNNER_TEMP/deploy.XXXXXX")
+          trap 'rm -rf "$work"' EXIT
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$work/key"
+          cp deploy/known_hosts "$work/known_hosts"
+
+          # Small config bundle (a few KB); the image is pulled from GHCR.
+          mkdir "$work/release"
+          cp compose.yaml deploy/pull.sh deploy/activate.sh "$work/release/"
+          printf '%s\n' "$GITHUB_SHA" > "$work/release/.release-version"
+          printf '%s\n' "$GITHUB_ACTOR" > "$work/release/.registry-user"
+          printf '%s' "$REGISTRY_TOKEN" > "$work/release/.registry-token"
+          tar -czf "$work/release.tar.gz" -C "$work/release" .
+
+          # One SSH session: unpack the bundle into a private directory and activate.
+          incoming=/home/wapp/.local/share/review-app/incoming
+          remote=$(printf 'set -eu; umask 077; mkdir -p %s; d=$(mktemp -d %s/%s.XXXXXX); trap '"'"'rm -rf "$d"'"'"' EXIT; tar -xzf - -C "$d"; sh "$d/activate.sh" %s "$d" </dev/null' \
+            "$incoming" "$incoming" "$GITHUB_SHA" "$GITHUB_SHA")
+          ssh -i "$work/key" -o "UserKnownHostsFile=$work/known_hosts" \
+            -o StrictHostKeyChecking=yes -o IdentitiesOnly=yes -o BatchMode=yes \
+            -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 \
+            wapp@194.146.223.221 "$remote" < "$work/release.tar.gz"

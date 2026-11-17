@@ -6,6 +6,7 @@ set -eu
 [ "$#" -le 1 ] || { echo 'Usage: pull.sh [commit-sha]' >&2; exit 1; }
 
 project=review-app
+image=ghcr.io/dryundel/review-app
 share=/home/wapp/.local/share
 state="$share/$project"
 export DOCKER_CONTEXT=rootless
@@ -32,7 +33,11 @@ revision=${1:-$(release_of current)}
 valid_sha "$revision" || die 'Invalid commit SHA.'
 release="$state/releases/$revision"
 [ "$(cat "$release/.release-version")" = "$revision" ] || die "Release $revision is not installed."
-docker image inspect "$project:$revision" >/dev/null 2>&1 || die "Image $project:$revision is not loaded."
+if ! docker image inspect "$image:$revision" >/dev/null 2>&1; then
+  # Releases deployed before GHCR were loaded as review-app:<sha>.
+  docker image inspect "$project:$revision" >/dev/null 2>&1 || die "Image $image:$revision is not available."
+  docker tag "$project:$revision" "$image:$revision"
+fi
 
 storage=${STORAGE_HOST_PATH:-/home/wapp/apps/review-api/storage}
 test -d "$storage" || die "Storage directory $storage does not exist."
@@ -62,9 +67,11 @@ for dir in "$state"/releases/*; do
   case "$name" in "$revision"|"$previous") continue ;; esac
   if valid_sha "$name"; then rm -rf -- "$dir"; fi
 done
-docker image ls --format '{{.Tag}}' "$project" | while read -r tag; do
-  case "$tag" in "$revision"|"$previous"|'<none>') continue ;; esac
-  docker image rm "$project:$tag" >/dev/null || echo "Warning: kept $project:$tag." >&2
+for repo in "$image" "$project"; do
+  docker image ls --format '{{.Tag}}' "$repo" | while read -r tag; do
+    case "$tag" in "$revision"|"$previous"|'<none>') continue ;; esac
+    docker image rm "$repo:$tag" >/dev/null || echo "Warning: kept $repo:$tag." >&2
+  done
 done
 docker image prune -f >/dev/null || echo 'Warning: dangling image cleanup failed.' >&2
 

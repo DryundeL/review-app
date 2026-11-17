@@ -17,6 +17,7 @@ RUN npm prune --omit=dev --ignore-scripts --no-audit --no-fund \
   && find /deps -exec touch -h -d @0 {} +
 
 FROM node:22-alpine
+LABEL org.opencontainers.image.source=https://github.com/DryundeL/review-app
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=8080

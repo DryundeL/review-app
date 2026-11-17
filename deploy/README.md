@@ -1,7 +1,12 @@
 # Деплой review-app
 
-Схема совпадает с review-api: GitHub Actions собирает образ, передаёт его
-по SSH и запускает rootless Docker пользователя `wapp` на `194.146.223.221`.
+GitHub Actions собирает и проверяет образ, публикует его в
+`ghcr.io/dryundel/review-app:<sha>` и одним SSH-подключением запускает деплой
+в rootless Docker пользователя `wapp` на `194.146.223.221`. Сервер скачивает
+из GHCR только недостающие слои; по SSH передаётся лишь конфигурация (несколько КБ)
+и временный read-only `GITHUB_TOKEN` (`packages: read`), действующий до конца job.
+Токен хранится только во временном `DOCKER_CONFIG` и удаляется после `docker pull`;
+в `~/.docker` учётные данные registry не сохраняются.
 Frontend слушает только `127.0.0.1:8081`, API — `127.0.0.1:8080`.
 Хостовый nginx обслуживает `review-hub.ru`:
 
@@ -52,15 +57,15 @@ sh /home/wapp/apps/review-app/pull.sh <PREVIOUS_COMMIT_SHA>
 ```
 
 После успешного запуска `pull.sh` оставляет только релизы и образы `current` и
-`previous`; остальные каталоги, образы `review-app:*` и dangling-слои удаляются.
-Откат возможен только на `previous` (`readlink .../review-app/previous`).
-Архив из `incoming` и `image.tar` удаляются сразу после `docker load`, брошенные
-загрузки старше суток — при следующем деплое. Деплой берёт общий с review-api lock
+`previous`; остальные каталоги, образы `ghcr.io/dryundel/review-app:*` (и старые
+`review-app:*`) и dangling-слои удаляются. Откат возможен только на `previous`
+(`readlink .../review-app/previous`), его образ уже есть локально, registry не нужен.
+Каталог из `incoming` удаляется после деплоя, брошенные — старше суток при следующем деплое. Деплой берёт общий с review-api lock
 `/home/wapp/.local/share/review-deploy.lock` (ожидание до 15 минут); ссылки
 `current`/`previous` меняются только после успешного healthcheck.
 Слой `node_modules` в образе воспроизводимый (фиксированные mtime, без кэша Vite):
-при неизменном `package-lock.json` и базовом образе сервер переиспользует уже
-распакованный слой и распаковывает только `dist`/`server` (~4 МБ). Healthcheck
+при неизменном `package-lock.json` и базовом образе CI не загружает его в GHCR повторно,
+а сервер не скачивает и не распаковывает его: передаются только `dist`/`server` (~4 МБ). Healthcheck
 во время `start_period` (120 с) выполняется каждые 5 с, `--wait` ждёт до 180 с.
 При ошибке контейнер может уже быть заменён: запускайте откат явно.
 Это не zero-downtime деплой.

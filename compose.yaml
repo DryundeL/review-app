@@ -1,7 +1,7 @@
 name: review-app
 services:
   app:
-    image: review-app:${APP_VERSION:-local}
+    image: ghcr.io/dryundel/review-app:${APP_VERSION:-local}
     build: .
     restart: unless-stopped
     environment:
@@ -23,7 +23,7 @@ services:
     healthcheck:
       test: [CMD, wget, -q, -O, /dev/null, "http://127.0.0.1:8080/healthz"]
       interval: 60s
-      timeout: 3s
+      timeout: 10s
       retries: 3
       # Checks run every start_interval until healthy, so --wait returns as soon
       # as the app is up, while a slow start under load still has time.
