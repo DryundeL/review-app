@@ -11,12 +11,12 @@ root=/home/wapp/apps/review-app
 state=/home/wapp/.local/share/review-app
 release="$state/releases/$revision"
 export DOCKER_CONTEXT=rootless
-mkdir -p "$root"
-mkdir -p "$release"
-tar -xzf "$state/incoming/$revision/release.tar.gz" -C "$release"
+incoming="$state/incoming/$revision"
+# The uploaded archive is never needed again, even if activation fails.
+trap 'rm -rf "$incoming" "$release/image.tar"' EXIT
+mkdir -p "$root" "$release"
+tar -xzf "$incoming/release.tar.gz" -C "$release"
 test "$(cat "$release/.release-version")" = "$revision"
 docker load -i "$release/image.tar"
 install -m 700 "$release/pull.sh" "$root/pull.sh"
 sh "$root/pull.sh" "$revision"
-rm -f "$release/image.tar" "$state/incoming/$revision/release.tar.gz"
-rmdir "$state/incoming/$revision"
