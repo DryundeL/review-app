@@ -2,13 +2,6 @@ import type { MediaType } from "@/shared/types";
 
 export type ReviewStatus = "draft" | "published";
 
-export type RemoteReviewBlock = {
-  id: string;
-  position: number;
-  title: string;
-  body: string;
-};
-
 export type MediaObjectSummary = {
   id: string;
   title: string;
@@ -40,7 +33,7 @@ export type RemoteReviewAuthor = {
   backdrop?: string;
 };
 
-/** Элемент списка: без blocks, с флагом спойлеров и вложенным mediaObject. */
+/** Элемент списка: без body, с флагом спойлеров и вложенным mediaObject. */
 export type RemoteReviewSummary = {
   id: string;
   authorId: string;
@@ -48,9 +41,10 @@ export type RemoteReviewSummary = {
   author?: RemoteReviewAuthor;
   mediaObject: MediaObjectSummary;
   title: string;
-  rating: number;
+  rating: number | null;
   /** В detail может отсутствовать на бэке — парсер подставляет published. В списках профиля различает draft. */
   status: ReviewStatus;
+  hasUnpublishedChanges?: boolean;
   hasSpoilers: boolean;
   likesCount: number;
   dislikesCount: number;
@@ -64,10 +58,10 @@ export type RemoteReviewSummary = {
   viewerIsLike?: boolean;
 };
 
-/** GET /reviews/:id и ответы create/update — полные блоки + author как в feed. */
+/** Публичная опубликованная версия; рабочая версия имеет отдельный контракт. */
 export type RemoteReview = Omit<RemoteReviewSummary, "author"> & {
   author: RemoteReviewAuthor;
-  blocks: RemoteReviewBlock[];
+  body: string;
 };
 
 export type RemoteReviewList = {
@@ -93,18 +87,25 @@ export type ListMediaObjectsParams = {
   limit?: number;
 };
 
-/** В теле create/update по-прежнему id произведения. */
-export type CreateReviewInput = {
-  mediaObjectId: string;
+export type ReviewEditorData = {
+  id: string;
+  mediaObject: MediaObjectSummary;
+  status: ReviewStatus;
   title: string;
-  rating: number;
-  status?: ReviewStatus;
-  blocks?: { title: string; body: string }[];
+  rating: number | null;
+  body: string;
+  revision: number;
+  hasUnpublishedChanges: boolean;
+  publishedAt?: string;
 };
 
 export type UpdateReviewInput = {
-  title?: string;
-  rating?: number;
-  status?: ReviewStatus;
-  blocks?: { title: string; body: string }[];
+  title: string;
+  rating: number | null;
+  body: string;
+  revision: number;
+};
+
+export type CreateReviewInput = Omit<UpdateReviewInput, "revision"> & {
+  mediaObjectId: string;
 };

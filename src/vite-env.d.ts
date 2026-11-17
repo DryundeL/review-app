@@ -37,10 +37,7 @@ type TelegramSafeAreaInset = {
 };
 
 type TelegramWebAppEvent =
-  | "viewportChanged"
-  | "safeAreaChanged"
-  | "contentSafeAreaChanged"
-  | "fullscreenChanged";
+  "viewportChanged" | "safeAreaChanged" | "contentSafeAreaChanged" | "fullscreenChanged";
 
 type TelegramWebApp = {
   initData: string;
@@ -52,6 +49,8 @@ type TelegramWebApp = {
   viewportHeight?: number;
   safeAreaInset?: TelegramSafeAreaInset;
   contentSafeAreaInset?: TelegramSafeAreaInset;
+  enableClosingConfirmation?: () => void;
+  disableClosingConfirmation?: () => void;
   ready: () => void;
   expand: () => void;
   requestFullscreen?: () => void;

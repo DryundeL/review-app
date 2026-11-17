@@ -172,7 +172,7 @@ export function ReviewPage() {
             <span aria-hidden>·</span>
             <Link to={`/media-objects/${media.id}`}>{mediaTitle}</Link>
           </p>
-          <h1>{review.title}</h1>
+          <h1>{review.title || mediaTitle}</h1>
           <p className="review-page__stats">
             <VoteCounts
               likes={review.likesCount}
@@ -191,7 +191,10 @@ export function ReviewPage() {
             <Link to={`/media-objects/${media.id}`}>О произведении →</Link>
           </Button>
           {isOwn ? (
-            <Link className="review-page__edit" to={`/reviews/${review.id}/edit`}>
+            <Link
+              className="review-page__edit"
+              to={`/reviews/${review.id}/edit?mediaObjectId=${media.id}`}
+            >
               Изменить
             </Link>
           ) : null}
@@ -199,16 +202,7 @@ export function ReviewPage() {
       </header>
 
       <div className="review-page__blocks">
-        {review.blocks.length === 0 ? (
-          <p className="muted">В этом обзоре пока нет блоков.</p>
-        ) : (
-          review.blocks.map((block) => (
-            <section key={block.id} className="review-page__block">
-              <h2>{block.title}</h2>
-              <SpoilerText text={block.body} />
-            </section>
-          ))
-        )}
+        <SpoilerText text={review.body} />
       </div>
 
       {!profile ? (

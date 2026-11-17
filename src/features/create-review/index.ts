@@ -1,2 +1,3 @@
-export { toCreatePayload, sanitizeText } from "./model/validate";
-export type { DraftBlock, ReviewDraft } from "./model/validate";
+export { toCreatePayload } from "./model/validate";
+export type { ReviewDraft } from "./model/validate";
+export { DraftSession } from "./model/draftSession";

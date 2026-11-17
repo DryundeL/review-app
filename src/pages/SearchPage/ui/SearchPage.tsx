@@ -450,7 +450,9 @@ function ReviewRow({ item }: { item: SearchReviewHit }) {
         posterUrl={item.mediaObject.posterUrl}
       />
       <span className="search-page__row-body">
-        <span className="search-page__row-title">{item.title}</span>
+        <span className="search-page__row-title">
+          {item.title || item.mediaObject.title}
+        </span>
         <span className="search-page__row-meta">
           {authorLabel} · {item.mediaObject.title} · ★{item.rating} · {item.likesCount} ♥
         </span>

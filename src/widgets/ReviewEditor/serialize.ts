@@ -1,9 +1,18 @@
-import { isHtmlBody, sanitizeReviewBody } from "../../shared/lib/reviewBody.ts";
+import {
+  isHtmlBody,
+  sanitizeReviewBody,
+  spoilerEditorHtml,
+} from "../../shared/lib/reviewBody.ts";
 import type { JSONContent } from "@tiptap/core";
 import { parseSpoilerText } from "../../shared/lib/spoilerText.ts";
 
 const tags: Record<string, string> = {
   paragraph: "p",
+  heading: "h3",
+  blockquote: "blockquote",
+  codeBlock: "pre",
+  code: "code",
+  underline: "u",
   bulletList: "ul",
   orderedList: "ol",
   listItem: "li",
@@ -22,14 +31,14 @@ export function editorDocToBody(doc: JSONContent | null | undefined): string {
 }
 
 function hasText(node: JSONContent): boolean {
-  return Boolean(node.text?.trim()) || (node.content ?? []).some(hasText);
+  return Boolean(node.text?.length) || (node.content ?? []).some(hasText);
 }
 
 function serializeNode(node: JSONContent): string {
   if (node.type === "text") {
     let text = escapeHtml(node.text ?? "");
     for (const mark of node.marks ?? []) {
-      if (mark.type === "spoiler") text = `<span data-spoiler="true">${text}</span>`;
+      if (mark.type === "spoiler") text = `||${text}||`;
       else if (tags[mark.type]) text = `<${tags[mark.type]}>${text}</${tags[mark.type]}>`;
     }
     return text;
@@ -42,7 +51,7 @@ function serializeNode(node: JSONContent): string {
 }
 
 export function bodyToEditorDoc(body: string): JSONContent | string {
-  if (isHtmlBody(body)) return sanitizeReviewBody(body);
+  if (isHtmlBody(body)) return spoilerEditorHtml(sanitizeReviewBody(body));
   const lines = body.length === 0 ? [""] : body.split("\n");
   return {
     type: "doc",

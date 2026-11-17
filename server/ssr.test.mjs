@@ -35,14 +35,7 @@ const review = {
   likesCount: 5,
   dislikesCount: 0,
   viewsCount: 10,
-  blocks: [
-    {
-      id: mediaId,
-      position: 1,
-      title: "Содержание",
-      body: "Текст рецензии доступен без JavaScript",
-    },
-  ],
+  body: "<h3>Содержание</h3><p>Текст рецензии доступен без JavaScript</p>",
 };
 let api;
 let app;
@@ -146,7 +139,7 @@ test("SSR renders guest page data and SEO metadata in the HTML response", async 
     ["/search", media.title],
     ["/search?q=Матрица", media.title],
     [`/media-objects/${mediaId}`, media.title],
-    [`/reviews/${reviewId}`, review.blocks[0].body],
+    [`/reviews/${reviewId}`, "Текст рецензии доступен без JavaScript"],
     [`/profiles/${authorId}`, "Автор SSR"],
   ]) {
     const { response, html } = await page(path);

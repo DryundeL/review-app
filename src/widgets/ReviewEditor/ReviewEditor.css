@@ -129,3 +129,22 @@
 .review-editor__count {
   transition: color var(--motion-duration-normal) var(--motion-ease);
 }
+
+.review-editor__toolbar {
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+}
+.review-editor__footer {
+  flex-wrap: wrap;
+}
+.review-editor .ProseMirror {
+  min-height: 240px;
+}
+.review-editor .ProseMirror h3 {
+  margin-block: 1em 0.5em;
+}
+.review-editor .ProseMirror blockquote {
+  border-left: 3px solid var(--color-muted);
+  margin-inline: 0;
+  padding-left: 12px;
+}

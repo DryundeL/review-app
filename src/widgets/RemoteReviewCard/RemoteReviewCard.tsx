@@ -31,12 +31,13 @@ export function RemoteReviewCard({
   const media = review.mediaObject;
   const mediaTitle = media.title.trim() || "Произведение";
   const typeLabel = media.type ? MEDIA_TYPE_LABELS[media.type] : null;
-  const reviewHref = `/reviews/${review.id}`;
+  const editHref = `/reviews/${review.id}/edit?mediaObjectId=${media.id}`;
+  const reviewHref =
+    review.status === "draft" && canEdit ? editHref : `/reviews/${review.id}`;
   const authorId = review.author?.id ?? review.authorId;
   const canReport =
     review.status === "published" && profile != null && profile.id !== authorId;
-  const backdrop =
-    hideBackdrop ? undefined : review.author?.backdrop;
+  const backdrop = hideBackdrop ? undefined : review.author?.backdrop;
   const cardStyle: CSSProperties | undefined = backdrop
     ? { ["--remote-review-backdrop" as string]: `url("${backdrop}")` }
     : undefined;
@@ -50,7 +51,7 @@ export function RemoteReviewCard({
         <Link
           className="remote-review__main"
           to={reviewHref}
-          aria-label={`Обзор: ${review.title}`}
+          aria-label={`Обзор: ${review.title || mediaTitle}`}
         >
           <span className="remote-review__poster">
             <MediaPoster title={mediaTitle} posterUrl={media.posterUrl} />
@@ -65,7 +66,9 @@ export function RemoteReviewCard({
               }
             >
               {typeLabel ? (
-                <span className="remote-review__badge remote-review__badge--live">{typeLabel}</span>
+                <span className="remote-review__badge remote-review__badge--live">
+                  {typeLabel}
+                </span>
               ) : null}
               {review.hasSpoilers ? (
                 <span className="remote-review__spoiler-flag">есть спойлеры</span>
@@ -85,7 +88,10 @@ export function RemoteReviewCard({
               ) : null}
             </span>
 
-            <span className="remote-review__title">{review.title}</span>
+            {review.hasUnpublishedChanges ? (
+              <span className="remote-review__status">Есть неопубликованные правки</span>
+            ) : null}
+            <span className="remote-review__title">{review.title || mediaTitle}</span>
 
             <span className="remote-review__media">{mediaTitle}</span>
 
@@ -97,8 +103,13 @@ export function RemoteReviewCard({
                   views={review.viewsCount}
                 />
               </span>
-              <span className="remote-review__rating" aria-label={`Оценка ${review.rating} из 10`}>
-                {review.rating}
+              <span
+                className="remote-review__rating"
+                aria-label={
+                  review.rating === null ? "Без оценки" : `Оценка ${review.rating} из 10`
+                }
+              >
+                {review.rating ?? "—"}
                 <small>/10</small>
               </span>
             </span>
@@ -115,7 +126,7 @@ export function RemoteReviewCard({
       {canEdit ? (
         <div className="remote-review__actions">
           <Button asChild className="remote-review__action" variant="secondary">
-            <Link to={`/reviews/${review.id}/edit`}>Изменить</Link>
+            <Link to={editHref}>Изменить</Link>
           </Button>
           {onDelete ? (
             <Button
@@ -134,7 +145,7 @@ export function RemoteReviewCard({
       {onDelete ? (
         <Modal open={confirmOpen} onOpenChange={setConfirmOpen} title="Удалить обзор?">
           <p className="remote-review__confirm-text">
-            «{review.title}» будет удалён без возможности восстановить.
+            «{review.title || mediaTitle}» будет удалён без возможности восстановить.
           </p>
           <div className="remote-review__confirm-actions">
             <Button
@@ -166,7 +177,14 @@ export function RemoteReviewCard({
 function PublishedIcon() {
   return (
     <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden focusable="false">
-      <circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <circle
+        cx="8"
+        cy="8"
+        r="6.25"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
       <path
         d="M4.75 8.2 6.9 10.3 11.25 5.7"
         fill="none"

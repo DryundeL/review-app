@@ -22,7 +22,7 @@ const detailBase = {
   likesCount: 0,
   dislikesCount: 0,
   viewsCount: 0,
-  blocks: [] as const,
+  body: "<p>Текст</p>",
 };
 
 test("parseRemoteReview requires author like feed", () => {
@@ -206,9 +206,9 @@ test("response bodies have no write-time length limit", () => {
   const review = parseRemoteReview({
     ...detailBase,
     author: { id: authorId, username: "ann" },
-    blocks: [{ id: reviewId, position: 1, title: "😀".repeat(50), body }],
+    body,
   });
-  assert.equal(review.blocks[0].body, body);
+  assert.equal(review.body, body);
 });
 
 test("author cosmetics use direct URLs independently of item codes", () => {
@@ -223,4 +223,38 @@ test("author cosmetics use direct URLs independently of item codes", () => {
   });
   assert.equal(review.author.avatarFrame, "/storage/gemification/custom-frame.webp");
   assert.equal(review.author.backdrop, "/storage/gemification/custom-list.webp");
+});
+
+test("editor parser accepts the editor contract without author or public counters", async () => {
+  const { parseReviewEditorText } = await import("./parseRemote.ts");
+  const input = {
+    id: reviewId,
+    mediaObject,
+    title: "",
+    rating: null,
+    body: "",
+    status: "draft",
+    revision: 3,
+    hasUnpublishedChanges: false,
+  };
+  assert.deepEqual(parseReviewEditorText(JSON.stringify(input)), input);
+  for (const revision of [-1, 1.2, "3"])
+    assert.throws(() => parseReviewEditorText(JSON.stringify({ ...input, revision })));
+});
+test("own list retains empty title, null rating and unpublished changes", () => {
+  const result = parseRemoteReviewListText(
+    JSON.stringify({
+      items: [
+        {
+          ...detailBase,
+          title: "",
+          rating: null,
+          status: "draft",
+          hasUnpublishedChanges: true,
+        },
+      ],
+    }),
+  );
+  assert.equal(result.items[0].rating, null);
+  assert.equal(result.items[0].hasUnpublishedChanges, true);
 });

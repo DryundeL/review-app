@@ -174,6 +174,12 @@ export function errorFromPayload(status: number, payload: unknown): ApiError {
       error: z.object({
         code: z.string(),
         message: z.string(),
+        details: z
+          .object({
+            field: z.string().max(40).optional(),
+            reason: z.string().max(40).optional(),
+          })
+          .optional(),
       }),
     })
     .safeParse(payload);
@@ -187,5 +193,6 @@ export function errorFromPayload(status: number, payload: unknown): ApiError {
     status,
     code,
     toPublicMessage(status, code, envelope.data.error.message),
+    envelope.data.error.details,
   );
 }

@@ -1,3 +1,6 @@
+import { JSDOM } from "jsdom";
+import createDOMPurify from "dompurify";
+import { configureReviewHtml } from "@/shared/lib/reviewBody";
 import { renderToString } from "react-dom/server";
 import { StaticRouter } from "react-router-dom";
 import { dehydrate } from "@tanstack/react-query";
@@ -23,6 +26,12 @@ import { ApiError } from "@/shared/api";
 import { PageMetaContext } from "@/shared/hooks/pageMetaContext";
 import { metaForPath, resolvePageMeta, type PageMeta } from "@/shared/lib/pageMeta";
 import { isClientOnlyPath, isPublicPath } from "@/shared/lib/publicRoutes";
+
+const reviewDom = new JSDOM("");
+configureReviewHtml({
+  purifier: createDOMPurify(reviewDom.window),
+  parse: (value) => new reviewDom.window.DOMParser().parseFromString(value, "text/html"),
+});
 
 /** Только гостевые данные: входящие headers/cookies не принимаются этим интерфейсом. */
 export async function render(url: string, requestSignal?: AbortSignal) {

@@ -8,7 +8,7 @@ describe("review editor serialize", () => {
     const doc = bodyToEditorDoc(body);
     assert.equal(
       editorDocToBody(doc as import("@tiptap/core").JSONContent),
-      '<p>до <span data-spoiler="true">секрет</span> после</p>',
+      "<p>до ||секрет|| после</p>",
     );
   });
 

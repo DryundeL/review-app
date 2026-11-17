@@ -3,17 +3,18 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useEffect, useId } from "react";
 import {
-  MAX_BLOCK_BODY,
+  MAX_REVIEW_BODY,
   sanitizeReviewBody,
   reviewBodyText,
   unicodeLength,
 } from "@/shared/lib/reviewBody";
 import { Button } from "@/shared/ui";
 import { bodyToEditorDoc, editorDocToBody } from "./serialize";
+import { UnderlineMark } from "./underlineMark";
 import { SpoilerMark } from "./spoilerMark";
 import "./ReviewEditor.css";
 
-const MAX_BODY = MAX_BLOCK_BODY;
+const MAX_BODY = MAX_REVIEW_BODY;
 
 type ReviewEditorProps = {
   value: string;
@@ -34,13 +35,11 @@ export function ReviewEditor({
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        heading: false,
-        code: false,
-        codeBlock: false,
-        blockquote: false,
+        heading: { levels: [3] },
         horizontalRule: false,
       }),
       SpoilerMark,
+      UnderlineMark,
       Placeholder.configure({ placeholder }),
     ],
     content: bodyToEditorDoc(value),
@@ -67,7 +66,7 @@ export function ReviewEditor({
   }, [editor, value]);
 
   useEffect(() => {
-    editor?.setEditable(!disabled);
+    editor?.setEditable(!disabled, false);
   }, [disabled, editor]);
 
   const length = unicodeLength(reviewBodyText(value));
@@ -80,6 +79,16 @@ export function ReviewEditor({
         <div className="review-editor__toolbar" role="group" aria-label="Форматирование">
           {(
             [
+              [
+                "heading",
+                "Раздел",
+                () => editor?.chain().focus().toggleHeading({ level: 3 }).run(),
+              ],
+              [
+                "blockquote",
+                "Цитата",
+                () => editor?.chain().focus().toggleBlockquote().run(),
+              ],
               ["bold", "Жирный", () => editor?.chain().focus().toggleBold().run()],
               ["italic", "Курсив", () => editor?.chain().focus().toggleItalic().run()],
               [
@@ -145,6 +154,8 @@ export function ReviewEditor({
 
 function ToolIcon({ name }: { name: string }) {
   const paths: Record<string, React.ReactNode> = {
+    heading: <path d="M4 4v16M16 4v16M4 12h12M20 14v6" />,
+    blockquote: <path d="M4 7h6v6H4V7m10 0h6v6h-6V7M10 13l-3 5m13-5-3 5" />,
     bold: <path d="M6 4h7a4 4 0 0 1 0 8H6m0 0h8a4 4 0 0 1 0 8H6V4" />,
     italic: <path d="M10 4h10M4 20h10M14 4 10 20" />,
     strike: (

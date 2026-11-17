@@ -6,11 +6,19 @@ export class ApiError extends Error {
   readonly status: number;
   readonly code: string;
 
-  constructor(status: number, code: string, message: string) {
+  readonly details?: { field?: string; reason?: string };
+
+  constructor(
+    status: number,
+    code: string,
+    message: string,
+    details?: { field?: string; reason?: string },
+  ) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.code = code;
+    this.details = details;
   }
 }
 
@@ -25,7 +33,11 @@ export function readErrorCode(value: unknown): string {
   return value;
 }
 
-export function toPublicMessage(status: number, code: string, serverMessage: unknown): string {
+export function toPublicMessage(
+  status: number,
+  code: string,
+  serverMessage: unknown,
+): string {
   if (status === 429 || code === "RATE_LIMITED") {
     return "Слишком много запросов. Подождите немного и повторите.";
   }

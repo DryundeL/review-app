@@ -81,6 +81,9 @@ export function MediaObjectPage() {
               <span aria-hidden>←</span> К поиску
             </Link>
           </Button>
+          <Button asChild>
+            <Link to={`/create?mediaObjectId=${media.id}`}>Написать обзор</Link>
+          </Button>
           <h2>Популярные обзоры</h2>
           {topQuery.isLoading ? <p role="status">Загрузка обзоров…</p> : null}
           {topQuery.isError ? (

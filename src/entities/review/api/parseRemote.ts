@@ -7,6 +7,7 @@ import type {
   MediaObjectSummary,
   CatalogMediaObject,
   RemoteReview,
+  ReviewEditorData,
   RemoteReviewAuthor,
   RemoteReviewList,
 } from "../model/remote.ts";
@@ -16,16 +17,6 @@ const uuid = z.string().uuid();
 const mediaTypeSchema = z.custom<MediaType>(
   (value) => typeof value === "string" && value in MEDIA_TYPE_LABELS,
 );
-
-const blockSchema = z.object({
-  id: uuid,
-  position: z.number().int().min(1).max(10),
-  title: z
-    .string()
-    .min(1)
-    .refine((value) => Array.from(value).length <= 50),
-  body: z.string().min(1),
-});
 
 const mediaObjectSchema = z.object({
   id: uuid,
@@ -61,7 +52,7 @@ const reviewSummarySchema = z.object({
   authorId: uuid,
   author: authorSchema,
   mediaObject: mediaObjectSchema,
-  title: z.string().min(1).max(256),
+  title: z.string().refine((value) => Array.from(value).length <= 256),
   rating: z.number().int().min(1).max(10),
   status: z.enum(["draft", "published"]).optional().default("published"),
   hasSpoilers: z.boolean(),
@@ -82,9 +73,10 @@ const reviewListItemSchema = z.object({
   authorId: uuid,
   author: authorSchema.optional(),
   mediaObject: mediaObjectSchema,
-  title: z.string().min(1).max(256),
-  rating: z.number().min(1).max(10),
+  title: z.string().refine((value) => Array.from(value).length <= 256),
+  rating: z.number().int().min(1).max(10).nullable(),
   status: z.enum(["draft", "published"]).optional().default("published"),
+  hasUnpublishedChanges: z.boolean().optional().default(false),
   hasSpoilers: z.boolean().optional().default(false),
   likesCount: z.number().nonnegative().optional().default(0),
   dislikesCount: z.number().nonnegative().optional().default(0),
@@ -94,7 +86,7 @@ const reviewListItemSchema = z.object({
 });
 
 const reviewDetailSchema = reviewSummarySchema.extend({
-  blocks: z.array(blockSchema).max(10),
+  body: z.string(),
 });
 
 const listSchema = z.object({
@@ -189,7 +181,9 @@ function mapSummary(
     ...(author ? { author } : {}),
     mediaObject: toMediaSummary(item.mediaObject),
     title: item.title,
-    rating: Math.round(item.rating),
+    rating: item.rating === null ? null : Math.round(item.rating),
+    hasUnpublishedChanges:
+      "hasUnpublishedChanges" in item ? item.hasUnpublishedChanges : false,
     status: item.status,
     hasSpoilers: item.hasSpoilers,
     likesCount: item.likesCount,
@@ -214,7 +208,7 @@ export function parseRemoteReview(payload: unknown): RemoteReview {
   return {
     ...summary,
     author: summary.author,
-    blocks: parsed.data.blocks,
+    body: parsed.data.body,
   };
 }
 
@@ -278,4 +272,28 @@ export function parseTopReviewsText(text: string): RemoteReviewList {
     throw unexpectedResponseError();
   }
   return { items: list.items };
+}
+
+const editorSchema = z.object({
+  id: uuid,
+  mediaObject: mediaObjectSchema,
+  status: z.enum(["draft", "published"]),
+  title: z.string().refine((value) => Array.from(value).length <= 256),
+  rating: z.number().int().min(1).max(10).nullable(),
+  body: z.string(),
+  revision: z.number().int().nonnegative(),
+  hasUnpublishedChanges: z.boolean(),
+  publishedAt: z.string().optional(),
+});
+
+export function parseReviewEditorText(text: string): ReviewEditorData {
+  let payload: unknown;
+  try {
+    payload = JSON.parse(text);
+  } catch {
+    throw unexpectedResponseError();
+  }
+  const parsed = editorSchema.safeParse(payload);
+  if (!parsed.success) throw unexpectedResponseError();
+  return { ...parsed.data, mediaObject: toMediaSummary(parsed.data.mediaObject) };
 }

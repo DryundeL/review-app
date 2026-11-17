@@ -419,3 +419,29 @@
     transform: none;
   }
 }
+
+.create-review__poster {
+  width: 64px;
+  flex: 0 0 64px;
+}
+.create-review__picked-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.create-review__conflict {
+  display: grid;
+  gap: 12px;
+}
+.create-review__conflict textarea {
+  width: 100%;
+  min-height: 120px;
+  font: inherit;
+}
+.create-review__actions {
+  position: sticky;
+  bottom: calc(var(--review-keyboard-inset, 0px) + var(--safe-bottom, 0px));
+  background: var(--color-surface-2);
+  padding: 12px;
+  z-index: 2;
+}

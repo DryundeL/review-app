@@ -4,6 +4,8 @@ import {
   isHtmlBody,
   REVIEW_BODY_TAGS,
   sanitizeReviewBody,
+  spoilerEditorHtml,
+  parseReviewHtml,
 } from "@/shared/lib/reviewBody";
 import { cn } from "@/shared/lib/cn";
 import "./SpoilerText.css";
@@ -17,7 +19,7 @@ type SpoilerTextProps = {
 
 export function SpoilerText({ text, className, preview = false }: SpoilerTextProps) {
   if (isHtmlBody(text)) {
-    const doc = new DOMParser().parseFromString(sanitizeReviewBody(text), "text/html");
+    const doc = parseReviewHtml(spoilerEditorHtml(sanitizeReviewBody(text)));
     return (
       <div className={cn("spoiler-text", className)}>
         {renderHtmlNodes(doc.body.childNodes, preview)}

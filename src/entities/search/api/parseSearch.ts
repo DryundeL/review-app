@@ -69,7 +69,7 @@ const reviewAuthorSchema = z.object({
 
 const reviewHitSchema = z.object({
   id: uuid,
-  title: z.string().min(1).max(256),
+  title: z.string().refine((value) => Array.from(value).length <= 256),
   authorId: uuid,
   username: z
     .string()

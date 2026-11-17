@@ -27,14 +27,16 @@ export type {
   MediaObjectSummary,
   RemoteReview,
   RemoteReviewAuthor,
-  RemoteReviewBlock,
   RemoteReviewList,
   RemoteReviewSummary,
   ReviewStatus,
+  ReviewEditorData,
   UpdateReviewInput,
 } from "./model/remote";
 export {
   createReview,
+  getReviewDraft,
+  publishReview,
   deleteReview,
   getMediaObject,
   getMediaTopReviews,

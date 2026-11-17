@@ -5,11 +5,13 @@ import type {
   ListFeedParams,
   ListMediaObjectsParams,
   RemoteReview,
+  ReviewEditorData,
   RemoteReviewList,
   UpdateReviewInput,
 } from "../model/remote";
 import {
   parseTopReviewsText,
+  parseReviewEditorText,
   parseMediaObjectText,
   parseMediaObjectsText,
   parseRemoteReviewListText,
@@ -32,15 +34,26 @@ function clampLimit(limit?: number): number {
   return rounded;
 }
 
+export function getReviewDraft(
+  mediaObjectId: string,
+  signal?: AbortSignal,
+): Promise<ReviewEditorData> {
+  return apiClient("/v1/reviews/draft", {
+    query: { mediaObjectId: assertUuid(mediaObjectId) },
+    signal,
+    parse: parseReviewEditorText,
+  });
+}
+
 export function createReview(
   input: CreateReviewInput,
   signal?: AbortSignal,
-): Promise<RemoteReview> {
+): Promise<ReviewEditorData> {
   return apiClient("/v1/reviews", {
     method: "POST",
     body: input,
     signal,
-    parse: parseRemoteReviewText,
+    parse: parseReviewEditorText,
   });
 }
 
@@ -48,13 +61,20 @@ export function updateReview(
   id: string,
   input: UpdateReviewInput,
   signal?: AbortSignal,
-): Promise<RemoteReview> {
-  const reviewId = assertUuid(id);
-  return apiClient(`/v1/reviews/${reviewId}`, {
-    method: "PATCH",
+): Promise<ReviewEditorData> {
+  return apiClient(`/v1/reviews/${assertUuid(id)}/draft`, {
+    method: "PUT",
     body: input,
     signal,
-    parse: parseRemoteReviewText,
+    parse: parseReviewEditorText,
+  });
+}
+
+export function publishReview(id: string, revision: number): Promise<ReviewEditorData> {
+  return apiClient(`/v1/reviews/${assertUuid(id)}/publish`, {
+    method: "POST",
+    body: { revision },
+    parse: parseReviewEditorText,
   });
 }
 

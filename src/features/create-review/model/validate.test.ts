@@ -1,69 +1,47 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { JSDOM } from "jsdom";
-
 Object.assign(globalThis, { window: new JSDOM("").window });
 const { toCreatePayload } = await import("./validate.ts");
-const draft = (body: string) => ({
+const draft = (body: string, rating: number | null = null) => ({
   mediaObjectId: "33333333-3333-4333-8333-333333333333",
-  title: "Обзор",
-  rating: 8,
-  blocks: [{ key: "1", title: "Блок", body }],
+  title: "",
+  rating,
+  body,
 });
-
-test("accepts 500 Unicode characters per block without truncation", () => {
-  const input = draft("😀".repeat(500));
-  input.blocks[0].title = "😀".repeat(50);
-  input.blocks.push({ key: "2", title: "Другой блок", body: "я".repeat(500) });
-  const result = toCreatePayload(input, "published");
-  assert.ok(result.ok);
-  assert.ok(result.payload.blocks);
-  assert.deepEqual(
-    result.payload.blocks.map((b) => b.body),
-    input.blocks.map((b) => b.body),
-  );
+test("empty draft permits absent title, rating and body", () => {
+  assert.equal(toCreatePayload(draft(""), "draft").ok, true);
 });
-
-test("rejects 501 characters in any block and titles exceeding 50", () => {
-  assert.equal(toCreatePayload(draft("😀".repeat(501)), "draft").ok, false);
-  const input = draft("Текст");
-  input.blocks[0].title = "я".repeat(51);
-  assert.equal(toCreatePayload(input, "published").ok, false);
+test("publication requires rating and meaningful text, but no title", () => {
+  for (const score of [1, 10])
+    assert.equal(toCreatePayload(draft("<p>Текст</p>", score), "published").ok, true);
+  for (const body of ["", "<p><br></p>", "<p>&nbsp; </p>"])
+    assert.equal(toCreatePayload(draft(body, 8), "published").ok, false);
+  assert.equal(toCreatePayload(draft("Текст"), "published").ok, false);
 });
-
-test("keeps safe HTML, removes active content, rejects empty markup", () => {
-  const result = toCreatePayload(
-    draft('<p onclick="alert(1)"><strong>Текст</strong><script>alert(1)</script></p>'),
-    "published",
-  );
-  assert.ok(result.ok);
-  assert.ok(result.payload.blocks);
-  assert.equal(result.payload.blocks[0].body, "<p><strong>Текст</strong></p>");
-  assert.equal(toCreatePayload(draft("<p><br></p>"), "published").ok, false);
-  assert.equal(toCreatePayload(draft(`<p>${"я".repeat(500)}</p>`), "published").ok, true);
-  assert.equal(
-    toCreatePayload(draft(`<p>${"я".repeat(501)}</p>`), "published").ok,
-    false,
-  );
-});
-
-test("HTML tags and attributes do not consume the visible text limit", () => {
-  for (const character of ["я", "😀", "&amp;", "&#128578;", "&lt;"]) {
-    const body = `<p><strong>${character.repeat(500)}</strong></p>`;
-    const result = toCreatePayload(draft(body), "published");
-    assert.ok(result.ok, character);
-    assert.ok(result.payload.blocks);
-    assert.ok(result.payload.blocks[0].body.includes("<strong>"));
+test("20000 Unicode code points and decoded entities, no truncation", () => {
+  for (const character of ["😀", "&amp;", "я"]) {
+    const input = draft(`<h3>${character.repeat(20_000)}</h3>`);
+    const result = toCreatePayload(input, "draft");
+    assert.ok(result.ok);
+    assert.equal(result.payload.body, input.body);
     assert.equal(
-      toCreatePayload(draft(`<p>${character.repeat(501)}</p>`), "draft").ok,
+      toCreatePayload(draft(`<p>${character.repeat(20_001)}</p>`), "draft").ok,
       false,
     );
   }
-  assert.ok(
-    toCreatePayload(
-      draft(`<p><span data-spoiler="true">${"😀".repeat(500)}</span></p>`),
-      "published",
-    ).ok,
+});
+test("validates title without stripping or truncating it", () => {
+  for (const title of ["<title>", "😀".repeat(257)])
+    assert.equal(toCreatePayload({ ...draft(""), title }, "draft").ok, false);
+  assert.equal(
+    toCreatePayload({ ...draft(""), title: "😀".repeat(256) }, "draft").ok,
+    true,
   );
-  assert.ok(toCreatePayload(draft("<strong>я</strong>".repeat(500)), "published").ok);
+});
+test("JSON size is constrained separately from visible text", () => {
+  assert.equal(
+    toCreatePayload(draft("<strong>я</strong>".repeat(20_000)), "draft").ok,
+    false,
+  );
 });
