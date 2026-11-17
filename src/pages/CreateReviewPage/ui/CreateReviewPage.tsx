@@ -291,6 +291,15 @@ function ReviewForm({
       setPublishing(false);
     }
   }
+  const [saveTone, saveLabel] = state.saving
+    ? (["saving", "Сохраняется…"] as const)
+    : state.error
+      ? (["error", "Не удалось сохранить"] as const)
+      : state.dirty
+        ? (["dirty", "Есть несохранённые изменения"] as const)
+        : state.saved
+          ? (["saved", "Черновик сохранён"] as const)
+          : (["idle", "Черновик сохранится автоматически"] as const);
   return (
     <section ref={formRef} className="create-review screen">
       <h1>Редактор обзора</h1>
@@ -378,50 +387,50 @@ function ReviewForm({
         disabled={publishing || state.conflict}
       />
       {fieldError("body")}
-      <p role="status" aria-live="polite">
-        {state.saving
-          ? "Сохраняется"
-          : state.error
-            ? "Не удалось сохранить"
-            : state.dirty
-              ? "Есть несохранённые изменения"
-              : state.saved
-                ? "Сохранено"
-                : "Начните писать — черновик сохранится автоматически"}
-      </p>
       {error && !field && !state.conflict ? (
         <p role="alert" className="create-review__error">
           {message(error)}
         </p>
       ) : null}
       <div className="create-review__actions">
-        {state.error && !state.conflict ? (
-          <Button
-            variant="secondary"
-            disabled={state.saving || publishing}
-            onClick={() => {
-              setLocalError(null);
-              void session.save().catch(() => {});
-            }}
-          >
-            Повторить
-          </Button>
-        ) : null}
-        <Button
-          disabled={
-            publishing ||
-            state.conflict ||
-            (state.saved?.status === "published" &&
-              !state.dirty &&
-              !state.saved.hasUnpublishedChanges)
-          }
-          aria-busy={publishing}
-          onClick={() => void publish()}
+        <p
+          role="status"
+          aria-live="polite"
+          className={`create-review__status create-review__status--${saveTone}`}
         >
-          {state.saved?.status === "published" ? "Обновить публикацию" : "Опубликовать"}
-        </Button>
+          {saveLabel}
+        </p>
+        <div className="create-review__buttons">
+          {state.error && !state.conflict ? (
+            <Button
+              variant="secondary"
+              disabled={state.saving || publishing}
+              onClick={() => {
+                setLocalError(null);
+                void session.save().catch(() => {});
+              }}
+            >
+              Повторить
+            </Button>
+          ) : null}
+          <Button
+            disabled={
+              publishing ||
+              state.conflict ||
+              (state.saved?.status === "published" &&
+                !state.dirty &&
+                !state.saved.hasUnpublishedChanges)
+            }
+            aria-busy={publishing}
+            onClick={() => void publish()}
+          >
+            {state.saved?.status === "published" ? "Обновить публикацию" : "Опубликовать"}
+          </Button>
+        </div>
       </div>
-      <Link to="/profile">Мои обзоры</Link>
+      <Link to="/profile" className="create-review__my-link">
+        Мои обзоры
+      </Link>
     </section>
   );
 }
