@@ -22,7 +22,7 @@ services:
       - /tmp:size=16m,mode=1777
     healthcheck:
       test: [CMD, wget, -q, -O, /dev/null, "http://127.0.0.1:8080/healthz"]
-      interval: 10s
+      interval: 60s
       timeout: 3s
       retries: 3
     logging:
