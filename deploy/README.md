@@ -51,15 +51,17 @@ sh /home/wapp/apps/review-app/pull.sh
 sh /home/wapp/apps/review-app/pull.sh <PREVIOUS_COMMIT_SHA>
 ```
 
-После успешного запуска `pull.sh` оставляет `KEEP_RELEASES` (по умолчанию 3)
-последних активированных релизов и их образы `review-app:<sha>`; более старые
-каталоги, образы и dangling-слои удаляются. Откат возможен только на эти релизы.
-Архив и `image.tar` удаляются сразу после `docker load`. Деплой блокирует параллельный
-запуск `pull.sh`; ссылка `current` меняется только после успешного healthcheck.
+После успешного запуска `pull.sh` оставляет только релизы и образы `current` и
+`previous`; остальные каталоги, образы `review-app:*` и dangling-слои удаляются.
+Откат возможен только на `previous` (`readlink .../review-app/previous`).
+Архив из `incoming` и `image.tar` удаляются сразу после `docker load`, брошенные
+загрузки старше суток — при следующем деплое. Деплой берёт общий с review-api lock
+`/home/wapp/.local/share/review-deploy.lock` (ожидание до 15 минут); ссылки
+`current`/`previous` меняются только после успешного healthcheck.
 При ошибке контейнер может уже быть заменён: запускайте откат явно.
 Это не zero-downtime деплой.
 
-Служебные файлы: `/home/wapp/.local/share/review-app/{releases,incoming,current}`.
+Служебные файлы: `/home/wapp/.local/share/review-app/{releases,incoming,current,previous}`.
 В `/home/wapp/apps/review-app` хранится только `pull.sh`.
 
 ## Проверка
