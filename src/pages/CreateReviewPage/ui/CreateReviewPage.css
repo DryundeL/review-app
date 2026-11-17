@@ -429,6 +429,12 @@
   align-items: center;
   gap: 12px;
 }
+.create-review__picked-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
 .create-review__conflict {
   display: grid;
   gap: 12px;

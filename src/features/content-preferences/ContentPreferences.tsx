@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   fetchContentPreferences,
@@ -17,8 +17,49 @@ import { getAccessToken } from "@/shared/api/session";
 import { AppImage, Button, Modal } from "@/shared/ui";
 import "./ContentPreferences.css";
 
+const DISMISSED_KEY = "rh-onboarding-dismissed";
+const UUID_LIKE = /^[0-9a-f-]{1,64}$/i;
+
+/**
+ * Закрытие опроса без сохранения — локальное действие (сервер продолжит отдавать
+ * needsOnboarding: true). Запоминаем его на сессию вкладки, чтобы опрос не
+ * всплывал при каждом переходе/ремаунте; после перезапуска приложения покажем снова.
+ */
+function readDismissed(): string[] {
+  try {
+    if (typeof sessionStorage === "undefined") return [];
+    const data: unknown = JSON.parse(sessionStorage.getItem(DISMISSED_KEY) ?? "[]");
+    return Array.isArray(data)
+      ? data.filter((id): id is string => typeof id === "string" && UUID_LIKE.test(id))
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+let dismissedAccounts: Set<string> | null = null;
+
+function isDismissed(accountId: string): boolean {
+  dismissedAccounts ??= new Set(readDismissed());
+  return dismissedAccounts.has(accountId);
+}
+
+function markDismissed(accountId: string): void {
+  dismissedAccounts ??= new Set(readDismissed());
+  dismissedAccounts.add(accountId);
+  try {
+    sessionStorage.setItem(
+      DISMISSED_KEY,
+      JSON.stringify([...dismissedAccounts].slice(-20)),
+    );
+  } catch {
+    // Остаётся в памяти вкладки.
+  }
+}
+
 export function ContentPreferencesOnboarding() {
   const { phase, profile, hasToken, retryMiniAppLogin } = useAuthSession();
+  const [, rerender] = useReducer((value: number) => value + 1, 0);
   if (phase === "failed" && hasToken)
     return (
       <section className="content-preferences screen">
@@ -26,9 +67,25 @@ export function ContentPreferencesOnboarding() {
         <Button onClick={retryMiniAppLogin}>Повторить</Button>
       </section>
     );
-  if (phase !== "authenticated" || !profile || profile.needsOnboarding !== true)
+  if (
+    phase !== "authenticated" ||
+    !profile ||
+    profile.needsOnboarding !== true ||
+    isDismissed(profile.id)
+  )
     return null;
-  return <PreferencesDialog key={profile.id} accountId={profile.id} onboarding />;
+  const accountId = profile.id;
+  return (
+    <PreferencesDialog
+      key={accountId}
+      accountId={accountId}
+      onboarding
+      onClose={() => {
+        markDismissed(accountId);
+        rerender();
+      }}
+    />
+  );
 }
 
 export function ContentPreferencesSettings() {

@@ -7,6 +7,7 @@ import {
   getMediaObject,
   listMediaObjects,
   listMyReviews,
+  mediaMetaLine,
   publishReview,
   updateReview,
   type MediaObjectSummary,
@@ -128,7 +129,10 @@ function ReviewSelection({ reviewId, mediaId }: { reviewId?: string; mediaId: st
                   className="create-review__media-item"
                   onClick={() => setSelected(media)}
                 >
-                  {media.title}
+                  <span className="create-review__media-title">{media.title}</span>
+                  <span className="create-review__media-meta">
+                    {mediaMetaLine(media)}
+                  </span>
                 </button>
               </li>
             ))}
@@ -296,7 +300,10 @@ function ReviewForm({
           title={media.title}
           posterUrl={media.posterUrl}
         />
-        <strong>{media.title}</strong>
+        <div className="create-review__picked-info">
+          <strong>{media.title}</strong>
+          <span className="create-review__media-meta">{mediaMetaLine(media)}</span>
+        </div>
       </div>
       {state.conflict ? (
         <div role="alert" className="create-review__conflict">
