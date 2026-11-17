@@ -298,7 +298,7 @@ function ReviewForm({
       : state.dirty
         ? (["dirty", "Есть несохранённые изменения"] as const)
         : state.saved
-          ? (["saved", "Черновик сохранён"] as const)
+          ? (["saved", "Сохранено"] as const)
           : (["idle", "Черновик сохранится автоматически"] as const);
   return (
     <section ref={formRef} className="create-review screen">
