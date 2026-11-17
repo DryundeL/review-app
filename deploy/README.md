@@ -58,6 +58,10 @@ sh /home/wapp/apps/review-app/pull.sh <PREVIOUS_COMMIT_SHA>
 загрузки старше суток — при следующем деплое. Деплой берёт общий с review-api lock
 `/home/wapp/.local/share/review-deploy.lock` (ожидание до 15 минут); ссылки
 `current`/`previous` меняются только после успешного healthcheck.
+Слой `node_modules` в образе воспроизводимый (фиксированные mtime, без кэша Vite):
+при неизменном `package-lock.json` и базовом образе сервер переиспользует уже
+распакованный слой и распаковывает только `dist`/`server` (~4 МБ). Healthcheck
+во время `start_period` (120 с) выполняется каждые 5 с, `--wait` ждёт до 180 с.
 При ошибке контейнер может уже быть заменён: запускайте откат явно.
 Это не zero-downtime деплой.
 

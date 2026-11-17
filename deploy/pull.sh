@@ -41,7 +41,7 @@ export APP_VERSION="$revision"
 cd "$release"
 compose() { docker compose -f "$release/compose.yaml" "$@"; }
 compose config --quiet
-compose up -d --no-build --pull never --wait --wait-timeout 120 app
+compose up -d --no-build --pull never --wait --wait-timeout 180 app
 
 set_ref() {
   ln -sfn "$state/releases/$2" "$state/$1.next"

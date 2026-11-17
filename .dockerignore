@@ -11,3 +11,4 @@ sessions.json
 storage
 public/achievements
 public/gamification
+.DS_Store
