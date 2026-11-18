@@ -1,3 +1,5 @@
+import { AsyncLocalStorage } from "node:async_hooks";
+import { isIP } from "node:net";
 import { JSDOM } from "jsdom";
 import createDOMPurify from "dompurify";
 import { configureReviewHtml } from "@/shared/lib/reviewBody";
@@ -22,7 +24,7 @@ import {
   sanitizeSearchQuery,
   type SearchTrendsTab,
 } from "@/entities/search";
-import { ApiError } from "@/shared/api";
+import { ApiError, setForwardedForProvider } from "@/shared/api";
 import { PageMetaContext } from "@/shared/hooks/pageMetaContext";
 import { metaForPath, resolvePageMeta, type PageMeta } from "@/shared/lib/pageMeta";
 import { isClientOnlyPath, isPublicPath } from "@/shared/lib/publicRoutes";
@@ -33,8 +35,19 @@ configureReviewHtml({
   parse: (value) => new reviewDom.window.DOMParser().parseFromString(value, "text/html"),
 });
 
-/** Только гостевые данные: входящие headers/cookies не принимаются этим интерфейсом. */
-export async function render(url: string, requestSignal?: AbortSignal) {
+const visitorIp = new AsyncLocalStorage<string | undefined>();
+setForwardedForProvider(() => visitorIp.getStore());
+
+/**
+ * Только гостевые данные: headers/cookies посетителя не принимаются.
+ * clientIp — X-Real-IP от хостового nginx; нужен только для rate limit API.
+ */
+export function render(url: string, requestSignal?: AbortSignal, clientIp?: unknown) {
+  const ip = typeof clientIp === "string" && isIP(clientIp) ? clientIp : undefined;
+  return visitorIp.run(ip, () => renderPage(url, requestSignal));
+}
+
+async function renderPage(url: string, requestSignal?: AbortSignal) {
   const location = new URL(url, "http://ssr.invalid");
   const pathname = location.pathname;
   const queryClient = createQueryClient();

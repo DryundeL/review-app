@@ -49,6 +49,7 @@ before(async () => {
       url: req.url,
       authorization: req.headers.authorization,
       cookie: req.headers.cookie,
+      forwardedFor: req.headers["x-forwarded-for"],
     });
     const path = new URL(req.url, "http://test").pathname;
     res.setHeader("Content-Type", "application/json");
@@ -390,4 +391,26 @@ test("SSR uses direct frame, backdrop and background URLs without fetching the s
   );
   assert.ok(profilePage.html.includes('src="/storage/gemification/direct-frame.webp"'));
   assert.ok(!calls.some(({ url }) => url.startsWith("/v1/shop/items")));
+});
+
+test("SSR forwards only a valid visitor IP to the API rate limiter", async () => {
+  for (const [header, expected] of [
+    ["203.0.113.7", "203.0.113.7"],
+    ["2001:db8::1", "2001:db8::1"],
+    ["1.1.1.1, 2.2.2.2", undefined],
+    ["not-an-ip", undefined],
+  ]) {
+    calls.length = 0;
+    const { response } = await page(`/reviews/${reviewId}`, {
+      "X-Real-IP": header,
+      "X-Forwarded-For": "198.51.100.66",
+    });
+    assert.equal(response.status, 200);
+    const apiCalls = calls.filter((call) => call.url.startsWith("/v1/reviews/"));
+    assert.ok(apiCalls.length > 0);
+    for (const call of apiCalls) assert.equal(call.forwardedFor, expected);
+  }
+  calls.length = 0;
+  await page(`/reviews/${reviewId}`);
+  assert.ok(calls.every((call) => call.forwardedFor === undefined));
 });

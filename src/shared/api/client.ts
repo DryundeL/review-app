@@ -2,6 +2,7 @@ import { appConfig } from "../config/index.ts";
 import { wait } from "../lib/wait.ts";
 import { errorFromPayload } from "./authPayload.ts";
 import { ApiError, isAbortError, toPublicMessage } from "./errors.ts";
+import { getForwardedFor } from "./forwardedFor.ts";
 import { clearAccessToken, getAccessToken } from "./session.ts";
 import { buildApiUrl, type ApiQuery } from "./url.ts";
 
@@ -36,6 +37,9 @@ export async function apiClient<T>(
   if (serverRendering) {
     headers.delete("Authorization");
     headers.delete("Cookie");
+    headers.delete("X-Forwarded-For");
+    const visitorIp = getForwardedFor();
+    if (visitorIp) headers.set("X-Forwarded-For", visitorIp);
   }
   let attachedToken: string | null = null;
   if (!serverRendering && options.auth !== false && !headers.has("Authorization")) {

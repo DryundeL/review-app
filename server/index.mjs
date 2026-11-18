@@ -181,7 +181,11 @@ export async function createAppServer({
           const renderer = dev
             ? await vite.ssrLoadModule("/src/entry-server.tsx")
             : production;
-          const result = await renderer.render(req.url, controller.signal);
+          const result = await renderer.render(
+            req.url,
+            controller.signal,
+            req.headers["x-real-ip"],
+          );
           if (res.destroyed) return;
           const html = renderDocument(
             source,
