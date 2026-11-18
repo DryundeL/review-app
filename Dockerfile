@@ -1,7 +1,11 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --ignore-scripts && npm audit --audit-level=high
+# Runtime deps: fail on high. Build-only tooling processes only our sources, so
+# it fails on critical; high there is tracked manually (picomatch ReDoS has no fix).
+RUN npm ci --ignore-scripts \
+  && npm audit --omit=dev --audit-level=high \
+  && npm audit --audit-level=critical
 COPY . .
 ENV VITE_API_BASE_URL=/api
 ENV VITE_TELEGRAM_BOT_URL=https://t.me/rate_review_hub_bot
