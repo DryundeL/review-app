@@ -63,7 +63,14 @@ export async function apiClient<T>(
     requestInit.body = JSON.stringify(options.body);
   }
 
-  const response = await fetchWithRateLimit(url, requestInit, options.signal);
+  // SSR не ждёт окно лимита: каждая пауза — это TTFB посетителя. Ошибку 429
+  // разбирает точка входа сервера, а браузер повторит запрос сам.
+  const response = await fetchWithRateLimit(
+    url,
+    requestInit,
+    options.signal,
+    serverRendering ? 0 : MAX_RATE_LIMIT_RETRIES,
+  );
   return readBody(
     response,
     attachedToken,
@@ -75,7 +82,8 @@ export async function apiClient<T>(
 async function fetchWithRateLimit(
   url: string,
   requestInit: RequestInit,
-  signal?: AbortSignal,
+  signal: AbortSignal | undefined,
+  maxRetries: number,
 ): Promise<Response> {
   for (let attempt = 0; ; attempt += 1) {
     let response: Response;
@@ -86,7 +94,7 @@ async function fetchWithRateLimit(
       throw new ApiError(0, "UNKNOWN", toPublicMessage(0, "UNKNOWN", undefined));
     }
 
-    if (response.status !== 429 || attempt >= MAX_RATE_LIMIT_RETRIES) {
+    if (response.status !== 429 || attempt >= maxRetries) {
       return response;
     }
 

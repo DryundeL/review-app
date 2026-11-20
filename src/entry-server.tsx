@@ -143,6 +143,12 @@ async function renderPage(url: string, requestSignal?: AbortSignal) {
     );
     return { html, meta: meta.current, status: 200, state: dehydrate(queryClient) };
   } catch (error) {
+    if (error instanceof ApiError && error.status === 429) {
+      // Лимит API посетителя исчерпан. 503 + Retry-After — временная ошибка для
+      // поисковиков (без noindex), а пустой #root даёт браузеру отрисовать SPA,
+      // которая загрузит данные сама, без паузы на сервере.
+      return { html: "", status: 503, meta: meta.current, state: null };
+    }
     const status = error instanceof ApiError && error.status === 404 ? 404 : 503;
     return {
       html: errorHtml(status),

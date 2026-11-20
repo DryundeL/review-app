@@ -41,6 +41,7 @@ let api;
 let app;
 let base;
 let failFeed = false;
+let rateLimitFeed = false;
 const calls = [];
 
 before(async () => {
@@ -80,6 +81,10 @@ before(async () => {
     if (path === `/v1/reviews/${reviewId}`) return json(review);
     if (path === `/v1/reviews/${draftId}`)
       return json({ ...review, id: draftId, status: "draft", title: "DRAFT SECRET" });
+    if (path === "/v1/feed" && rateLimitFeed) {
+      res.statusCode = 429;
+      return json({ error: { code: "RATE_LIMITED", message: "too many requests" } });
+    }
     if (path === "/v1/feed" && !failFeed) return json({ items: [review] });
     if (path === "/v1/search/trends")
       return json({ tab: "media", items: [{ ...media, reviewsCount: 1 }] });
@@ -303,6 +308,24 @@ test("upstream failure returns 503 and Retry-After instead of an indexable empty
     assert.ok(!html.includes('id="__REVIEW_SSR__"'));
   } finally {
     failFeed = false;
+  }
+});
+
+test("API rate limit fails fast to a client-rendered shell without retry pauses", async () => {
+  rateLimitFeed = true;
+  calls.length = 0;
+  try {
+    const started = performance.now();
+    const { response, html } = await page("/");
+    assert.ok(performance.now() - started < 1_000);
+    assert.equal(response.status, 503);
+    assert.equal(response.headers.get("retry-after"), "30");
+    assert.equal(response.headers.get("x-robots-tag"), null);
+    assert.ok(html.includes('<div id="root"></div>'));
+    assert.ok(!html.includes('id="__REVIEW_SSR__"'));
+    assert.equal(calls.filter(({ url }) => url.startsWith("/v1/feed")).length, 1);
+  } finally {
+    rateLimitFeed = false;
   }
 });
 
