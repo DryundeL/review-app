@@ -9,7 +9,8 @@ project=review-app
 image=ghcr.io/dryundel/review-app
 share=/home/wapp/.local/share
 state="$share/$project"
-export DOCKER_CONTEXT=rootless
+unset DOCKER_CONTEXT
+export DOCKER_HOST=unix:///var/run/docker.sock
 
 die() { echo "$*" >&2; exit 1; }
 valid_sha() {

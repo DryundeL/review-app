@@ -2,7 +2,7 @@
 
 GitHub Actions собирает и проверяет образ, публикует его в
 `ghcr.io/dryundel/review-app:<sha>` и одним SSH-подключением запускает деплой
-в rootless Docker пользователя `wapp` на `194.146.223.221`. Сервер скачивает
+в системный Docker (`/var/run/docker.sock`) от пользователя `wapp` на `194.146.223.221`. Сервер скачивает
 из GHCR только недостающие слои; по SSH передаётся лишь конфигурация (несколько КБ)
 и временный read-only `GITHUB_TOKEN` (`packages: read`), действующий до конца job.
 Токен хранится только во временном `DOCKER_CONFIG` и удаляется после `docker pull`;
@@ -161,7 +161,7 @@ Compose подключает существующий каталог
 деплой, автоматически создавать его нельзя. Фотографии не входят в образ или
 каталог релиза (`storage` исключён из Docker build context). API сохраняет свой
 существующий mount с записью. Права, владельца и содержимое storage не менять.
-Пользователь `node` внутри rootless-контейнера должен уже иметь права чтения
+Пользователь `node` (UID 1000) внутри контейнера должен уже иметь права чтения
 файлов и прохода по каталогам; если их нет, деплой следует остановить и согласовать
 схему доступа, не запускать frontend от root.
 
@@ -200,7 +200,8 @@ URL соответствующее оформление не отображае�
 После публикации изменений запустите от `wapp` (без sudo):
 
 ```sh
-export DOCKER_CONTEXT=rootless
+unset DOCKER_CONTEXT
+export DOCKER_HOST=unix:///var/run/docker.sock
 export STORAGE_HOST_PATH=/home/wapp/apps/review-api/storage
 test -d "$STORAGE_HOST_PATH"
 sh /home/wapp/apps/review-app/pull.sh
