@@ -69,4 +69,6 @@ interface Window {
   Telegram?: {
     WebApp?: TelegramWebApp;
   };
+  /** Задаётся public/telegram-bootstrap.js только внутри Mini App. */
+  __reviewTelegramSdk?: Promise<void>;
 }

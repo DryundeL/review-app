@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState, type ComponentProps } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import { z } from "zod";
@@ -6,7 +6,32 @@ import { listComments, mergeComments, type RemoteComment } from "@/entities/revi
 import { useAuthSession } from "@/features/auth";
 import { ApiError } from "@/shared/api";
 import { Button, UserAvatar } from "@/shared/ui";
-import { CommentComposer } from "./CommentComposer";
+
+// TipTap и ProseMirror — самая тяжёлая часть клиента, поэтому редактор
+// грузится отдельным чанком. До монтирования (SSR и гидратация) всегда
+// рисуется одна и та же заглушка: lazy на сервере дал бы разный HTML у
+// холодного и прогретого процесса и ошибку гидратации #419.
+const LazyCommentComposer = lazy(() =>
+  import("./CommentComposer").then((m) => ({ default: m.CommentComposer })),
+);
+
+const composerPlaceholder = (
+  <div className="comment-composer" aria-busy="true">
+    <div className="comment-composer__canvas" />
+  </div>
+);
+
+function CommentComposer(props: ComponentProps<typeof LazyCommentComposer>) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return composerPlaceholder;
+  return (
+    <Suspense fallback={composerPlaceholder}>
+      <LazyCommentComposer {...props} />
+    </Suspense>
+  );
+}
+
 import "./ReviewComments.css";
 
 type ReplyTarget = { id: string; username: string };

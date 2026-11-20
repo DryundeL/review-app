@@ -189,6 +189,17 @@ test("guest can read a review and sees login instead of voting controls", async 
   assert.doesNotMatch(html, /aria-label="(?:Нравится|Не нравится)"/);
 });
 
+test("comment editor is never server-rendered, so cold and warm SSR match", async () => {
+  const pages = [];
+  for (let i = 0; i < 2; i++)
+    pages.push(await (await fetch(`${base}/reviews/${reviewId}`)).text());
+  for (const html of pages) {
+    assert.ok(html.includes('<div class="comment-composer" aria-busy="true">'));
+    assert.ok(!html.includes('<form class="comment-composer"'));
+    assert.ok(!html.includes("<!--$!-->"));
+  }
+});
+
 test("internal search is rendered but not indexable, including query variations", async () => {
   for (const path of ["/search", "/search?q=Матрица"]) {
     const { response, html } = await page(path);

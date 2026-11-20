@@ -40,68 +40,109 @@ test("browser session waits for profile on both public and private routes", () =
   }
 });
 
-test("startup guard covers stored browser sessions and tolerates blocked storage", () => {
-  const script = readFileSync(
-    new URL("../../../../public/telegram-bootstrap.js", import.meta.url),
-    "utf8",
-  );
-  for (const token of [null, "", "stored-token"]) {
-    const attributes = new Map<string, string>();
-    runInNewContext(script, {
-      window: {
-        sessionStorage: {
-          getItem: (key: string) => {
-            assert.equal(key, "review.auth.token");
-            return token;
-          },
-        },
+const bootstrapScript = readFileSync(
+  new URL("../../../../public/telegram-bootstrap.js", import.meta.url),
+  "utf8",
+);
+const SDK_URL = "https://telegram.org/js/telegram-web-app.js";
+
+function runBootstrap({
+  hash = "",
+  storage = {},
+  blockStorage = false,
+}: {
+  hash?: string;
+  storage?: Record<string, string>;
+  blockStorage?: boolean;
+}) {
+  const attributes = new Map<string, string>();
+  const scripts: { src?: string; onload?: () => void; onerror?: () => void }[] = [];
+  const window: Record<string, unknown> = {
+    location: { hash },
+    get sessionStorage() {
+      if (blockStorage) throw new Error("blocked");
+      return { getItem: (key: string) => storage[key] ?? null };
+    },
+  };
+  runInNewContext(bootstrapScript, {
+    window,
+    Promise,
+    JSON,
+    String,
+    Boolean,
+    document: {
+      documentElement: {
+        setAttribute: (key: string, value: string) => attributes.set(key, value),
       },
-      document: {
-        documentElement: {
-          setAttribute: (key: string, value: string) => attributes.set(key, value),
-        },
-      },
-    });
-    assert.equal(attributes.has("data-telegram-startup"), Boolean(token));
-  }
-  runInNewContext(script, {
-    window: {
-      get sessionStorage() {
-        throw new Error("blocked");
-      },
+      createElement: () => ({}),
+      head: { appendChild: (script: (typeof scripts)[number]) => scripts.push(script) },
     },
   });
+  return {
+    hidesSsr: attributes.has("data-telegram-startup"),
+    scripts,
+    sdk: window.__reviewTelegramSdk as Promise<void> | undefined,
+  };
+}
+
+test("startup guard covers stored browser sessions and tolerates blocked storage", () => {
+  for (const token of [null, "", "stored-token"]) {
+    const storage: Record<string, string> =
+      token === null ? {} : { "review.auth.token": token };
+    const result = runBootstrap({ storage });
+    assert.equal(result.hidesSsr, Boolean(token));
+    assert.equal(result.scripts.length, 0);
+    assert.equal(result.sdk, undefined);
+  }
+  const blocked = runBootstrap({ blockStorage: true });
+  assert.equal(blocked.hidesSsr, false);
+  assert.equal(blocked.scripts.length, 0);
 });
 
-test("pre-render guard hides SSR only when Telegram initData is present", () => {
-  const script = readFileSync(
-    new URL("../../../../public/telegram-bootstrap.js", import.meta.url),
-    "utf8",
-  );
-  for (const initData of [undefined, null, "", 123, "query_id=test"]) {
-    const attributes = new Map<string, string>();
-    runInNewContext(script, {
-      window: { Telegram: { WebApp: { initData } } },
-      document: {
-        documentElement: {
-          setAttribute: (key: string, value: string) => attributes.set(key, value),
-        },
-      },
-    });
-    assert.equal(
-      attributes.has("data-telegram-startup"),
-      typeof initData === "string" && initData.length > 0,
-    );
+test("browsers outside a Mini App never load the Telegram SDK", () => {
+  for (const hash of [
+    "",
+    "#comments",
+    "#tgWebAppData=",
+    "#tgWebAppVersion=8.0&tgWebAppPlatform=ios",
+    "#xtgWebAppData=query_id%3Dtest",
+  ]) {
+    const result = runBootstrap({ hash });
+    assert.equal(result.hidesSsr, false, hash);
+    assert.equal(result.scripts.length, 0, hash);
   }
-  runInNewContext(script, { window: {} });
+  for (const stored of ["{}", '{"tgWebAppData":""}', "not json", "null"]) {
+    const result = runBootstrap({ storage: { __telegram__initParams: stored } });
+    assert.equal(result.scripts.length, 0, stored);
+  }
+});
+
+test("Mini App launch or reload hides SSR and waits for the SDK", async () => {
+  for (const launch of [
+    { hash: "#tgWebAppData=query_id%3Dtest&tgWebAppVersion=8.0" },
+    { hash: "#/reviews?tgWebAppData=query_id%3Dtest" },
+    {
+      hash: "#comments",
+      storage: { __telegram__initParams: '{"tgWebAppData":"query_id=test"}' },
+    },
+  ]) {
+    const result = runBootstrap(launch);
+    assert.equal(result.hidesSsr, true);
+    assert.equal(result.scripts.length, 1);
+    assert.equal(result.scripts[0].src, SDK_URL);
+    assert.ok(result.sdk);
+    result.scripts[0].onerror?.();
+    await result.sdk;
+  }
 });
 
 test("startup guard and stylesheet load before SSR content", () => {
   const html = readFileSync(new URL("../../../../index.html", import.meta.url), "utf8");
-  const sdk = html.indexOf('src="https://telegram.org/js/telegram-web-app.js"');
   const guard = html.indexOf('src="/telegram-bootstrap.js"');
   const root = html.indexOf('id="root"');
-  assert.ok(sdk >= 0 && guard > sdk && root > guard);
+  assert.ok(guard >= 0 && root > guard);
+  // SDK грузит только telegram-bootstrap.js и только внутри Mini App.
+  assert.ok(!html.includes("telegram.org/js/telegram-web-app.js"));
   assert.ok(html.indexOf('href="/auth-loading.css"') < guard);
   assert.ok(html.indexOf('id="telegram-startup"') < root);
 });

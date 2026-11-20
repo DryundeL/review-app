@@ -1,16 +1,46 @@
+import { lazy, Suspense, type ComponentType } from "react";
 import { AuthGate } from "@/features/auth";
 import { Link, Route, Routes } from "react-router-dom";
-import { AchievementsPage } from "@/pages/AchievementsPage";
-import { CreateReviewPage } from "@/pages/CreateReviewPage";
 import { FeedPage } from "@/pages/FeedPage";
-import { NotificationsPage } from "@/pages/NotificationsPage";
 import { MediaObjectPage } from "@/pages/MediaObjectPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { ReviewPage } from "@/pages/ReviewPage";
 import { SearchPage } from "@/pages/SearchPage";
-import { SettingsPage } from "@/pages/SettingsPage";
-import { ShopPage } from "@/pages/ShopPage";
 import { AppShell } from "@/widgets/AppShell";
+
+// Страницы из isClientOnlyPath: SSR их не рендерит, поэтому они грузятся
+// отдельными чанками и не попадают в стартовый бандл публичных страниц.
+// Публичные страницы остаются статическими: иначе гидратация ждала бы чанк.
+const CreateReviewPage = lazyPage(() =>
+  import("@/pages/CreateReviewPage").then((m) => m.CreateReviewPage),
+);
+const NotificationsPage = lazyPage(() =>
+  import("@/pages/NotificationsPage").then((m) => m.NotificationsPage),
+);
+const AchievementsPage = lazyPage(() =>
+  import("@/pages/AchievementsPage").then((m) => m.AchievementsPage),
+);
+const ShopPage = lazyPage(() => import("@/pages/ShopPage").then((m) => m.ShopPage));
+const SettingsPage = lazyPage(() =>
+  import("@/pages/SettingsPage").then((m) => m.SettingsPage),
+);
+
+function lazyPage(load: () => Promise<ComponentType>) {
+  const Page = lazy(() => load().then((component) => ({ default: component })));
+  return function LazyPage() {
+    return (
+      <Suspense
+        fallback={
+          <section className="screen" aria-busy="true">
+            <p className="muted">Загрузка…</p>
+          </section>
+        }
+      >
+        <Page />
+      </Suspense>
+    );
+  };
+}
 
 export function AppRoutes() {
   return (
