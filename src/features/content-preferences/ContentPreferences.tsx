@@ -263,7 +263,12 @@ function PreferencesDialog({
       }}
     >
       <div className="content-preferences" aria-busy={loading || busy}>
-        <p>Выберите от 1 до 32 типов контента. Выбор можно изменить в настройках.</p>
+        <p>
+          {items && items.length > 32
+            ? "Выберите от 1 до 32 типов контента."
+            : "Выберите один или несколько типов контента."}{" "}
+          Выбор можно изменить в настройках.
+        </p>
         {loading ? <p role="status">Загрузка…</p> : null}
         {error ? <p role="alert">{error}</p> : null}
         {notice ? <p role="status">{notice}</p> : null}
