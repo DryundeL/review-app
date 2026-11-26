@@ -43,7 +43,7 @@
 
 ---
 
-### Задача 1: `index` в деталях ошибки и загрузка картинок
+### Task 1: `index` в деталях ошибки и загрузка картинок
 
 **Файлы:**
 - Изменить: `src/shared/api/errors.ts` (тип `details` + `index?: number`), `src/shared/api/authPayload.ts:177` (`index: z.number().int().min(0).optional()`)
@@ -62,7 +62,7 @@
 - [ ] Прогнать тесты — падают. Реализовать. Прогнать — проходят. Добавить `src/features/upload-media/**/*.test.ts` в `npm test`.
 - [ ] Коммит `feat(upload-media): загрузка картинок и index в деталях ошибок`.
 
-### Задача 2: `entities/list` — типы и парсеры
+### Task 2: `entities/list` — типы и парсеры
 
 **Файлы:**
 - Создать: `src/entities/list/model/types.ts` — типы из раздела 2 спеки дословно (`Format`, `Status`, `Visibility`, `Author`, `Tier`, `Item`, `Template`, `Entry`, `Result`, `Card`, `ListPage`, `ListReport`)
@@ -82,7 +82,7 @@
 - [ ] Красный → реализация (zod, `storageImageUrl` через `.transform`) → зелёный. Добавить `src/entities/list/**/*.test.ts` в `npm test`.
 - [ ] Коммит `feat(lists): типы и парсеры шаблонов и результатов`.
 
-### Задача 3: `entities/list` — API
+### Task 3: `entities/list` — API
 
 **Файлы:**
 - Создать: `src/entities/list/api/listsApi.ts`, `src/entities/list/api/listQuery.ts`, тест `listQuery.test.ts`, `src/entities/list/index.ts`
@@ -106,7 +106,7 @@
 - [ ] Красный → реализация → зелёный.
 - [ ] `npm run build` без ошибок типов. Коммит `feat(lists): API модуля lists`.
 
-### Задача 4: раскладка и готовность к публикации (чистая логика)
+### Task 4: раскладка и готовность к публикации (чистая логика)
 
 **Файлы:**
 - Создать: `src/entities/list/model/layout.ts`, `src/entities/list/model/readiness.ts`, тесты рядом
@@ -130,7 +130,7 @@
   - `templatePublishIssues` для элемента без картинки → `{field:"items.image", index}`.
 - [ ] Красный → реализация (immutable, новые массивы) → зелёный. Коммит `feat(lists): модель раскладки и проверки публикации`.
 
-### Задача 5: автосохранение `ListAutosave`
+### Task 5: автосохранение `ListAutosave`
 
 **Файлы:**
 - Создать: `src/features/list-autosave/model/listAutosave.ts`, тест `listAutosave.test.ts`, `src/features/list-autosave/index.ts`, `src/features/list-autosave/useListAutosave.ts`
@@ -164,7 +164,7 @@
   - 422 → `error` с `details`, автосохранение ждёт следующего `change`.
 - [ ] Красный → реализация → зелёный. Добавить в `npm test`. Коммит `feat(lists): автосохранение с ревизиями`.
 
-### Задача 6: карточки и разделы `/lists`
+### Task 6: карточки и разделы `/lists`
 
 **Файлы:**
 - Создать: `src/widgets/ListCard/` (`ListCard.tsx`, `.css`, `index.ts`), `src/widgets/ListsFeed/ListsFeed.tsx` (бесконечный список по `scope` + `filters`, «Показать ещё», пустое состояние), `src/pages/ListsPage/`
@@ -179,7 +179,7 @@
 - [ ] `npm test && npm run lint && npm run build`; вручную: смена фильтра сбрасывает подгруженные страницы, последняя страница без кнопки «Показать ещё».
 - [ ] Коммит `feat(lists): раздел топов и шаблонов`.
 
-### Задача 7: «Мои» и вкладка в профиле
+### Task 7: «Мои» и вкладка в профиле
 
 **Файлы:**
 - Создать: `src/pages/MyListsPage/` (вкладки, фильтр `status` с подписями «Все / Черновики / Опубликованные / По ссылке / Скрытые модератором», кнопка «Создать шаблон»)
@@ -190,7 +190,7 @@
 - [ ] `npm run lint && npm run build`; вручную гостем `/my-lists` → вход.
 - [ ] Коммит `feat(lists): мои списки и вкладка в профиле`.
 
-### Задача 8: страницы шаблона и результата
+### Task 8: страницы шаблона и результата
 
 **Файлы:**
 - Создать: `src/widgets/ListBoard/` — только отрисовка: `tiers` (строки тиров с цветом + неразложенные не показываем), `ranked` (нумерованный список), `collection` (сетка); элемент ищется по `itemId` через `Map`
@@ -206,7 +206,7 @@
 - [ ] `npm run lint && npm run build && npm run test:ssr`; вручную: гость, автор, чужой пользователь, черновик по прямой ссылке у чужого → 404.
 - [ ] Коммит `feat(lists): страницы шаблона и результата`.
 
-### Задача 9: редактор шаблона
+### Task 9: редактор шаблона
 
 **Файлы:**
 - Создать: `src/pages/ListTemplateEditorPage/` и внутри `ui/TiersEditor.tsx`, `ui/ItemsEditor.tsx`, `ui/CatalogItemPicker.tsx` (поиск через `fetchSearch` из `entities/search`, фильтр по `typeCode`), `ui/ConflictDialog.tsx`, `model/templateDraft.ts` (+ тест)
@@ -225,7 +225,7 @@
 - [ ] `npm test && npm run lint && npm run build`; вручную: две вкладки → конфликт; загрузка файла 400 КБ отклоняется до отправки.
 - [ ] Коммит `feat(lists): редактор шаблона`.
 
-### Задача 10: редактор результата
+### Task 10: редактор результата
 
 **Файлы:**
 - Создать: `src/pages/ListResultEditorPage/` (`ui/LayoutEditor.tsx` поверх `ListBoard` в режиме редактирования + блок «Неразложенные»)
@@ -241,7 +241,7 @@
 - [ ] `npm run lint && npm run build`; вручную: тир-лист, топ и подборка; обложка в карточке после публикации совпадает с таблицей из раздела 4 спеки.
 - [ ] Коммит `feat(lists): редактор результата`.
 
-### Задача 11: сессия и кеш
+### Task 11: сессия и кеш
 
 **Файлы:**
 - Изменить: место, где обрабатывается вход/выход (`src/features/auth/model/authController.ts` или `refreshHome.ts`)
