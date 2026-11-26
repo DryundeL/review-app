@@ -41,3 +41,4 @@ export {
 export type { GroupKey, Layout } from "./model/layout";
 export { resultPublishIssues, templatePublishIssues } from "./model/readiness";
 export type { PublishIssue, ReadinessInput } from "./model/readiness";
+export { useResultQuery, useTemplateQuery } from "./model/useListObject";
