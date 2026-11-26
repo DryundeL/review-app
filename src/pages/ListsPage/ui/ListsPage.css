@@ -52,3 +52,17 @@
   font: inherit;
   font-size: 0.875rem;
 }
+
+.lists-page__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.lists-page__link {
+  color: var(--color-accent);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}

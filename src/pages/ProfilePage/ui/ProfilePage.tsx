@@ -32,10 +32,11 @@ import { Button, Modal, UserAvatar, useImagePhase } from "@/shared/ui";
 import { AchievementsStrip } from "@/widgets/AchievementsStrip";
 import { RemoteReviewCard } from "@/widgets/RemoteReviewCard";
 import { UserHeader } from "@/widgets/UserHeader";
+import { ProfileLists } from "./ProfileLists";
 import "./ProfilePage.css";
 
 type ReviewTab = "published" | "drafts";
-type ProfileTab = ReviewTab | "requests";
+type ProfileTab = ReviewTab | "requests" | "lists";
 type FollowListKind = "followers" | "following";
 
 const FOLLOW_PAGE_SIZE = 20;
@@ -62,9 +63,11 @@ function OwnProfileView({ profile }: { profile: SessionProfile }) {
   const tab: ProfileTab =
     requestedTab === "drafts"
       ? "drafts"
-      : requestedTab === "requests" && showRequests
-        ? "requests"
-        : "published";
+      : requestedTab === "lists"
+        ? "lists"
+        : requestedTab === "requests" && showRequests
+          ? "requests"
+          : "published";
   function setTab(next: ProfileTab) {
     setSearchParams(
       (previous) => {
@@ -97,7 +100,7 @@ function OwnProfileView({ profile }: { profile: SessionProfile }) {
   const reviews = reviewsQuery.data?.items ?? [];
   const { published, drafts, visible } = splitReviews(
     reviews,
-    tab === "requests" ? "published" : tab,
+    tab === "requests" || tab === "lists" ? "published" : tab,
   );
 
   const background = profile.background;
@@ -146,6 +149,8 @@ function OwnProfileView({ profile }: { profile: SessionProfile }) {
 
       {tab === "requests" ? (
         <FollowRequests />
+      ) : tab === "lists" ? (
+        <ProfileLists userId={profile.id} isOwn />
       ) : (
         <ReviewsBlock
           reviewsQuery={reviewsQuery}
@@ -184,7 +189,22 @@ function PublicProfileView({
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab] = useState<ReviewTab>("published");
+  const showLists = searchParams.get("tab") === "lists";
+  function selectTab(next: ProfileTab) {
+    if (next === "requests") return;
+    if (next !== "lists") setTab(next);
+    setSearchParams(
+      (previous) => {
+        const params = new URLSearchParams(previous);
+        if (next === "lists") params.set("tab", "lists");
+        else params.delete("tab");
+        return params;
+      },
+      { replace: true },
+    );
+  }
   const [followList, setFollowList] = useState<FollowListKind | null>(null);
   const profileKey = ["profile", userId] as const;
 
@@ -315,32 +335,33 @@ function PublicProfileView({
 
       <AchievementsStrip profileId={profile.id} />
 
-      {isMe ? (
-        <ReviewTabs
-          tab={tab}
-          onChange={(next) => {
-            if (next !== "requests") setTab(next);
-          }}
-          publishedCount={published.length}
-          draftsCount={drafts.length}
-        />
-      ) : null}
-
-      <ReviewsBlock
-        reviewsQuery={reviewsQuery}
-        reviews={list}
-        canEdit={isMe}
-        deleteError={deleteError}
-        deletingId={
-          deleteMutation.isPending && deleteMutation.variables
-            ? deleteMutation.variables
-            : null
-        }
-        onDelete={(id) => deleteMutation.mutateAsync(id)}
-        emptyOwn={isMe}
-        emptyTab={isMe ? tab : "published"}
-        backdrop={profile.backdrop}
+      <ReviewTabs
+        tab={showLists ? "lists" : tab}
+        onChange={selectTab}
+        publishedCount={published.length}
+        draftsCount={drafts.length}
+        showDrafts={isMe}
       />
+
+      {showLists ? (
+        <ProfileLists userId={profile.id} isOwn={isMe} />
+      ) : (
+        <ReviewsBlock
+          reviewsQuery={reviewsQuery}
+          reviews={list}
+          canEdit={isMe}
+          deleteError={deleteError}
+          deletingId={
+            deleteMutation.isPending && deleteMutation.variables
+              ? deleteMutation.variables
+              : null
+          }
+          onDelete={(id) => deleteMutation.mutateAsync(id)}
+          emptyOwn={isMe}
+          emptyTab={isMe ? tab : "published"}
+          backdrop={profile.backdrop}
+        />
+      )}
 
       <FollowConnectionsModal
         profileId={profile.id}
@@ -489,10 +510,12 @@ function ReviewTabs({
   publishedCount,
   draftsCount,
   showRequests = false,
+  showDrafts = true,
 }: {
   tab: ProfileTab;
   onChange: (tab: ProfileTab) => void;
   showRequests?: boolean;
+  showDrafts?: boolean;
   publishedCount: number;
   draftsCount: number;
 }) {
@@ -520,19 +543,34 @@ function ReviewTabs({
         Опубликовано
         <span className="profile-page__tab-count">{publishedCount}</span>
       </button>
+      {showDrafts ? (
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "drafts"}
+          className={
+            tab === "drafts"
+              ? "profile-page__tab profile-page__tab--active"
+              : "profile-page__tab"
+          }
+          onClick={() => onChange("drafts")}
+        >
+          Черновики
+          <span className="profile-page__tab-count">{draftsCount}</span>
+        </button>
+      ) : null}
       <button
         type="button"
         role="tab"
-        aria-selected={tab === "drafts"}
+        aria-selected={tab === "lists"}
         className={
-          tab === "drafts"
+          tab === "lists"
             ? "profile-page__tab profile-page__tab--active"
             : "profile-page__tab"
         }
-        onClick={() => onChange("drafts")}
+        onClick={() => onChange("lists")}
       >
-        Черновики
-        <span className="profile-page__tab-count">{draftsCount}</span>
+        Топы
       </button>
       {showRequests ? (
         <button

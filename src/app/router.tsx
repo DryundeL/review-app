@@ -26,6 +26,10 @@ const SettingsPage = lazyPage(() =>
   import("@/pages/SettingsPage").then((m) => m.SettingsPage),
 );
 
+const MyListsPage = lazyPage(() =>
+  import("@/pages/MyListsPage").then((m) => m.MyListsPage),
+);
+
 function lazyPage(load: () => Promise<ComponentType>) {
   const Page = lazy(() => load().then((component) => ({ default: component })));
   return function LazyPage() {
@@ -52,6 +56,7 @@ export function AppRoutes() {
           <Route path="media-objects/:mediaId" element={<MediaObjectPage />} />
           <Route path="search" element={<SearchPage />} />
           <Route path="lists" element={<ListsPage />} />
+          <Route path="my-lists" element={<MyListsPage />} />
           <Route path="create" element={<CreateReviewPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="profile" element={<ProfilePage />} />

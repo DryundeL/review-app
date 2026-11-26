@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import { useAuthSession } from "@/features/auth";
 import type { Format, ListFilters, ListScope } from "@/entities/list";
 import { fetchReviewTypes } from "@/entities/settings";
 import { useDebouncedValue, usePageMeta } from "@/shared/hooks";
@@ -22,6 +23,7 @@ function parseFormat(value: string | null): Format | undefined {
 }
 
 export function ListsPage() {
+  const { profile } = useAuthSession();
   const [searchParams, setSearchParams] = useSearchParams();
   const kind = searchParams.get("tab") === "results" ? "results" : "templates";
   const type = searchParams.get("type") || undefined;
@@ -72,7 +74,14 @@ export function ListsPage() {
 
   return (
     <section className="lists-page">
-      <h1 className="lists-page__title">Топы</h1>
+      <div className="lists-page__header">
+        <h1 className="lists-page__title">Топы</h1>
+        {profile ? (
+          <Link className="lists-page__link" to="/my-lists">
+            Мои топы и шаблоны
+          </Link>
+        ) : null}
+      </div>
 
       <div className="lists-page__tabs" role="tablist" aria-label="Раздел">
         {TABS.map((tab) => (

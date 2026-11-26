@@ -264,7 +264,8 @@
   background: var(--color-accent);
   opacity: 0;
   transform: scaleX(0.7);
-  transition: transform var(--motion-duration-normal) var(--motion-ease),
+  transition:
+    transform var(--motion-duration-normal) var(--motion-ease),
     opacity var(--motion-duration-normal) var(--motion-ease);
 }
 
@@ -598,10 +599,30 @@
 
 .profile-page__tab,
 .profile-page__tab-count {
-  transition: color var(--motion-duration-normal) var(--motion-ease),
+  transition:
+    color var(--motion-duration-normal) var(--motion-ease),
     background-color var(--motion-duration-normal) var(--motion-ease);
 }
 
 :is(.profile-page__empty, .profile-page__error, .profile-page__skeleton) {
   animation: content-state-in var(--motion-duration-normal) var(--motion-ease);
+}
+
+.profile-page__lists {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.profile-page__lists-title {
+  margin-bottom: var(--space-2);
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.profile-page__lists-link {
+  color: var(--color-accent);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
 }
