@@ -55,3 +55,20 @@ export function createResultMessage(error: ErrorLike): string {
   }
   return error.message;
 }
+
+const REASON_MESSAGES: Readonly<Record<string, string>> = {
+  required: "Обязательное поле",
+  too_long: "Слишком длинно",
+  too_many: "Слишком много",
+  duplicate: "Повторяется",
+  immutable: "Нельзя изменить после публикации",
+  invalid: "Неверное значение",
+  type_mismatch: "Другой тип произведения",
+};
+
+/** Текст для подсветки поля по `details.reason` (422 VALIDATION_ERROR). */
+export function fieldReasonMessage(reason?: string): string | null {
+  return reason !== undefined && Object.hasOwn(REASON_MESSAGES, reason)
+    ? REASON_MESSAGES[reason]
+    : null;
+}

@@ -31,6 +31,9 @@ const SettingsPage = lazyPage(() =>
 const MyListsPage = lazyPage(() =>
   import("@/pages/MyListsPage").then((m) => m.MyListsPage),
 );
+const ListTemplateEditorPage = lazyPage(() =>
+  import("@/pages/ListTemplateEditorPage").then((m) => m.ListTemplateEditorPage),
+);
 
 function lazyPage(load: () => Promise<ComponentType>) {
   const Page = lazy(() => load().then((component) => ({ default: component })));
@@ -59,6 +62,10 @@ export function AppRoutes() {
           <Route path="search" element={<SearchPage />} />
           <Route path="lists" element={<ListsPage />} />
           <Route path="list-templates/:templateId" element={<ListTemplatePage />} />
+          <Route
+            path="list-templates/:templateId/edit"
+            element={<ListTemplateEditorPage />}
+          />
           <Route path="list-results/:resultId" element={<ListResultPage />} />
           <Route path="my-lists" element={<MyListsPage />} />
           <Route path="create" element={<CreateReviewPage />} />

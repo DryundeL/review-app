@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { createResultMessage, ownerActionMessage, publishFieldMessage } from "./errorMessage.ts";
+import {
+  createResultMessage,
+  fieldReasonMessage,
+  ownerActionMessage,
+  publishFieldMessage,
+} from "./errorMessage.ts";
 
 const base = { status: 422, code: "VALIDATION_ERROR", message: "invalid input" };
 
@@ -46,4 +51,16 @@ test("createResultMessage", () => {
     "Достигнут лимит: 200 топов",
   );
   assert.equal(createResultMessage({ status: 429, code: "RATE_LIMITED", message: "slow" }), "slow");
+});
+
+test("fieldReasonMessage", () => {
+  assert.equal(fieldReasonMessage("required"), "Обязательное поле");
+  assert.equal(fieldReasonMessage("too_long"), "Слишком длинно");
+  assert.equal(fieldReasonMessage("too_many"), "Слишком много");
+  assert.equal(fieldReasonMessage("duplicate"), "Повторяется");
+  assert.equal(fieldReasonMessage("immutable"), "Нельзя изменить после публикации");
+  assert.equal(fieldReasonMessage("invalid"), "Неверное значение");
+  assert.equal(fieldReasonMessage("type_mismatch"), "Другой тип произведения");
+  assert.equal(fieldReasonMessage("weird"), null);
+  assert.equal(fieldReasonMessage(undefined), null);
 });
