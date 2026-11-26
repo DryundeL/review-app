@@ -86,7 +86,9 @@ export class ListAutosave<D, S extends { revision?: number }> {
   change(patch: Partial<D>) {
     if (this.disposed) return;
     this.version++;
-    this.set({ draft: { ...this.state.draft, ...patch }, dirty: true, error: null });
+    // Пока конфликт не снят, ошибка (например, REBASE_MISMATCH) определяет, что предложить.
+    const error = this.state.conflict ? this.state.error : null;
+    this.set({ draft: { ...this.state.draft, ...patch }, dirty: true, error });
     this.schedule();
   }
 
@@ -224,9 +226,22 @@ export class ListAutosave<D, S extends { revision?: number }> {
     return this.send();
   }
 
+  /** Черновик (auto) с несохранёнными правками сохраняется напоследок, уже без уведомлений. */
   dispose() {
+    if (this.disposed) return;
     this.disposed = true;
     this.clearTimer();
     this.wantSave = false;
+    if (this.auto && this.state.dirty && !this.state.conflict) void this.finalSave();
+  }
+
+  private async finalSave(): Promise<void> {
+    try {
+      if (this.inflight) await this.inflight;
+    } catch {
+      // Ошибка уже в состоянии; ниже решаем по нему, слать ли повтор.
+    }
+    if (!this.state.dirty || this.state.conflict) return;
+    await this.send().catch(() => {});
   }
 }

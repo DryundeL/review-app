@@ -230,11 +230,60 @@ test("dispose отменяет таймер и глушит уведомлени
   await flushPromises();
   assert.equal(notified, before);
 
-  const second = setup();
+  const second = setup(false);
   second.autosave.change({ title: "a" });
   second.autosave.dispose();
   mock.timers.tick(5000);
   assert.equal(second.calls.length, 0);
+});
+
+test("dispose в auto-режиме с несохранёнными правками шлёт финальное сохранение", async () => {
+  const { autosave, calls } = setup();
+  let notified = 0;
+  autosave.subscribe(() => notified++);
+  autosave.change({ title: "a" });
+  const before = notified;
+  autosave.dispose();
+  await flushPromises();
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].draft.title, "a");
+  calls[0].resolve(server(2, "a"));
+  await flushPromises();
+  mock.timers.tick(5000);
+  assert.equal(calls.length, 1);
+  assert.equal(notified, before);
+});
+
+test("dispose во время запроса: после ответа досылает последние правки", async () => {
+  const { autosave, calls } = setup();
+  autosave.change({ title: "a" });
+  mock.timers.tick(1500);
+  autosave.change({ title: "ab" });
+  autosave.dispose();
+  await flushPromises();
+  assert.equal(calls.length, 1);
+  calls[0].resolve(server(2, "a"));
+  await flushPromises();
+  assert.equal(calls.length, 2);
+  assert.equal(calls[1].revision, 2);
+  assert.equal(calls[1].draft.title, "ab");
+});
+
+test("dispose без правок или при конфликте ничего не шлёт", async () => {
+  const clean = setup();
+  clean.autosave.dispose();
+  await flushPromises();
+  assert.equal(clean.calls.length, 0);
+
+  const { autosave, calls } = setup();
+  autosave.change({ title: "a" });
+  mock.timers.tick(1500);
+  calls[0].reject(new ApiError(409, "REVISION_CONFLICT", "c"));
+  await flushPromises();
+  autosave.change({ title: "ab" });
+  autosave.dispose();
+  await flushPromises();
+  assert.equal(calls.length, 1);
 });
 
 test("rebase: ответ на старую версию переносит данные сервера в локальный draft", async () => {
@@ -318,4 +367,19 @@ test("rebase бросил: конфликт, автосохранение ост
   await assert.rejects(autosave.flush());
   autosave.reload(server(3, "fresh"));
   assert.equal(autosave.snapshot().conflict, false);
+});
+
+test("REBASE_MISMATCH: change не стирает код ошибки, пока конфликт не снят", async () => {
+  const { autosave, calls } = setupRebase(() => {
+    throw new Error("mismatch");
+  });
+  autosave.change({ title: "a" });
+  mock.timers.tick(1500);
+  calls[0].resolve(server(2, "a"));
+  await flushPromises();
+  autosave.change({ title: "b" });
+  const state = autosave.snapshot();
+  assert.equal(state.draft.title, "b");
+  assert.equal(state.conflict, true);
+  assert.equal(state.error?.code, "REBASE_MISMATCH");
 });
