@@ -131,3 +131,17 @@ test("ListReport парсится, неверный target бросает", () =
   assert.equal(parseListReportText(JSON.stringify(ok)).target, "template");
   assert.throws(() => parseListReportText(JSON.stringify({ ...ok, target: "x" })));
 });
+
+test("ranked-результат: tiers пуст, entry без tierId", () => {
+  const r = parseResultText(
+    JSON.stringify({ ...baseResult, format: "ranked", tiers: [], entries: [{ itemId: "i1", position: 1 }] }),
+  );
+  assert.equal(r.tiers.length, 0);
+  assert.equal(r.entries[0]?.tierId, undefined);
+});
+
+test("длинное описание с emoji парсится", () => {
+  const description = "😀".repeat(2000);
+  const t = parseTemplateText(JSON.stringify({ ...baseTemplate, description }));
+  assert.equal(t.description, description);
+});

@@ -15,23 +15,23 @@ const imageUrlSchema = z
   .transform((value) => storageImageUrl(value));
 
 const formatSchema = z.enum(["tiers", "ranked", "collection"]);
-const idSchema = z.string().min(1).max(64);
+const idSchema = z.string().min(1);
 
 const authorSchema = z.object({
   id: idSchema,
-  username: z.string().max(128),
+  username: z.string(),
   photoUrl: imageUrlSchema,
 });
 
 const tierSchema = z.object({
   id: idSchema,
-  name: z.string().min(1).max(30),
+  name: z.string().min(1),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
 });
 
 const itemSchema = z.object({
   id: idSchema,
-  title: z.string().max(150),
+  title: z.string(),
   mediaObjectId: idSchema.optional(),
   imageUrl: imageUrlSchema,
   imageId: idSchema.optional(),
@@ -54,10 +54,10 @@ const ownerFields = {
 
 const common = {
   id: idSchema,
-  typeCode: z.string().min(1).max(64),
+  typeCode: z.string().min(1),
   format: formatSchema,
-  title: z.string().max(150),
-  description: z.string().max(2000),
+  title: z.string(),
+  description: z.string(),
   coverUrl: imageUrlSchema,
   author: authorSchema,
   firstPublishedAt: z.string().min(1).optional(),
@@ -66,8 +66,8 @@ const common = {
 const templateSchema = z.object({
   ...common,
   ...ownerFields,
-  tiers: z.array(tierSchema).max(10),
-  items: z.array(itemSchema).max(50),
+  tiers: z.array(tierSchema),
+  items: z.array(itemSchema),
   canCreateResult: z.boolean(),
 });
 
@@ -76,24 +76,24 @@ const resultSchema = z.object({
   ...ownerFields,
   template: z.object({
     id: idSchema.optional(),
-    title: z.string().max(150),
+    title: z.string(),
     author: authorSchema.optional(),
   }),
   canCreateOwn: z.boolean(),
-  tiers: z.array(tierSchema).max(10),
-  items: z.array(itemSchema).max(50),
-  entries: z.array(entrySchema).max(50),
+  tiers: z.array(tierSchema),
+  items: z.array(itemSchema),
+  entries: z.array(entrySchema),
 });
 
 const cardSchema = z.object({
   id: idSchema,
-  title: z.string().max(150),
-  typeCode: z.string().min(1).max(64),
+  title: z.string(),
+  typeCode: z.string().min(1),
   format: formatSchema,
   coverUrl: imageUrlSchema,
   author: authorSchema,
   firstPublishedAt: z.string().min(1).optional(),
-  templateTitle: z.string().max(150).optional(),
+  templateTitle: z.string().optional(),
   status: ownerFields.status,
   visibility: ownerFields.visibility,
   moderation: ownerFields.moderation,
@@ -109,8 +109,8 @@ const reportSchema = z.object({
   id: idSchema,
   target: z.enum(["template", "result"]),
   targetId: idSchema,
-  reasonCode: z.string().min(1).max(64),
-  status: z.string().min(1).max(32),
+  reasonCode: z.string().min(1),
+  status: z.string().min(1),
   createdAt: z.string().min(1),
 });
 
@@ -144,7 +144,7 @@ export function parseListReportText(text: string): ListReport {
   return parseWith(reportSchema, text);
 }
 
-/** Автору API отдаёт `revision`; гостю и не-автору — нет. */
+/** Только для полных Template/Result, не для Card. Автору API отдаёт `revision`; гостю и не-автору — нет. */
 export function isOwnerView(obj: { revision?: number }): boolean {
   return obj.revision !== undefined;
 }
