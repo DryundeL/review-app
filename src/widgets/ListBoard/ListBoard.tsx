@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import type { Format, Item, Layout, Tier } from "@/entities/list";
+import { tierLabel, type Format, type Item, type Layout, type Tier } from "@/entities/list";
+import { readableTextColor } from "@/shared/lib/readableTextColor";
 import { MediaPoster } from "@/shared/ui";
 import "./ListBoard.css";
 
@@ -48,10 +49,13 @@ export function ListBoard({ format, tiers, items, layout }: ListBoardProps) {
           {tiers.map((tier) => {
             const placed = layout ? pick(layout.groups.get(tier.id) ?? []) : [];
             return (
-              <section key={tier.id} className="list-board__tier" aria-label={tier.name}>
-                <h3 className="list-board__tier-label" style={{ background: tier.color }}>
-                  {tier.name}
-                </h3>
+              <section key={tier.id} className="list-board__tier" aria-label={tierLabel(tier.name)}>
+                <h2
+                  className="list-board__tier-label"
+                  style={{ background: tier.color, color: readableTextColor(tier.color) }}
+                >
+                  {tierLabel(tier.name)}
+                </h2>
                 <ul className="list-board__tier-items">
                   {placed.map((item) => (
                     <ItemTile key={item.id} item={item} />

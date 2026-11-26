@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { unexpectedResponseError } from "../../../shared/api/errors.ts";
 import { displayImageUrl } from "../../../shared/lib/imageUrl.ts";
+import { safeHttpsUrl } from "../../../shared/lib/safeHttpsUrl.ts";
 import type {
   ListPage,
   ListReport,
@@ -8,11 +9,20 @@ import type {
   Template,
 } from "../model/types.ts";
 
-/** Невалидный URL картинки отбрасывается (поле становится undefined), а не ломает ответ. */
+/**
+ * Невалидный URL картинки отбрасывается (поле становится undefined), а не ломает ответ.
+ * Постеры и обложки: путь storage или https (постеры каталога).
+ */
 const imageUrlSchema = z
   .unknown()
   .optional()
   .transform((value) => displayImageUrl(value));
+
+/** Фото автора — как в профиле пользователя: только https (Telegram). */
+const photoUrlSchema = z
+  .unknown()
+  .optional()
+  .transform((value) => safeHttpsUrl(value));
 
 const formatSchema = z.enum(["tiers", "ranked", "collection"]);
 const idSchema = z.string().min(1);
@@ -20,12 +30,13 @@ const idSchema = z.string().min(1);
 const authorSchema = z.object({
   id: idSchema,
   username: z.string(),
-  photoUrl: imageUrlSchema,
+  photoUrl: photoUrlSchema,
 });
 
 const tierSchema = z.object({
   id: idSchema,
-  name: z.string().min(1),
+  // Черновик хранит пустое название; непустое требуется только при публикации.
+  name: z.string(),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
 });
 

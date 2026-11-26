@@ -99,6 +99,35 @@ test("author.photoUrl https сохраняется", () => {
   assert.equal(t.author.photoUrl, "https://t.me/a.jpg");
 });
 
+test("author.photoUrl: storage-путь не принимается (как фото в профиле — только https)", () => {
+  const t = parseTemplateText(
+    JSON.stringify({ ...baseTemplate, author: { ...author, photoUrl: "/storage/images/a.webp" } }),
+  );
+  assert.equal(t.author.photoUrl, undefined);
+});
+
+test("черновик с пустым названием тира парсится", () => {
+  const t = parseTemplateText(
+    JSON.stringify({ ...baseTemplate, status: "draft", revision: 2, tiers: [{ ...tier, name: "" }] }),
+  );
+  assert.equal(t.tiers[0]?.name, "");
+});
+
+test("черновик с пустыми названиями шаблона, элемента и результата парсится", () => {
+  const t = parseTemplateText(
+    JSON.stringify({ ...baseTemplate, title: "", items: [{ id: "i1", title: "" }] }),
+  );
+  assert.equal(t.title, "");
+  assert.equal(t.items[0]?.title, "");
+  const r = parseResultText(JSON.stringify({ ...baseResult, title: "" }));
+  assert.equal(r.title, "");
+});
+
+test("пустой id тира бросает", () => {
+  const body = { ...baseTemplate, tiers: [{ ...tier, id: "" }] };
+  assert.throws(() => parseTemplateText(JSON.stringify(body)));
+});
+
 test("author.photoUrl невалидный отбрасывается", () => {
   const t = parseTemplateText(
     JSON.stringify({ ...baseTemplate, author: { ...author, photoUrl: "javascript:1" } }),

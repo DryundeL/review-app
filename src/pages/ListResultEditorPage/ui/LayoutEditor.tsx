@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from "react";
 import {
   moveWithinGroup,
+  tierLabel,
   unplaceItem,
   type Format,
   type GroupKey,
@@ -8,6 +9,7 @@ import {
   type Layout,
   type Tier,
 } from "@/entities/list";
+import { readableTextColor } from "@/shared/lib/readableTextColor";
 import { Button, MediaPoster } from "@/shared/ui";
 import { placeAtEnd, placeBefore } from "../model/selection";
 import "@/widgets/ListBoard/ListBoard.css";
@@ -159,16 +161,16 @@ export function LayoutEditor({
       {format === "tiers" ? (
         <div className="list-board__tiers">
           {tiers.map((tier) => (
-            <section key={tier.id} className="list-board__tier" aria-label={tier.name}>
+            <section key={tier.id} className="list-board__tier" aria-label={tierLabel(tier.name)}>
               <button
                 type="button"
                 className="list-board__tier-label layout-editor__target"
-                style={{ background: tier.color }}
+                style={{ background: tier.color, color: readableTextColor(tier.color) }}
                 disabled={disabled || !selectedId}
-                aria-label={`Положить в тир ${tier.name}`}
+                aria-label={`Положить в тир ${tierLabel(tier.name)}`}
                 onClick={() => selectedId && apply(placeAtEnd(layout, selectedId, tier.id))}
               >
-                {tier.name}
+                {tierLabel(tier.name)}
               </button>
               <ul className="list-board__tier-items">{groupTiles(tier.id, false)}</ul>
             </section>
