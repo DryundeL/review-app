@@ -87,13 +87,20 @@ export function toTemplateInput(draft: TemplateDraft, revision: number): Templat
   };
 }
 
-/** Сервер сохраняет порядок запроса: новый объект с индексом i получил id из saved[i]. */
+/**
+ * Сервер сохраняет порядок запроса: новый объект с индексом i получил id из saved[i].
+ * Если длины не совпали, сопоставить новые объекты нельзя — бросаем, иначе следующий
+ * PUT создал бы их повторно (ListAutosave переходит в конфликт до reload).
+ */
 function assignedIds<T extends { key: string; id?: string }>(
   sent: T[],
   saved: { id: string }[],
 ): Map<string, string> {
   const ids = new Map<string, string>();
-  if (sent.length !== saved.length) return ids;
+  if (!sent.some((entry) => !entry.id)) return ids;
+  if (sent.length !== saved.length) {
+    throw new Error("Ответ сервера не совпадает с отправленным списком.");
+  }
   sent.forEach((entry, index) => {
     if (!entry.id) ids.set(entry.key, saved[index].id);
   });
@@ -101,8 +108,9 @@ function assignedIds<T extends { key: string; id?: string }>(
 }
 
 /**
- * Правки, сделанные пока шёл PUT, накладываются на ответ: новым тирам и элементам
- * достаются id сервера, отправленная картинка больше не переотправляется.
+ * Локальный draft накладывается на ответ PUT (и после тихого сохранения): ключи строк
+ * и введённый текст остаются, новым тирам и элементам достаются id сервера,
+ * отправленная картинка больше не переотправляется.
  */
 export function rebaseDraft(
   local: TemplateDraft,
@@ -129,6 +137,10 @@ export function rebaseDraft(
         delete rest.imageId;
         const imageUrl = savedItems.get(id)?.imageUrl ?? item.imageUrl;
         next = { ...rest, ...(imageUrl ? { imageUrl } : {}) };
+      } else if (id && !next.imageId && !next.imageUrl) {
+        // Постер нового элемента из каталога выдаёт сервер.
+        const imageUrl = savedItems.get(id)?.imageUrl;
+        if (imageUrl) next = { ...next, imageUrl };
       }
       return next;
     }),
@@ -141,10 +153,8 @@ export function readinessFromDraft(draft: TemplateDraft): ReadinessInput {
     tiers: usesTiers(draft) ? draft.tiers.map((tier) => ({ name: tier.name })) : [],
     items: draft.items.map((item) => ({
       title: item.title,
-      // Новый элемент из каталога получит постер на сервере; без постера ответит 422.
-      hasImage: Boolean(
-        item.imageId || item.imageUrl || (!item.id && item.mediaObjectId),
-      ),
+      // Постер элемента из каталога проверяет сервер (422 items.image).
+      hasImage: Boolean(item.imageId || item.imageUrl || item.mediaObjectId),
     })),
   };
 }

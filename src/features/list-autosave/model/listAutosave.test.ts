@@ -269,24 +269,53 @@ test("rebase: ответ на старую версию переносит да�
   assert.deepEqual(calls[1].draft, { title: "ab", description: "+srv" });
 });
 
-test("rebase не вызывается, если draft не менялся во время запроса", async () => {
+function setupRebase(rebase: (local: Draft, sent: Draft, saved: Server) => Draft) {
   const calls: Call[] = [];
   const save = (revision: number, draft: Draft) =>
     new Promise<Server>((resolve, reject) => {
       calls.push({ revision, draft, resolve, reject });
     });
-  let rebased = 0;
-  const autosave = new ListAutosave(server(1), toDraft, save, {
-    auto: true,
-    rebase: (local) => {
-      rebased++;
-      return local;
-    },
+  const autosave = new ListAutosave(server(1), toDraft, save, { auto: true, rebase });
+  return { autosave, calls };
+}
+
+test("тихое сохранение с rebase: draft из rebase, а не toDraft; dirty сброшен", async () => {
+  const seen: { local: Draft; sent: Draft }[] = [];
+  const { autosave, calls } = setupRebase((local, sent) => {
+    seen.push({ local, sent });
+    return { ...local, description: "rebased" };
+  });
+  autosave.change({ title: "Лучший " });
+  mock.timers.tick(1500);
+  calls[0].resolve(server(2, "Лучший"));
+  await flushPromises();
+  assert.equal(seen.length, 1);
+  assert.equal(seen[0].local, seen[0].sent);
+  const state = autosave.snapshot();
+  assert.deepEqual(state.draft, { title: "Лучший ", description: "rebased" });
+  assert.equal(state.dirty, false);
+  assert.equal(state.saved.revision, 2);
+  mock.timers.tick(5000);
+  assert.equal(calls.length, 1);
+});
+
+test("rebase бросил: конфликт, автосохранение остановлено до reload", async () => {
+  const { autosave, calls } = setupRebase(() => {
+    throw new Error("mismatch");
   });
   autosave.change({ title: "a" });
   mock.timers.tick(1500);
   calls[0].resolve(server(2, "a"));
   await flushPromises();
-  assert.equal(rebased, 0);
-  assert.equal(autosave.snapshot().dirty, false);
+  const state = autosave.snapshot();
+  assert.equal(state.conflict, true);
+  assert.equal(state.error?.code, "REBASE_MISMATCH");
+  assert.equal(state.saved.revision, 2);
+  assert.equal(state.saving, false);
+  autosave.change({ title: "b" });
+  mock.timers.tick(5000);
+  assert.equal(calls.length, 1);
+  await assert.rejects(autosave.flush());
+  autosave.reload(server(3, "fresh"));
+  assert.equal(autosave.snapshot().conflict, false);
 });

@@ -271,7 +271,7 @@ test("moveEntry", () => {
   assert.deepEqual(moveEntry(["a", "b"], 1, 1), ["a", "b"]);
 });
 
-test("readinessFromDraft: новый элемент из каталога без постера не блокирует сохранение", () => {
+test("readinessFromDraft: элемент из каталога без картинки не блокируется на клиенте", () => {
   const draft = draftFromTemplate(template({ items: [] }));
   draft.items.push({
     key: "k1",
@@ -280,8 +280,62 @@ test("readinessFromDraft: новый элемент из каталога без
     catalogTitle: "Монстр",
   });
   draft.items.push({ key: "k2", id: "item-5", mediaObjectId: "m5", title: "Старый" });
+  draft.items.push({ key: "k3", id: "item-6", title: "Своё без картинки" });
   assert.deepEqual(
     readinessFromDraft(draft).items.map((item) => item.hasImage),
-    [true, false],
+    [true, true, false],
+  );
+});
+
+test("rebaseDraft после тихого сохранения: ключи и текст локальные, id и постер с сервера", () => {
+  const base = draftFromTemplate(template({ items: [] }));
+  const sent: TemplateDraft = {
+    ...base,
+    title: "Лучший ",
+    tiers: [...base.tiers, { key: "k-tier", name: "A ", color: "#7fbfff" }],
+    items: [
+      { key: "k-new", mediaObjectId: "m2", title: "Монстр", catalogTitle: "Монстр" },
+    ],
+  };
+  const saved = template({
+    revision: 4,
+    title: "Лучший",
+    tiers: [...template().tiers, { id: "tier-new", name: "A", color: "#7fbfff" }],
+    items: [
+      {
+        id: "item-2",
+        title: "Монстр",
+        mediaObjectId: "m2",
+        imageUrl: "https://cdn/p.jpg",
+      },
+    ],
+  });
+  const rebased = rebaseDraft(sent, sent, saved);
+  assert.equal(rebased.title, "Лучший ");
+  assert.deepEqual(
+    rebased.tiers.map((t) => [t.key, t.id, t.name]),
+    [
+      ["tier-s", "tier-s", "S"],
+      ["k-tier", "tier-new", "A "],
+    ],
+  );
+  assert.equal(rebased.items[0].key, "k-new");
+  assert.equal(rebased.items[0].id, "item-2");
+  assert.equal(rebased.items[0].imageUrl, "https://cdn/p.jpg");
+});
+
+test("rebaseDraft: ответ не совпал по длине при новых элементах — бросает", () => {
+  const base = draftFromTemplate(template({ items: [] }));
+  const sent: TemplateDraft = {
+    ...base,
+    items: [{ key: "k-new", title: "Своё", imageId: "img" }],
+  };
+  assert.throws(() => rebaseDraft(sent, sent, template({ revision: 4, items: [] })));
+});
+
+test("rebaseDraft: без новых элементов расхождение длины не мешает", () => {
+  const draft = draftFromTemplate(template());
+  assert.doesNotThrow(() =>
+    rebaseDraft(draft, draft, template({ revision: 4, items: [] })),
   );
 });

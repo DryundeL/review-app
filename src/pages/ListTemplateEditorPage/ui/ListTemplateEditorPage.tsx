@@ -21,7 +21,7 @@ import { ListAutosave, useListAutosave } from "@/features/list-autosave";
 import { fieldReasonMessage, ownerActionMessage } from "@/features/manage-list";
 import { ApiError } from "@/shared/api";
 import { confirmLeave, usePageMeta, useUnsavedChangesGuard } from "@/shared/hooks";
-import { storageImageUrl } from "@/shared/lib/storageImageUrl";
+import { displayImageUrl } from "@/shared/lib/imageUrl";
 import { Button, Input } from "@/shared/ui";
 import { FORMAT_LABELS } from "@/widgets/ListCard";
 import {
@@ -196,7 +196,7 @@ function TemplateEditor({ template }: { template: Template }) {
       if (items.length >= LIMITS.items || items.some((i) => i.mediaObjectId === hit.id)) {
         return items;
       }
-      const imageUrl = storageImageUrl(hit.posterUrl);
+      const imageUrl = displayImageUrl(hit.posterUrl);
       return [
         ...items,
         {
@@ -512,7 +512,10 @@ function TemplateEditor({ template }: { template: Template }) {
         open={hasConflict && !conflictHidden}
         onOpenChange={(open) => setConflictHidden(!open)}
         busy={conflictBusy}
-        error={conflictError}
+        error={
+          conflictError ??
+          (conflict && error && !isRevisionConflict(error) ? error.message : null)
+        }
         onReload={() => void resolveConflict("reload")}
         onOverwrite={() => void resolveConflict("overwrite")}
       />

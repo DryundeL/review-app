@@ -134,11 +134,32 @@ export class ListAutosave<D, S extends { revision?: number }> {
       const result = await this.saveFn(revision, draft);
       if (epoch !== this.epoch) return;
       const unchanged = version === this.version;
-      const nextDraft = unchanged
-        ? this.toDraft(result)
-        : this.rebase
+      let nextDraft: D;
+      try {
+        // С rebase локальный draft сохраняется и после тихого сохранения:
+        // ключи строк и введённый текст не заменяются нормализованным ответом.
+        nextDraft = this.rebase
           ? this.rebase(this.state.draft, draft, result)
-          : this.state.draft;
+          : unchanged
+            ? this.toDraft(result)
+            : this.state.draft;
+      } catch {
+        // Ответ не сопоставился с отправленным draft: следующий PUT мог бы
+        // создать элементы повторно. Останавливаемся до reload/overwrite.
+        this.clearTimer();
+        this.set({
+          saved: result,
+          dirty: true,
+          saving: false,
+          conflict: true,
+          error: new ApiError(
+            0,
+            "REBASE_MISMATCH",
+            "Ответ сервера не совпал с правками. Загрузите актуальную версию.",
+          ),
+        });
+        return;
+      }
       this.set({
         saved: result,
         draft: nextDraft,

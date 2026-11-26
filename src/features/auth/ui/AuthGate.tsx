@@ -15,7 +15,10 @@ type AuthGateProps = {
 export function AuthGate({ children }: AuthGateProps) {
   const session = useAuthSession();
   const { pathname } = useLocation();
-  const editorPath = pathname === "/create" || /^\/reviews\/[^/]+\/edit$/.test(pathname);
+  const editorPath =
+    pathname === "/create" ||
+    /^\/reviews\/[^/]+\/edit$/.test(pathname) ||
+    /^\/list-(templates|results)\/[^/]+\/edit$/.test(pathname);
   const [editorOwner, setEditorOwner] = useState<string | null>(null);
   useEffect(() => {
     if (!editorPath) setEditorOwner(null);

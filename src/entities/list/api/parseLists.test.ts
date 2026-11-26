@@ -70,7 +70,7 @@ test("невалидный JSON бросает", () => {
   assert.throws(() => parseTemplateText("{"));
 });
 
-test("imageUrl: чужой хост отбрасывается, storage-путь сохраняется", () => {
+test("imageUrl: https и storage-путь сохраняются, опасные схемы отбрасываются", () => {
   const t = parseTemplateText(
     JSON.stringify({
       ...baseTemplate,
@@ -78,12 +78,25 @@ test("imageUrl: чужой хост отбрасывается, storage-путь
       items: [
         { id: "i1", title: "a", imageUrl: "https://evil/x.png" },
         { id: "i2", title: "b", imageUrl: "/storage/images/a.webp" },
+        { id: "i3", title: "c", imageUrl: "javascript:alert(1)" },
+        { id: "i4", title: "d", imageUrl: "http://plain/x.png" },
+        { id: "i5", title: "e", imageUrl: "data:image/png;base64,AAAA" },
       ],
     }),
   );
-  assert.equal(t.coverUrl, undefined);
-  assert.equal(t.items[0]?.imageUrl, undefined);
+  assert.equal(t.coverUrl, "https://evil/x.png");
+  assert.equal(t.items[0]?.imageUrl, "https://evil/x.png");
   assert.equal(t.items[1]?.imageUrl, "/storage/images/a.webp");
+  assert.equal(t.items[2]?.imageUrl, undefined);
+  assert.equal(t.items[3]?.imageUrl, undefined);
+  assert.equal(t.items[4]?.imageUrl, undefined);
+});
+
+test("author.photoUrl https сохраняется", () => {
+  const t = parseTemplateText(
+    JSON.stringify({ ...baseTemplate, author: { ...author, photoUrl: "https://t.me/a.jpg" } }),
+  );
+  assert.equal(t.author.photoUrl, "https://t.me/a.jpg");
 });
 
 test("author.photoUrl невалидный отбрасывается", () => {

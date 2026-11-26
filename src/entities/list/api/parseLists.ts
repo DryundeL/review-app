@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { unexpectedResponseError } from "../../../shared/api/errors.ts";
-import { storageImageUrl } from "../../../shared/lib/storageImageUrl.ts";
+import { displayImageUrl } from "../../../shared/lib/imageUrl.ts";
 import type {
   ListPage,
   ListReport,
@@ -12,7 +12,7 @@ import type {
 const imageUrlSchema = z
   .unknown()
   .optional()
-  .transform((value) => storageImageUrl(value));
+  .transform((value) => displayImageUrl(value));
 
 const formatSchema = z.enum(["tiers", "ranked", "collection"]);
 const idSchema = z.string().min(1);
