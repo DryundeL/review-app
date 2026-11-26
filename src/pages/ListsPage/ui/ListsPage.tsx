@@ -5,6 +5,7 @@ import { useAuthSession } from "@/features/auth";
 import type { Format, ListFilters, ListScope } from "@/entities/list";
 import { fetchReviewTypes } from "@/entities/settings";
 import { useDebouncedValue, usePageMeta } from "@/shared/hooks";
+import { metaForPath } from "@/shared/lib/pageMeta";
 import { Input } from "@/shared/ui";
 import { FORMAT_LABELS } from "@/widgets/ListCard";
 import { ListsFeed } from "@/widgets/ListsFeed";
@@ -33,11 +34,7 @@ export function ListsPage() {
   const [q, setQ] = useState(urlQ.slice(0, Q_MAX));
   const debouncedQ = useDebouncedValue(q, 300).trim();
 
-  usePageMeta({
-    title: "Топы и шаблоны",
-    description: "Тир-листы, топы и подборки по аниме, фильмам, играм и другим темам.",
-    path: "/lists",
-  });
+  usePageMeta(metaForPath("/lists"));
 
   const typesQuery = useQuery({
     queryKey: ["review-types"],

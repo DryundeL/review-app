@@ -15,6 +15,18 @@ test("metaForPath indexes public routes and noindexes private ones", () => {
   assert.equal(metaForPath("/profile").noindex, true);
 });
 
+test("metaForPath: каталог топов индексируется, редакторы списков — нет", () => {
+  const lists = metaForPath("/lists");
+  assert.equal(lists.noindex, undefined);
+  assert.equal(lists.title, "Топы и шаблоны");
+  assert.equal(lists.path, "/lists");
+  assert.ok(lists.description);
+  assert.equal(metaForPath("/list-templates/abc/edit").noindex, true);
+  assert.equal(metaForPath("/list-templates/abc/edit").title, "Редактор шаблона");
+  assert.equal(metaForPath("/list-results/abc/edit").title, "Редактор топа");
+  assert.equal(metaForPath("/reviews/abc/edit").title, "Редактор обзора");
+});
+
 test("truncateMeta keeps short text and ellipsizes long", () => {
   assert.equal(truncateMeta("коротко"), "коротко");
   const long = "а".repeat(200);
