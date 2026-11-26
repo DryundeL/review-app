@@ -9,7 +9,15 @@ export type AutosaveState<D, S> = {
   error: ApiError | null;
 };
 
-type Options = { auto: boolean; delayMs?: number };
+type Options<D, S> = {
+  auto: boolean;
+  delayMs?: number;
+  /**
+   * Правки пришли во время запроса: перенести в локальный draft то, что выдал сервер
+   * (например, id новых тиров), чтобы следующий PUT не создал их повторно.
+   */
+  rebase?: (local: D, sent: D, saved: S) => D;
+};
 
 const DEFAULT_DELAY_MS = 1500;
 
@@ -33,17 +41,19 @@ export class ListAutosave<D, S extends { revision?: number }> {
   private readonly saveFn: (revision: number, draft: D) => Promise<S>;
   private readonly auto: boolean;
   private readonly delayMs: number;
+  private readonly rebase: ((local: D, sent: D, saved: S) => D) | undefined;
 
   constructor(
     saved: S,
     toDraft: (saved: S) => D,
     save: (revision: number, draft: D) => Promise<S>,
-    opts: Options,
+    opts: Options<D, S>,
   ) {
     this.toDraft = toDraft;
     this.saveFn = save;
     this.auto = opts.auto;
     this.delayMs = opts.delayMs ?? DEFAULT_DELAY_MS;
+    this.rebase = opts.rebase;
     this.state = {
       draft: toDraft(saved),
       saved,
@@ -124,9 +134,14 @@ export class ListAutosave<D, S extends { revision?: number }> {
       const result = await this.saveFn(revision, draft);
       if (epoch !== this.epoch) return;
       const unchanged = version === this.version;
+      const nextDraft = unchanged
+        ? this.toDraft(result)
+        : this.rebase
+          ? this.rebase(this.state.draft, draft, result)
+          : this.state.draft;
       this.set({
         saved: result,
-        ...(unchanged ? { draft: this.toDraft(result) } : {}),
+        draft: nextDraft,
         dirty: !unchanged,
         saving: false,
         error: null,

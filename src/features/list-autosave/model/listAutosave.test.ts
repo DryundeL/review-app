@@ -236,3 +236,57 @@ test("dispose отменяет таймер и глушит уведомлени
   mock.timers.tick(5000);
   assert.equal(second.calls.length, 0);
 });
+
+test("rebase: ответ на старую версию переносит данные сервера в локальный draft", async () => {
+  const calls: Call[] = [];
+  const save = (revision: number, draft: Draft) =>
+    new Promise<Server>((resolve, reject) => {
+      calls.push({ revision, draft, resolve, reject });
+    });
+  const seen: { local: Draft; sent: Draft; saved: Server }[] = [];
+  const autosave = new ListAutosave(server(1), toDraft, save, {
+    auto: true,
+    rebase: (local, sent, saved) => {
+      seen.push({ local, sent, saved });
+      return { ...local, description: `${local.description}+${saved.title}` };
+    },
+  });
+  autosave.change({ title: "a" });
+  mock.timers.tick(1500);
+  autosave.change({ title: "ab" });
+  calls[0].resolve(server(2, "srv"));
+  await flushPromises();
+  assert.equal(seen.length, 1);
+  assert.equal(seen[0].sent.title, "a");
+  assert.equal(seen[0].local.title, "ab");
+  assert.equal(seen[0].saved.revision, 2);
+  const state = autosave.snapshot();
+  assert.deepEqual(state.draft, { title: "ab", description: "+srv" });
+  assert.equal(state.dirty, true);
+  mock.timers.tick(1500);
+  assert.equal(calls.length, 2);
+  assert.equal(calls[1].revision, 2);
+  assert.deepEqual(calls[1].draft, { title: "ab", description: "+srv" });
+});
+
+test("rebase не вызывается, если draft не менялся во время запроса", async () => {
+  const calls: Call[] = [];
+  const save = (revision: number, draft: Draft) =>
+    new Promise<Server>((resolve, reject) => {
+      calls.push({ revision, draft, resolve, reject });
+    });
+  let rebased = 0;
+  const autosave = new ListAutosave(server(1), toDraft, save, {
+    auto: true,
+    rebase: (local) => {
+      rebased++;
+      return local;
+    },
+  });
+  autosave.change({ title: "a" });
+  mock.timers.tick(1500);
+  calls[0].resolve(server(2, "a"));
+  await flushPromises();
+  assert.equal(rebased, 0);
+  assert.equal(autosave.snapshot().dirty, false);
+});
