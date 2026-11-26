@@ -107,7 +107,7 @@ test("entriesFromLayout: ranked без tierId; чужие группы отбр�
   ]);
   assert.equal("tierId" in e[0], false);
 
-  let t = placeItem(layoutFromResult(result({})), "1", "A");
+  const t = placeItem(layoutFromResult(result({})), "1", "A");
   assert.deepEqual(entriesFromLayout(t, [tiers[1]]), []);
 });
 
