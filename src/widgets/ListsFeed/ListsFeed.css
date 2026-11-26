@@ -1,0 +1,30 @@
+.lists-feed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.lists-feed__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lists-feed__status {
+  margin: 0;
+  padding: var(--space-5) 0;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.lists-feed__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-danger);
+}
+
+.lists-feed__more {
+  align-self: center;
+}

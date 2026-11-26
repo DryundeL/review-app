@@ -89,6 +89,11 @@ async function renderPage(url: string, requestSignal?: AbortSignal) {
           queryFn: () => fetchSearchTrends({ tab, limit: 10 }, signal),
           retry: false,
         });
+    } else if (pathname === "/lists") {
+      // Данные списков клиент загружает сам: SSR отдаёт оболочку страницы.
+    } else if (/^\/list-(templates|results)\//.test(pathname)) {
+      // Страницы просмотра появятся позже; не трактуем путь как профиль.
+      throw new ApiError(404, "NOT_FOUND", "Не найдено.");
     } else {
       const id = pathname.split("/")[2]!;
       if (pathname.startsWith("/reviews/")) {

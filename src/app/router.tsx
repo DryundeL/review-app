@@ -2,6 +2,7 @@ import { lazy, Suspense, type ComponentType } from "react";
 import { AuthGate } from "@/features/auth";
 import { Link, Route, Routes } from "react-router-dom";
 import { FeedPage } from "@/pages/FeedPage";
+import { ListsPage } from "@/pages/ListsPage";
 import { MediaObjectPage } from "@/pages/MediaObjectPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { ReviewPage } from "@/pages/ReviewPage";
@@ -50,6 +51,7 @@ export function AppRoutes() {
           <Route index element={<FeedPage />} />
           <Route path="media-objects/:mediaId" element={<MediaObjectPage />} />
           <Route path="search" element={<SearchPage />} />
+          <Route path="lists" element={<ListsPage />} />
           <Route path="create" element={<CreateReviewPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="profile" element={<ProfilePage />} />
