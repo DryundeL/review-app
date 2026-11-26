@@ -17,7 +17,7 @@ import {
 import type { SearchMediaHit } from "@/entities/search";
 import { fetchReviewTypes } from "@/entities/settings";
 import { useAuthSession } from "@/features/auth";
-import { ListAutosave, useListAutosave } from "@/features/list-autosave";
+import { ConflictDialog, ListAutosave, useListAutosave } from "@/features/list-autosave";
 import { fieldReasonMessage, ownerActionMessage } from "@/features/manage-list";
 import { ApiError } from "@/shared/api";
 import { confirmLeave, usePageMeta, useUnsavedChangesGuard } from "@/shared/hooks";
@@ -38,7 +38,6 @@ import {
   type TemplateDraft,
 } from "../model/templateDraft";
 import { CatalogItemPicker } from "./CatalogItemPicker";
-import { ConflictDialog } from "./ConflictDialog";
 import { FieldError } from "./FieldError";
 import { ItemsEditor } from "./ItemsEditor";
 import { TiersEditor } from "./TiersEditor";
@@ -509,6 +508,8 @@ function TemplateEditor({ template }: { template: Template }) {
         onAdd={addFromCatalog}
       />
       <ConflictDialog
+        title="Шаблон изменился"
+        errorCode={error?.code}
         open={hasConflict && !conflictHidden}
         onOpenChange={(open) => setConflictHidden(!open)}
         busy={conflictBusy}

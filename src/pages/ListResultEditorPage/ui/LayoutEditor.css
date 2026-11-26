@@ -1,0 +1,81 @@
+.layout-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.layout-editor__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.layout-editor__heading {
+  margin: 0 0 var(--space-2);
+  font-size: 1rem;
+}
+
+.layout-editor__tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 72px;
+  padding: 2px;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+}
+
+.layout-editor__tile.is-selected {
+  border-color: var(--color-accent);
+  background: var(--color-surface-2);
+}
+
+.layout-editor__pick {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.layout-editor__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.layout-editor__controls button {
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0 4px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.layout-editor__controls button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+button.layout-editor__target {
+  border: 0;
+  cursor: pointer;
+}
+
+button.layout-editor__target:disabled {
+  cursor: default;
+}
+
+.layout-editor button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}

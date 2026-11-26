@@ -31,6 +31,9 @@ const SettingsPage = lazyPage(() =>
 const MyListsPage = lazyPage(() =>
   import("@/pages/MyListsPage").then((m) => m.MyListsPage),
 );
+const ListResultEditorPage = lazyPage(() =>
+  import("@/pages/ListResultEditorPage").then((m) => m.ListResultEditorPage),
+);
 const ListTemplateEditorPage = lazyPage(() =>
   import("@/pages/ListTemplateEditorPage").then((m) => m.ListTemplateEditorPage),
 );
@@ -67,6 +70,10 @@ export function AppRoutes() {
             element={<ListTemplateEditorPage />}
           />
           <Route path="list-results/:resultId" element={<ListResultPage />} />
+          <Route
+            path="list-results/:resultId/edit"
+            element={<ListResultEditorPage />}
+          />
           <Route path="my-lists" element={<MyListsPage />} />
           <Route path="create" element={<CreateReviewPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
