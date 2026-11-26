@@ -31,12 +31,16 @@ export function OwnerActions({ kind, object }: OwnerActionsProps) {
   const navigate = useNavigate();
   const [publishOpen, setPublishOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [visibility, setVisibility] = useState<Visibility>("public");
+  const [visibility, setVisibility] = useState<Visibility>(object.visibility ?? "public");
   const [error, setError] = useState<string | null>(null);
 
   const key = queryKeyFor(kind, object.id);
 
   const onFail = (action: OwnerAction) => (err: unknown) => {
+    // Ревизия устарела: перезапрос, чтобы повтор ушёл со свежей.
+    if (err instanceof ApiError && err.status === 409 && err.code === "REVISION_CONFLICT") {
+      void queryClient.invalidateQueries({ queryKey: key });
+    }
     setError(
       err instanceof ApiError ? ownerActionMessage(err, action) : "Не удалось выполнить действие",
     );

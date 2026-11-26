@@ -113,7 +113,8 @@ function ResultEditor({ result }: { result: Result }) {
   );
 
   const { draft, saved, dirty, saving, conflict, error } = useListAutosave(session);
-  useUnsavedChangesGuard(dirty || saving);
+  // Черновик досохраняется при уходе (dispose); удержать стоит только то, что не сохранится.
+  useUnsavedChangesGuard(auto ? conflict || error !== null : dirty || saving);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -183,8 +184,8 @@ function ResultEditor({ result }: { result: Result }) {
         throw new ApiError(0, "NO_REVISION", "Обновите страницу.");
       }
       const published = await publishList("results", id, revision, visibility);
-      navigate(`/list-results/${id}`);
       queryClient.setQueryData(queryKey, published);
+      navigate(`/list-results/${id}`);
       void queryClient.invalidateQueries({ queryKey: ["lists"] });
     } catch (cause) {
       handleActionError(cause, "publish");

@@ -125,7 +125,8 @@ function TemplateEditor({ template }: { template: Template }) {
   );
 
   const { draft, saved, dirty, saving, conflict, error } = useListAutosave(session);
-  useUnsavedChangesGuard(dirty || saving);
+  // Черновик досохраняется при уходе (dispose); удержать стоит только то, что не сохранится.
+  useUnsavedChangesGuard(auto ? conflict || error !== null : dirty || saving);
 
   const [issues, setIssues] = useState<PublishIssue[] | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -133,7 +134,7 @@ function TemplateEditor({ template }: { template: Template }) {
   const [busy, setBusy] = useState(false);
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [visibility, setVisibility] = useState<Visibility>("public");
+  const [visibility, setVisibility] = useState<Visibility>(template.visibility ?? "public");
   const [actionConflict, setActionConflict] = useState(false);
   const [conflictHidden, setConflictHidden] = useState(false);
   const [conflictBusy, setConflictBusy] = useState(false);
@@ -257,8 +258,8 @@ function TemplateEditor({ template }: { template: Template }) {
       if (revision === undefined)
         throw new ApiError(0, "NO_REVISION", "Обновите страницу.");
       const published = await publishList("templates", id, revision, visibility);
-      navigate(`/list-templates/${id}`);
       queryClient.setQueryData(queryKey, published);
+      navigate(`/list-templates/${id}`);
       void queryClient.invalidateQueries({ queryKey: ["lists"] });
     } catch (cause) {
       handleActionError(cause, "publish");
