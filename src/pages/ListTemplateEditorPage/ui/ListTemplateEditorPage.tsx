@@ -3,12 +3,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   fetchTemplate,
-  isOwnerView,
   publishList,
   refreshItemFromCatalog,
   saveTemplate,
   templatePublishIssues,
   useTemplateQuery,
+  useOwnerSnapshot,
   type Format,
   type PublishIssue,
   type Template,
@@ -16,7 +16,7 @@ import {
 } from "@/entities/list";
 import type { SearchMediaHit } from "@/entities/search";
 import { fetchReviewTypes } from "@/entities/settings";
-import { useAuthSession } from "@/features/auth";
+import { currentAccountId, useAuthSession } from "@/features/auth";
 import { ConflictDialog, ListAutosave, useListAutosave } from "@/features/list-autosave";
 import { fieldReasonMessage, ownerActionMessage } from "@/features/manage-list";
 import { ApiError } from "@/shared/api";
@@ -51,6 +51,9 @@ function toApiError(error: unknown): ApiError {
     : new ApiError(0, "UNKNOWN", "Не удалось выполнить действие. Попробуйте ещё раз.");
 }
 
+const accountChangedError = () =>
+  new ApiError(0, "ACCOUNT_CHANGED", "Войдите в аккаунт автора, чтобы сохранить изменения.");
+
 const isRevisionConflict = (error: ApiError) =>
   error.status === 409 && error.code === "REVISION_CONFLICT";
 
@@ -70,9 +73,15 @@ export function ListTemplateEditorPage() {
   );
   usePageMeta(pageMeta);
 
+  // Последний ответ автору: редактор не размонтируется на перезапросе и повторном входе.
+  const owned = useOwnerSnapshot(template, profile?.id ?? null);
+  if (owned) {
+    // Смена статуса (публикация, снятие) меняет режим: автосохранение или «Сохранить».
+    return <TemplateEditor key={`${owned.id}:${owned.status}`} template={owned} />;
+  }
+
   // Кешированный гостевой ответ без полей автора: ждём перезапрос с входом.
-  const waiting =
-    query.isLoading || (template && !isOwnerView(template) && query.isFetching);
+  const waiting = query.isLoading || (template && query.isFetching);
   if (waiting) {
     return (
       <section className="template-editor screen" aria-busy="true">
@@ -80,20 +89,14 @@ export function ListTemplateEditorPage() {
       </section>
     );
   }
-  if (!template || !isOwnerView(template)) {
-    const notFound =
-      (template && !isOwnerView(template)) ||
-      (query.error instanceof ApiError && query.error.status === 404);
-    return (
-      <section className="template-editor screen">
-        <h1>{notFound ? "Не найдено" : "Ошибка загрузки"}</h1>
-        <Link to="/my-lists">К моим спискам</Link>
-      </section>
-    );
-  }
-
-  // Смена статуса (публикация, снятие) меняет режим: автосохранение или «Сохранить».
-  return <TemplateEditor key={`${template.id}:${template.status}`} template={template} />;
+  const notFound =
+    Boolean(template) || (query.error instanceof ApiError && query.error.status === 404);
+  return (
+    <section className="template-editor screen">
+      <h1>{notFound ? "Не найдено" : "Ошибка загрузки"}</h1>
+      <Link to="/my-lists">К моим спискам</Link>
+    </section>
+  );
 }
 
 function TemplateEditor({ template }: { template: Template }) {
@@ -109,6 +112,8 @@ function TemplateEditor({ template }: { template: Template }) {
         template,
         draftFromTemplate,
         async (revision, draft) => {
+          // Сессия сменилась (выход, другой аккаунт): чужими учётными данными не сохраняем.
+          if (currentAccountId() !== template.author.id) throw accountChangedError();
           const saved = await saveTemplate(id, toTemplateInput(draft, revision));
           queryClient.setQueryData(queryKey, saved);
           return saved;

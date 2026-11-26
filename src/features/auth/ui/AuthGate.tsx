@@ -5,6 +5,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "re
 import { bootstrapAuth } from "../model/authController";
 import { useAuthSession } from "../model/useAuthSession";
 import { authScreen } from "../model/authScreen";
+import { nextCacheAccount } from "../model/cacheAccount";
 import { AuthLoadingScreen } from "./AuthLoadingScreen";
 import { LoginScreen } from "./LoginScreen";
 
@@ -27,7 +28,9 @@ export function AuthGate({ children }: AuthGateProps) {
   }, [editorPath, session.phase, session.profile]);
   const requiresLogin = isClientOnlyPath(pathname);
   const queryClient = useQueryClient();
-  const previousAccount = useRef<string | null>(session.profile?.id ?? null);
+  const cacheAccount = useRef<string | null>(
+    session.phase === "authenticated" ? (session.profile?.id ?? null) : null,
+  );
 
   useLayoutEffect(() => {
     document.documentElement.removeAttribute("data-telegram-startup");
@@ -37,12 +40,12 @@ export function AuthGate({ children }: AuthGateProps) {
     bootstrapAuth();
   }, []);
 
+  const profileId = session.profile?.id ?? null;
   useLayoutEffect(() => {
-    const account = session.profile?.id ?? null;
-    if (previousAccount.current === account) return;
-    previousAccount.current = account;
-    queryClient.clear();
-  }, [queryClient, session.profile?.id]);
+    const step = nextCacheAccount(cacheAccount.current, session.phase, profileId);
+    cacheAccount.current = step.account;
+    if (step.clear) queryClient.clear();
+  }, [queryClient, session.phase, profileId]);
 
   const screen = authScreen(
     session.phase,

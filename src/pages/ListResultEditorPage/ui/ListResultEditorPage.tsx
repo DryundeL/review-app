@@ -4,16 +4,16 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   entriesFromLayout,
   fetchResult,
-  isOwnerView,
   publishList,
   resultPublishIssues,
   saveResult,
   useResultQuery,
+  useOwnerSnapshot,
   type Layout,
   type Result,
   type Visibility,
 } from "@/entities/list";
-import { useAuthSession } from "@/features/auth";
+import { currentAccountId, useAuthSession } from "@/features/auth";
 import { ConflictDialog, ListAutosave, useListAutosave } from "@/features/list-autosave";
 import { ownerActionMessage } from "@/features/manage-list";
 import { ApiError } from "@/shared/api";
@@ -38,6 +38,9 @@ function toApiError(error: unknown): ApiError {
     : new ApiError(0, "UNKNOWN", "Не удалось выполнить действие. Попробуйте ещё раз.");
 }
 
+const accountChangedError = () =>
+  new ApiError(0, "ACCOUNT_CHANGED", "Войдите в аккаунт автора, чтобы сохранить изменения.");
+
 const isRevisionConflict = (error: ApiError) =>
   error.status === 409 && error.code === "REVISION_CONFLICT";
 
@@ -60,8 +63,15 @@ export function ListResultEditorPage() {
   );
   usePageMeta(pageMeta);
 
+  // Последний ответ автору: редактор не размонтируется на перезапросе и повторном входе.
+  const owned = useOwnerSnapshot(result, profile?.id ?? null);
+  if (owned) {
+    // Смена статуса (публикация, снятие) меняет режим: автосохранение или «Сохранить».
+    return <ResultEditor key={`${owned.id}:${owned.status}`} result={owned} />;
+  }
+
   // Кешированный гостевой ответ без полей автора: ждём перезапрос с входом.
-  const waiting = query.isLoading || (result && !isOwnerView(result) && query.isFetching);
+  const waiting = query.isLoading || (result && query.isFetching);
   if (waiting) {
     return (
       <section className="result-editor screen" aria-busy="true">
@@ -69,19 +79,14 @@ export function ListResultEditorPage() {
       </section>
     );
   }
-  if (!result || !isOwnerView(result)) {
-    const notFound =
-      (result && !isOwnerView(result)) ||
-      (query.error instanceof ApiError && query.error.status === 404);
-    return (
-      <section className="result-editor screen">
-        <h1>{notFound ? "Не найдено" : "Ошибка загрузки"}</h1>
-        <Link to="/my-lists">К моим спискам</Link>
-      </section>
-    );
-  }
-
-  return <ResultEditor key={`${result.id}:${result.status}`} result={result} />;
+  const notFound =
+    Boolean(result) || (query.error instanceof ApiError && query.error.status === 404);
+  return (
+    <section className="result-editor screen">
+      <h1>{notFound ? "Не найдено" : "Ошибка загрузки"}</h1>
+      <Link to="/my-lists">К моим спискам</Link>
+    </section>
+  );
 }
 
 function ResultEditor({ result }: { result: Result }) {
@@ -97,6 +102,8 @@ function ResultEditor({ result }: { result: Result }) {
         result,
         toDraft,
         async (revision, draft) => {
+          // Сессия сменилась (выход, другой аккаунт): чужими учётными данными не сохраняем.
+          if (currentAccountId() !== result.author.id) throw accountChangedError();
           const saved = await saveResult(id, toResultInput(draft, result, revision));
           queryClient.setQueryData(queryKey, saved);
           return saved;
