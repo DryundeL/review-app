@@ -11,7 +11,14 @@ import { MEDIA_TYPE_LABELS, isMediaType } from "@/shared/types";
 import { UserAvatar } from "@/shared/ui";
 import { FORMAT_LABELS } from "@/widgets/ListCard";
 import { ListBoard } from "@/widgets/ListBoard";
+import type { Format } from "@/entities/list";
 import "./ListTemplatePage.css";
+
+const CREATE_HINTS: Record<Format, string> = {
+  tiers: "Это шаблон. Чтобы расставить элементы по тирам, составьте свой топ.",
+  ranked: "Это шаблон. Чтобы расставить элементы по местам, составьте свой топ.",
+  collection: "Это шаблон. Чтобы собрать из элементов свою подборку, составьте свой топ.",
+};
 
 export function ListTemplatePage() {
   const { templateId } = useParams();
@@ -27,7 +34,9 @@ export function ListTemplatePage() {
       title: template.title,
       description: truncateMeta(template.description || template.title),
       image: template.coverUrl,
-      noindex: isOwnerView(template) && (template.status !== "published" || template.visibility === "unlisted"),
+      noindex:
+        isOwnerView(template) &&
+        (template.status !== "published" || template.visibility === "unlisted"),
     };
   }, [templateId, template]);
   usePageMeta(pageMeta);
@@ -42,23 +51,33 @@ export function ListTemplatePage() {
   if (query.isError || !template) {
     return (
       <section className="list-page screen">
-        <h1>{query.error instanceof ApiError && query.error.status === 404 ? "Не найдено" : "Ошибка загрузки"}</h1>
+        <h1>
+          {query.error instanceof ApiError && query.error.status === 404
+            ? "Не найдено"
+            : "Ошибка загрузки"}
+        </h1>
         <Link to="/lists">К топам и шаблонам</Link>
       </section>
     );
   }
 
   const owner = isOwnerView(template);
-  const typeLabel = isMediaType(template.typeCode) ? MEDIA_TYPE_LABELS[template.typeCode] : null;
+  const typeLabel = isMediaType(template.typeCode)
+    ? MEDIA_TYPE_LABELS[template.typeCode]
+    : null;
 
   return (
     <article className="list-page screen">
       {owner ? (
         <div className="list-page__banners">
           {template.moderation === "hidden" ? (
-            <p className="list-page__banner list-page__banner--danger">Скрыто модератором</p>
+            <p className="list-page__banner list-page__banner--danger">
+              Скрыто модератором
+            </p>
           ) : null}
-          {template.status === "draft" ? <p className="list-page__banner">Черновик</p> : null}
+          {template.status === "draft" ? (
+            <p className="list-page__banner">Черновик</p>
+          ) : null}
           {template.visibility === "unlisted" ? (
             <p className="list-page__banner">Доступно по ссылке</p>
           ) : null}
@@ -88,11 +107,18 @@ export function ListTemplatePage() {
 
       {owner ? <OwnerActions kind="templates" object={template} /> : null}
 
-      <ListBoard format={template.format} tiers={template.tiers} items={template.items} />
-
       {template.canCreateResult ? (
-        <CreateResultButton templateId={template.id} label="Составить свой топ" />
+        <section className="list-page__cta" aria-label="Свой топ по шаблону">
+          <p className="list-page__cta-text">{CREATE_HINTS[template.format]}</p>
+          <CreateResultButton templateId={template.id} label="Составить свой топ" />
+        </section>
+      ) : owner && template.status === "draft" ? (
+        <p className="list-page__cta-text">
+          Опубликуйте шаблон, чтобы составить по нему свой топ.
+        </p>
       ) : null}
+
+      <ListBoard format={template.format} tiers={template.tiers} items={template.items} />
     </article>
   );
 }
