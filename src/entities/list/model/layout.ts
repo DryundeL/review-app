@@ -8,7 +8,10 @@ export type Layout = {
   unplaced: string[];
 };
 
-export function layoutFromResult(result: Result): Layout {
+/** Источник раскладки: результат или шаблон (у шаблона `entries` пустые). */
+export type LayoutSource = Pick<Result, "format" | "tiers" | "items" | "entries">;
+
+export function layoutFromResult(result: LayoutSource): Layout {
   const groups = new Map<GroupKey, string[]>();
   if (result.format === "tiers") {
     for (const tier of result.tiers) groups.set(tier.id, []);
@@ -89,4 +92,16 @@ export function entriesFromLayout(layout: Layout, tiers: Tier[]): Entry[] {
     );
   }
   return entries;
+}
+
+/**
+ * Переносит раскладку (например, собранную на странице шаблона) в снимок нового результата.
+ * Тиры и элементы, которых нет в снимке, отбрасываются: шаблон мог измениться.
+ */
+export function carryLayout(layout: Layout, target: LayoutSource): Layout {
+  let next = layoutFromResult({ ...target, entries: [] });
+  for (const [key, ids] of layout.groups) {
+    for (const id of ids) next = placeItem(next, id, key);
+  }
+  return next;
 }

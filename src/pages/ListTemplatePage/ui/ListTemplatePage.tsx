@@ -12,6 +12,7 @@ import { UserAvatar } from "@/shared/ui";
 import { FORMAT_LABELS } from "@/widgets/ListCard";
 import { ListBoard } from "@/widgets/ListBoard";
 import type { Format } from "@/entities/list";
+import { TemplateArrange } from "./TemplateArrange";
 import "./ListTemplatePage.css";
 
 const CREATE_HINTS: Record<Format, string> = {
@@ -107,7 +108,9 @@ export function ListTemplatePage() {
 
       {owner ? <OwnerActions kind="templates" object={template} /> : null}
 
-      {template.canCreateResult ? (
+      {template.canCreateResult && profile ? (
+        <TemplateArrange key={template.id} template={template} />
+      ) : template.canCreateResult ? (
         <section className="list-page__cta" aria-label="Свой топ по шаблону">
           <p className="list-page__cta-text">{CREATE_HINTS[template.format]}</p>
           <CreateResultButton templateId={template.id} label="Составить свой топ" />
@@ -118,7 +121,9 @@ export function ListTemplatePage() {
         </p>
       ) : null}
 
-      <ListBoard format={template.format} tiers={template.tiers} items={template.items} />
+      {template.canCreateResult && profile ? null : (
+        <ListBoard format={template.format} tiers={template.tiers} items={template.items} />
+      )}
     </article>
   );
 }

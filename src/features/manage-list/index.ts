@@ -1,3 +1,3 @@
 export { CreateResultButton } from "./ui/CreateResultButton";
 export { OwnerActions } from "./ui/OwnerActions";
-export { fieldReasonMessage, ownerActionMessage } from "./model/errorMessage";
+export { createResultMessage, fieldReasonMessage, ownerActionMessage } from "./model/errorMessage";

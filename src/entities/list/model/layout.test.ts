@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { entriesFromLayout, layoutFromResult, moveWithinGroup, placeItem, unplaceItem } from "./layout.ts";
+import { carryLayout, entriesFromLayout, layoutFromResult, moveWithinGroup, placeItem, unplaceItem } from "./layout.ts";
 import type { Item, Result, Tier } from "./types.ts";
 
 const tiers: Tier[] = [
@@ -118,4 +118,37 @@ test("иммутабельность", () => {
   unplaceItem(l, "1");
   moveWithinGroup(l, "1", 1);
   assert.equal(JSON.stringify([[...l.groups], l.unplaced]), before);
+});
+
+test("carryLayout переносит расстановку в снимок и отбрасывает незнакомые id", () => {
+  const draft = placeItem(
+    placeItem(
+      placeItem(layoutFromResult(result({ entries: [] })), "2", "A"),
+      "1",
+      "A",
+    ),
+    "3",
+    "B",
+  );
+  // В снимке нет элемента "3" и тира "C"; есть новый элемент "5".
+  const snapshot = result({
+    entries: [],
+    tiers: tiers.slice(0, 2),
+    items: [...items.filter((i) => i.id !== "3"), { id: "5", title: "5" }],
+  });
+  const next = carryLayout(draft, snapshot);
+  assert.deepEqual(next.groups.get("A"), ["2", "1"]);
+  assert.deepEqual(next.groups.get("B"), []);
+  assert.deepEqual(next.unplaced, ["4", "5"]);
+  assert.deepEqual(entriesFromLayout(next, snapshot.tiers), [
+    { itemId: "2", tierId: "A", position: 1 },
+    { itemId: "1", tierId: "A", position: 2 },
+  ]);
+});
+
+test("carryLayout: другой формат снимка — ничего не переносится", () => {
+  const draft = placeItem(layoutFromResult(result({ entries: [] })), "1", "A");
+  const next = carryLayout(draft, result({ format: "ranked", tiers: [], entries: [] }));
+  assert.deepEqual(next.groups.get(null), []);
+  assert.deepEqual(next.unplaced, ["1", "2", "3", "4"]);
 });

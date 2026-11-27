@@ -32,13 +32,14 @@ export {
 } from "./api/listsApi";
 export type { ResultInput, TemplateInput, TemplateItemInput } from "./api/listsApi";
 export {
+  carryLayout,
   entriesFromLayout,
   layoutFromResult,
   moveWithinGroup,
   placeItem,
   unplaceItem,
 } from "./model/layout";
-export type { GroupKey, Layout } from "./model/layout";
+export type { GroupKey, Layout, LayoutSource } from "./model/layout";
 export { resultPublishIssues, templatePublishIssues } from "./model/readiness";
 export type { PublishIssue, ReadinessInput } from "./model/readiness";
 export { tierLabel } from "./model/tierLabel";

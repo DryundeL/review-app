@@ -26,7 +26,7 @@ import {
   toResultInput,
   type ResultDraft,
 } from "../model/resultDraft";
-import { LayoutEditor } from "./LayoutEditor";
+import { LayoutEditor } from "@/features/arrange-list";
 import "./ListResultEditorPage.css";
 
 const PUBLISH_ISSUES_TEXT = "Нужно название и хотя бы один разложенный элемент";
