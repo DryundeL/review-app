@@ -44,6 +44,8 @@ const OPTIONS = [
 const GAP = 12;
 const EDGE = 12;
 const MAX_WIDTH = 280;
+/** Совпадает с брейкпоинтом в CreateMenu.css. */
+const DESKTOP_QUERY = "(min-width: 768px)";
 /** Длительность «втягивания» обратно; совпадает с CSS. */
 const CLOSE_MS = 380;
 
@@ -59,12 +61,22 @@ type Placement = {
 function measure(anchor: HTMLElement): Placement {
   const rect = anchor.getBoundingClientRect();
   const vw = window.innerWidth;
-  const alignRight = rect.left + rect.width / 2 > vw / 2;
-  const width = Math.min(MAX_WIDTH, vw - EDGE * 2, Math.max(rect.width, 260));
-  const bottom = window.innerHeight - rect.top + GAP;
-  const menu: CSSProperties = alignRight
-    ? { right: Math.max(EDGE, vw - rect.right), bottom, width }
-    : { left: Math.max(EDGE, rect.left), bottom, width };
+  const vh = window.innerHeight;
+  let menu: CSSProperties;
+  if (window.matchMedia(DESKTOP_QUERY).matches) {
+    // ПК: колонка справа от кнопки, нижний край — вровень с кнопкой.
+    const left = rect.right + GAP;
+    const width = Math.max(0, Math.min(MAX_WIDTH, vw - left - EDGE));
+    menu = { left, bottom: Math.max(EDGE, vh - rect.bottom), width };
+  } else {
+    // Телефон: колонка над кнопкой, по ближнему к ней краю экрана.
+    const alignRight = rect.left + rect.width / 2 > vw / 2;
+    const width = Math.min(MAX_WIDTH, vw - EDGE * 2, Math.max(rect.width, 260));
+    const bottom = vh - rect.top + GAP;
+    menu = alignRight
+      ? { right: Math.max(EDGE, vw - rect.right), bottom, width }
+      : { left: Math.max(EDGE, rect.left), bottom, width };
+  }
   return {
     menu,
     originX: rect.left + rect.width / 2,
