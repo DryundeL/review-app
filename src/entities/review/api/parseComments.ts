@@ -19,7 +19,12 @@ const commentSchema = z.object({
 });
 const pageSchema = z.object({
   items: z.array(commentSchema).max(50),
-  nextCursor: z.string().min(1).nullable(),
+  // Комментарии обзоров отдают null, топов — опускают поле на последней странице.
+  nextCursor: z
+    .string()
+    .min(1)
+    .nullish()
+    .transform((value) => value ?? null),
 });
 export type RemoteComment = z.infer<typeof commentSchema>;
 export type CommentPage = z.infer<typeof pageSchema>;

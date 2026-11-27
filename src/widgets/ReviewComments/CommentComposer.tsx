@@ -116,7 +116,11 @@ export function CommentComposer({
         horizontalRule: false,
       }),
       Placeholder.configure({
-        placeholder: parentId ? "Напишите ответ…" : "Что вы думаете об обзоре?",
+        placeholder: parentId
+          ? "Напишите ответ…"
+          : target === "list-results"
+            ? "Что вы думаете о топе?"
+            : "Что вы думаете об обзоре?",
       }),
     ],
     editorProps: {

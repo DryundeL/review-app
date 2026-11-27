@@ -44,3 +44,11 @@ test("comment pages merge by id while preserving oldest-first order", () => {
     [id, next.id],
   );
 });
+
+test("list result comments: resultId and omitted nextCursor on the last page", () => {
+  const page = parseCommentsText(
+    JSON.stringify({ items: [{ ...comment, reviewId: undefined, resultId: id }] }),
+  );
+  assert.equal(page.nextCursor, null);
+  assert.equal(page.items[0].resultId, id);
+});
