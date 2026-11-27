@@ -79,3 +79,74 @@ button.layout-editor__target:disabled {
   outline: 2px solid var(--color-accent);
   outline-offset: 1px;
 }
+
+/* Перетаскивание */
+.layout-editor__hint {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.layout-editor__tile {
+  position: relative;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.layout-editor__tile img {
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+.layout-editor__tile.is-dragging {
+  opacity: 0.35;
+}
+
+.layout-editor__tile.is-drop-before::before,
+.layout-editor__tile.is-drop-after::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--color-accent);
+}
+
+.layout-editor__tile.is-drop-before::before {
+  left: -6px;
+}
+
+.layout-editor__tile.is-drop-after::after {
+  right: -6px;
+}
+
+.layout-editor__drop-area {
+  min-height: 88px;
+}
+
+.layout-editor__unplaced {
+  padding: var(--space-2);
+  border: 1px dashed transparent;
+  border-radius: var(--radius-md);
+}
+
+.layout-editor .is-drop-target {
+  outline: 2px dashed var(--color-accent);
+  outline-offset: 2px;
+}
+
+.layout-editor.is-dragging {
+  cursor: grabbing;
+}
+
+.layout-editor__ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0.9;
+  filter: drop-shadow(0 8px 16px rgb(0 0 0 / 0.45));
+  will-change: transform;
+}
