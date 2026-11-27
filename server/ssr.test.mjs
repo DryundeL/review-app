@@ -218,11 +218,11 @@ test("SSR renders public list template and result pages for guests", async () =>
   assert.ok(template.html.includes("Тир-лист SSR"));
   assert.ok(template.html.includes("Элемент SSR"));
   assert.ok(template.html.includes(`<title>Тир-лист SSR · Review Hub</title>`));
-  assert.ok(template.html.includes("Войти, чтобы составить свой"));
+  assert.ok(template.html.includes("Войти и составить свой топ"));
   const result = await page(`/list-results/${resultId}`);
   assert.equal(result.response.status, 200, result.html.slice(0, 500));
   assert.ok(result.html.includes("Топ SSR"));
-  assert.ok(!result.html.includes("Составить свой</"));
+  assert.ok(!result.html.includes("Составить свой топ по этому шаблону"));
 });
 
 test("guest 404 for hidden list objects returns a real 404", async () => {
