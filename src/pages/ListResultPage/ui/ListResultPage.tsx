@@ -74,7 +74,7 @@ export function ListResultPage() {
             ? "Не найдено"
             : "Ошибка загрузки"}
         </h1>
-        <Link to="/lists?tab=results">К топам и шаблонам</Link>
+        <Link to="/lists">К топам</Link>
       </section>
     );
   }
@@ -128,13 +128,14 @@ export function ListResultPage() {
           </p>
         ) : null}
         <p className="result-page__source">
-          Шаблон:{" "}
+          По шаблону{" "}
+          «
           {canOpenTemplate ? (
             <Link to={`/list-templates/${template.id}`}>{template.title}</Link>
           ) : (
             template.title
           )}
-          {templateAuthor ? ` · ${templateAuthor}` : null}
+          »{templateAuthor ? ` · ${templateAuthor}` : null}
         </p>
       </header>
 
@@ -148,7 +149,7 @@ export function ListResultPage() {
       />
 
       {canOpenTemplate && template.id ? (
-        <CreateResultButton templateId={template.id} label="Составить свой" />
+        <CreateResultButton templateId={template.id} label="Составить свой топ по этому шаблону" />
       ) : null}
 
       {isOpen && profile && !isOwn ? <ResultVote result={result} /> : null}

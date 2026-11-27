@@ -8,18 +8,23 @@ import "./ListCard.css";
 type ListCardProps = {
   card: Card;
   href: string;
+  /** Шаблон помечается бейджем, чтобы его не путали с топом. */
+  kind?: "templates" | "results";
 };
 
-export function ListCard({ card, href }: ListCardProps) {
+export function ListCard({ card, href, kind }: ListCardProps) {
   const typeLabel = isMediaType(card.typeCode) ? MEDIA_TYPE_LABELS[card.typeCode] : null;
   return (
     <article className="list-card">
-      <Link className="list-card__main" to={href} aria-label={`Список: ${card.title}`}>
+      <Link className="list-card__main" to={href} aria-label={`${kind === "templates" ? "Шаблон" : "Топ"}: ${card.title}`}>
         <span className="list-card__cover">
           <MediaPoster title={card.title} posterUrl={card.coverUrl} />
         </span>
         <span className="list-card__body">
           <span className="list-card__meta">
+            {kind === "templates" ? (
+              <span className="list-card__badge list-card__badge--template">Шаблон</span>
+            ) : null}
             <span className="list-card__badge">{FORMAT_LABELS[card.format]}</span>
             {typeLabel ? <span className="list-card__badge">{typeLabel}</span> : null}
             {card.status === "draft" ? (
@@ -36,7 +41,7 @@ export function ListCard({ card, href }: ListCardProps) {
           </span>
           <span className="list-card__title">{card.title}</span>
           {card.templateTitle ? (
-            <span className="list-card__subtitle">{card.templateTitle}</span>
+            <span className="list-card__subtitle">по шаблону «{card.templateTitle}»</span>
           ) : null}
           <span className="list-card__author">
             <UserAvatar

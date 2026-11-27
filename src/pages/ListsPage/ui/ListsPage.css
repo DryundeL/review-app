@@ -55,7 +55,7 @@
 
 .lists-page__header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
 }
@@ -65,4 +65,10 @@
   font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none;
+}
+
+.lists-page__mine.ui-button {
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  font-size: 0.875rem;
 }

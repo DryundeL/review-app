@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import type { ListFilters, ListScope } from "@/entities/list";
 import { usePageMeta } from "@/shared/hooks";
 import { Button } from "@/shared/ui";
-import { ListsFeed } from "@/widgets/ListsFeed";
+import { ListsFeed, ListsHint } from "@/widgets/ListsFeed";
 import { CreateTemplateModal } from "./CreateTemplateModal";
 import "./MyListsPage.css";
 
 const TABS = [
-  { id: "templates", label: "Шаблоны" },
-  { id: "results", label: "Топы" },
+  { id: "results", label: "Мои топы" },
+  { id: "templates", label: "Мои шаблоны" },
 ] as const;
 
 const STATUSES: { value: NonNullable<ListFilters["status"]> | ""; label: string }[] = [
@@ -26,8 +26,11 @@ function parseStatus(value: string | null): ListFilters["status"] {
 
 export function MyListsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [createOpen, setCreateOpen] = useState(false);
-  const kind = searchParams.get("tab") === "results" ? "results" : "templates";
+  // ?create=template — пришли из раздела шаблонов по кнопке «Создать шаблон».
+  const [createOpen, setCreateOpen] = useState(
+    () => searchParams.get("create") === "template",
+  );
+  const kind = searchParams.get("tab") === "templates" ? "templates" : "results";
   const status = parseStatus(searchParams.get("status"));
 
   usePageMeta({ title: "Мои топы и шаблоны", path: "/my-lists", noindex: true });
@@ -53,7 +56,13 @@ export function MyListsPage() {
     <section className="my-lists-page screen">
       <div className="my-lists-page__header">
         <h1 className="my-lists-page__title">Мои топы и шаблоны</h1>
-        <Button type="button" onClick={() => setCreateOpen(true)}>
+      </div>
+
+      <div className="my-lists-page__actions">
+        <Button asChild>
+          <Link to="/lists?tab=templates">Составить топ</Link>
+        </Button>
+        <Button type="button" variant="secondary" onClick={() => setCreateOpen(true)}>
           Создать шаблон
         </Button>
       </div>
@@ -71,7 +80,7 @@ export function MyListsPage() {
                 : "my-lists-page__tab"
             }
             onClick={() =>
-              patchParams({ tab: tab.id === "results" ? "results" : undefined })
+              patchParams({ tab: tab.id === "templates" ? "templates" : undefined })
             }
           >
             {tab.label}
@@ -92,9 +101,52 @@ export function MyListsPage() {
         ))}
       </select>
 
-      <ListsFeed scope={scope} filters={filters} />
+      {kind === "results" ? (
+        <ListsHint>
+          Топ — ваша расстановка элементов шаблона. Черновик видите только вы, после
+          публикации топ появится в ленте.
+        </ListsHint>
+      ) : (
+        <ListsHint>
+          Шаблон — набор произведений, по которому вы и другие пользователи составляют свои
+          топы. Опубликуйте его, чтобы им могли пользоваться.
+        </ListsHint>
+      )}
 
-      <CreateTemplateModal open={createOpen} onOpenChange={setCreateOpen} />
+      <ListsFeed
+        scope={scope}
+        filters={filters}
+        emptyState={
+          status ? (
+            <p>Здесь ничего нет.</p>
+          ) : kind === "results" ? (
+            <>
+              <p>У вас пока нет топов. Выберите шаблон и расставьте элементы по-своему.</p>
+              <Button asChild>
+                <Link to="/lists?tab=templates">Выбрать шаблон</Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <p>
+                У вас пока нет шаблонов. Создайте свой, если подходящего в разделе
+                шаблонов нет.
+              </p>
+              <Button type="button" onClick={() => setCreateOpen(true)}>
+                Создать шаблон
+              </Button>
+            </>
+          )
+        }
+      />
+
+      <CreateTemplateModal
+        open={createOpen}
+        onOpenChange={(next) => {
+          setCreateOpen(next);
+          if (!next && searchParams.has("create")) patchParams({ create: undefined });
+        }}
+      />
     </section>
   );
 }

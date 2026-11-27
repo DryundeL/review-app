@@ -1,4 +1,5 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
+import type { ReactNode } from "react";
 import {
   fetchLists,
   type Card,
@@ -19,6 +20,8 @@ type ListsFeedProps = {
   cardHref?: (card: Card) => string;
   /** Текст для 404 (закрытый профиль) вместо общей ошибки. */
   notFoundText?: string;
+  /** Пустой список: подсказка со следующим шагом вместо «пока нет». */
+  emptyState?: ReactNode;
 };
 
 function defaultHref(scope: ListScope, card: Card): string {
@@ -27,7 +30,13 @@ function defaultHref(scope: ListScope, card: Card): string {
     : `/list-results/${card.id}`;
 }
 
-export function ListsFeed({ scope, filters, cardHref, notFoundText }: ListsFeedProps) {
+export function ListsFeed({
+  scope,
+  filters,
+  cardHref,
+  notFoundText,
+  emptyState,
+}: ListsFeedProps) {
   const keyFilters: ListFilters = {
     q: filters.q,
     type: filters.type,
@@ -75,9 +84,15 @@ export function ListsFeed({ scope, filters, cardHref, notFoundText }: ListsFeedP
       ) : null}
 
       {query.isSuccess && items.length === 0 ? (
-        <p className="lists-feed__status" role="status">
-          {scope.kind === "templates" ? "Шаблонов пока нет" : "Топов пока нет"}
-        </p>
+        emptyState ? (
+          <div className="lists-feed__empty" role="status">
+            {emptyState}
+          </div>
+        ) : (
+          <p className="lists-feed__status" role="status">
+            {scope.kind === "templates" ? "Шаблонов пока нет" : "Топов пока нет"}
+          </p>
+        )
       ) : null}
 
       {items.length > 0 ? (
@@ -86,6 +101,7 @@ export function ListsFeed({ scope, filters, cardHref, notFoundText }: ListsFeedP
             <li key={card.id}>
               <ListCard
                 card={card}
+                kind={scope.kind}
                 href={cardHref ? cardHref(card) : defaultHref(scope, card)}
               />
             </li>

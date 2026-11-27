@@ -57,7 +57,7 @@ export function ListTemplatePage() {
             ? "Не найдено"
             : "Ошибка загрузки"}
         </h1>
-        <Link to="/lists">К топам и шаблонам</Link>
+        <Link to="/lists?tab=templates">К шаблонам</Link>
       </section>
     );
   }

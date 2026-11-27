@@ -40,7 +40,7 @@ export function CreateResultButton({ templateId, label }: CreateResultButtonProp
         </Button>
       ) : (
         <Button asChild>
-          <Link to="/profile">Войти, чтобы составить свой</Link>
+          <Link to="/profile">Войти и составить свой топ</Link>
         </Button>
       )}
       {error ? (

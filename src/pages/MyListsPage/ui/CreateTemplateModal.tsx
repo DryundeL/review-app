@@ -70,6 +70,11 @@ export function CreateTemplateModal({
   return (
     <Modal open={open} onOpenChange={handleOpenChange} title="Создать шаблон">
       <form className="my-lists-page__form" onSubmit={handleSubmit}>
+        <p className="my-lists-page__intro">
+          Шаблон — заготовка: вы выбираете произведения, а вы и другие пользователи
+          расставляете их в свои топы. Если хотите просто составить свой топ, найдите
+          готовый шаблон в разделе «Топы».
+        </p>
         <label className="my-lists-page__field">
           Тип произведения
           <select

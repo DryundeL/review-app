@@ -84,7 +84,7 @@ export function ListResultEditorPage() {
   return (
     <section className="result-editor screen">
       <h1>{notFound ? "Не найдено" : "Ошибка загрузки"}</h1>
-      <Link to="/my-lists">К моим спискам</Link>
+      <Link to="/my-lists">К моим топам и шаблонам</Link>
     </section>
   );
 }

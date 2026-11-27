@@ -6,14 +6,15 @@ import type { Format, ListFilters, ListScope } from "@/entities/list";
 import { fetchReviewTypes } from "@/entities/settings";
 import { useDebouncedValue, usePageMeta } from "@/shared/hooks";
 import { metaForPath } from "@/shared/lib/pageMeta";
-import { Input } from "@/shared/ui";
+import { Button, Input } from "@/shared/ui";
 import { FORMAT_LABELS } from "@/widgets/ListCard";
-import { ListsFeed } from "@/widgets/ListsFeed";
+import { ListsFeed, ListsHint } from "@/widgets/ListsFeed";
 import "./ListsPage.css";
 
+// Топы — то, ради чего приходят; шаблоны — заготовки, из которых их составляют.
 const TABS = [
+  { id: "results", label: "Топы" },
   { id: "templates", label: "Шаблоны" },
-  { id: "results", label: "Топы пользователей" },
 ] as const;
 
 const FORMATS: Format[] = ["tiers", "ranked", "collection"];
@@ -26,7 +27,7 @@ function parseFormat(value: string | null): Format | undefined {
 export function ListsPage() {
   const { profile } = useAuthSession();
   const [searchParams, setSearchParams] = useSearchParams();
-  const kind = searchParams.get("tab") === "results" ? "results" : "templates";
+  const kind = searchParams.get("tab") === "templates" ? "templates" : "results";
   const type = searchParams.get("type") || undefined;
   const format = parseFormat(searchParams.get("format"));
   const urlQ = searchParams.get("q") ?? "";
@@ -74,9 +75,9 @@ export function ListsPage() {
       <div className="lists-page__header">
         <h1 className="lists-page__title">Топы</h1>
         {profile ? (
-          <Link className="lists-page__link" to="/my-lists">
-            Мои топы и шаблоны
-          </Link>
+          <Button asChild variant="secondary" className="lists-page__mine">
+            <Link to="/my-lists">Мои топы и шаблоны</Link>
+          </Button>
         ) : null}
       </div>
 
@@ -93,13 +94,44 @@ export function ListsPage() {
                 : "lists-page__tab"
             }
             onClick={() =>
-              patchParams({ tab: tab.id === "results" ? "results" : undefined })
+              patchParams({ tab: tab.id === "templates" ? "templates" : undefined })
             }
           >
             {tab.label}
           </button>
         ))}
       </div>
+
+      {kind === "results" ? (
+        <ListsHint
+          action={
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => patchParams({ tab: "templates" })}
+            >
+              Составить свой топ
+            </Button>
+          }
+        >
+          Тир-листы, рейтинги и подборки пользователей. Свой топ составляется по шаблону:
+          выберите шаблон и расставьте элементы.
+        </ListsHint>
+      ) : (
+        <ListsHint
+          action={
+            profile ? (
+              <Button asChild variant="secondary">
+                <Link to="/my-lists?create=template">Создать шаблон</Link>
+              </Button>
+            ) : null
+          }
+        >
+          Шаблон — набор произведений. Откройте шаблон, расставьте элементы по-своему и
+          опубликуйте свой топ.
+          {profile ? " Не нашли подходящий — создайте свой." : null}
+        </ListsHint>
+      )}
 
       <Input
         type="search"
@@ -141,7 +173,22 @@ export function ListsPage() {
         </select>
       </div>
 
-      <ListsFeed scope={scope} filters={filters} />
+      <ListsFeed
+        scope={scope}
+        filters={filters}
+        emptyState={
+          kind === "results" ? (
+            <>
+              <p>Топов пока нет. Станьте первым — выберите шаблон и составьте свой.</p>
+              <Button type="button" onClick={() => patchParams({ tab: "templates" })}>
+                К шаблонам
+              </Button>
+            </>
+          ) : (
+            <p>Шаблонов по этим условиям нет. Попробуйте изменить поиск или фильтры.</p>
+          )
+        }
+      />
     </section>
   );
 }

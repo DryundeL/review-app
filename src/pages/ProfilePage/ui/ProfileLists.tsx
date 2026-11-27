@@ -4,8 +4,8 @@ import { ListsFeed } from "@/widgets/ListsFeed";
 
 const NOT_FOUND_TEXT = "Списки недоступны: профиль закрыт";
 const SECTIONS = [
-  { kind: "templates", title: "Шаблоны" },
   { kind: "results", title: "Топы" },
+  { kind: "templates", title: "Шаблоны" },
 ] as const;
 
 export function ProfileLists({ userId, isOwn }: { userId: string; isOwn: boolean }) {

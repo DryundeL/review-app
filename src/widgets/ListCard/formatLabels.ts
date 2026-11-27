@@ -2,6 +2,7 @@ import type { Format } from "@/entities/list";
 
 export const FORMAT_LABELS: Record<Format, string> = {
   tiers: "Тир-лист",
-  ranked: "Топ",
+  // «Топ» — общее название результата, поэтому формат по местам — «Рейтинг».
+  ranked: "Рейтинг",
   collection: "Подборка",
 };
