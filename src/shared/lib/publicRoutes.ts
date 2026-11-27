@@ -3,12 +3,15 @@ export function isPublicPath(pathname: string): boolean {
   return (
     pathname === "/" ||
     pathname === "/search" ||
-    /^\/(reviews|media-objects|profiles)\/[^/]+$/.test(pathname)
+    pathname === "/lists" ||
+    /^\/(reviews|media-objects|profiles|list-templates|list-results)\/[^/]+$/.test(
+      pathname,
+    )
   );
 }
 
 export function isClientOnlyPath(pathname: string): boolean {
-  return /^\/(profile|settings|notifications|create|achievements|shop)$|^\/reviews\/[^/]+\/edit$/.test(
+  return /^\/(profile|settings|notifications|create|achievements|shop|my-lists)$|^\/(reviews|list-templates|list-results)\/[^/]+\/edit$/.test(
     pathname,
   );
 }

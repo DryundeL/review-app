@@ -12,6 +12,8 @@ const MAX_RETRY_AFTER_MS = 60_000;
 type RequestOptions<T> = {
   method?: string;
   body?: unknown;
+  /** Multipart-тело отправляется как есть; Content-Type с boundary задаёт браузер. */
+  formData?: FormData;
   headers?: HeadersInit;
   signal?: AbortSignal;
   auth?: boolean;
@@ -29,7 +31,7 @@ export async function apiClient<T>(
   const headers = new Headers(options.headers);
   headers.set("Accept", "application/json");
 
-  if (options.body !== undefined) {
+  if (options.formData === undefined && options.body !== undefined) {
     headers.set("Content-Type", "application/json");
   }
 
@@ -50,7 +52,9 @@ export async function apiClient<T>(
   }
 
   const requestInit: RequestInit = {
-    method: options.method ?? (options.body !== undefined ? "POST" : "GET"),
+    method:
+      options.method ??
+      (options.body !== undefined || options.formData !== undefined ? "POST" : "GET"),
     credentials: "omit",
     cache: "no-store",
     redirect: "error",
@@ -59,7 +63,9 @@ export async function apiClient<T>(
     signal: options.signal,
   };
 
-  if (options.body !== undefined) {
+  if (options.formData !== undefined) {
+    requestInit.body = options.formData;
+  } else if (options.body !== undefined) {
     requestInit.body = JSON.stringify(options.body);
   }
 

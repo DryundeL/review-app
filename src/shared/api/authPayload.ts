@@ -178,6 +178,7 @@ export function errorFromPayload(status: number, payload: unknown): ApiError {
           .object({
             field: z.string().max(40).optional(),
             reason: z.string().max(40).optional(),
+            index: z.number().int().min(0).optional(),
           })
           .optional(),
       }),

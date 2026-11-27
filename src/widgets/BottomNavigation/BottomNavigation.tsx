@@ -16,6 +16,7 @@ const links = [
 ] as const;
 
 const secondaryLinks = [
+  { to: "/lists", label: "Топы", icon: "list" },
   { to: "/achievements", label: "Достижения", icon: "award" },
   { to: "/shop", label: "Магазин", icon: "shop" },
   { to: "/settings", label: "Настройки", icon: "settings" },
@@ -181,6 +182,12 @@ function NavIcon({
         <>
           <circle cx="12" cy="8" r="5" />
           <path d="m8 12-2 9 6-3 6 3-2-9" />
+        </>
+      ) : null}
+      {name === "list" ? (
+        <>
+          <path d="M9 6h11M9 12h11M9 18h11" />
+          <path d="M4 6h.01M4 12h.01M4 18h.01" />
         </>
       ) : null}
       {name === "shop" ? (

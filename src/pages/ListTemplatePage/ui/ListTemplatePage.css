@@ -1,0 +1,87 @@
+.list-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.list-page__banners {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.list-page__banner {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  color: var(--color-gold);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.list-page__banner--danger {
+  color: var(--color-danger);
+}
+
+.list-page__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.list-page__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.list-page__badge {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-2);
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.list-page__title {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 1.4rem;
+  letter-spacing: -0.02em;
+}
+
+.list-page__author-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.list-page__author {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: inherit;
+  text-decoration: none;
+}
+
+.list-page__avatar {
+  width: 28px;
+  height: 28px;
+}
+
+.list-page__description {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+  line-height: 1.5;
+}
+
+.list-page__source {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}

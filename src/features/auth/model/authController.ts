@@ -68,6 +68,11 @@ export function getAuthSnapshot(): AuthSnapshot {
   return snapshot;
 }
 
+/** Аккаунт текущей сессии; null — гость или вход ещё/снова не завершён. */
+export function currentAccountId(): string | null {
+  return snapshot.phase === "authenticated" ? (snapshot.profile?.id ?? null) : null;
+}
+
 export function subscribeAuth(listener: () => void): () => void {
   listeners.add(listener);
   return () => {

@@ -47,11 +47,15 @@ export function AppShell() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const refreshAfterBackRef = useRef(false);
-  // Обзор и публичный профиль ставят meta сами — иначе shell перетрёт после их effect.
+  // Обзор, профиль и списки ставят meta сами — иначе shell перетрёт после их effect.
   const pageOwnsMeta =
     /^\/reviews\/[^/]+$/.test(pathname) ||
     pathname.startsWith("/profiles/") ||
-    pathname.startsWith("/media-objects/");
+    pathname.startsWith("/media-objects/") ||
+    pathname === "/lists" ||
+    pathname === "/my-lists" ||
+    pathname.startsWith("/list-templates/") ||
+    pathname.startsWith("/list-results/");
   usePageMeta(pageOwnsMeta ? null : metaForPath(pathname));
   const hideNav =
     pathname === "/create" ||

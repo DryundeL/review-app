@@ -16,6 +16,7 @@ import {
   listFeed,
   listUserReviews,
 } from "@/entities/review";
+import { fetchResult, fetchTemplate, isOwnerView } from "@/entities/list";
 import { fetchPublicProfile } from "@/entities/user";
 import { fetchProfileAchievements } from "@/entities/achievement";
 import {
@@ -89,6 +90,25 @@ async function renderPage(url: string, requestSignal?: AbortSignal) {
           queryFn: () => fetchSearchTrends({ tab, limit: 10 }, signal),
           retry: false,
         });
+    } else if (pathname === "/lists") {
+      // Данные списков клиент загружает сам: SSR отдаёт оболочку страницы.
+    } else if (/^\/list-templates\/[^/]+$/.test(pathname)) {
+      const id = pathname.split("/")[2]!;
+      const template = await queryClient.fetchQuery({
+        queryKey: ["list-template", id],
+        queryFn: () => fetchTemplate(id, signal),
+        retry: false,
+      });
+      // SSR всегда гостевой; поля владельца означают чужую утечку — не рендерим.
+      if (isOwnerView(template)) throw new ApiError(404, "NOT_FOUND", "Не найдено.");
+    } else if (/^\/list-results\/[^/]+$/.test(pathname)) {
+      const id = pathname.split("/")[2]!;
+      const result = await queryClient.fetchQuery({
+        queryKey: ["list-result", id],
+        queryFn: () => fetchResult(id, signal),
+        retry: false,
+      });
+      if (isOwnerView(result)) throw new ApiError(404, "NOT_FOUND", "Не найдено.");
     } else {
       const id = pathname.split("/")[2]!;
       if (pathname.startsWith("/reviews/")) {

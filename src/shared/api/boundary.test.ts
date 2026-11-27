@@ -81,6 +81,21 @@ describe("auth boundary", { concurrency: 1 }, () => {
     assert.equal(error.message.includes("eyJ"), false);
   });
 
+  test("keeps details.index in API errors", () => {
+    const error = errorFromPayload(422, {
+      error: {
+        code: "VALIDATION_ERROR",
+        message: "x",
+        details: { field: "items.title", reason: "required", index: 2 },
+      },
+    });
+    assert.deepEqual(error.details, {
+      field: "items.title",
+      reason: "required",
+      index: 2,
+    });
+  });
+
   test("parses login, poll, and profile without keeping a pending token", () => {
     const login = parseLoginPayload(
       { loginId: LOGIN_ID, url: LOGIN_URL, expiresIn: 600 },

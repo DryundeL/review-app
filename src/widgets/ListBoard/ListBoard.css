@@ -1,0 +1,122 @@
+.list-board__tiers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.list-board__tier {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  min-height: 72px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+}
+
+.list-board__tier-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: var(--space-1);
+  color: #111;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.list-board__tier-items,
+.list-board__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-2);
+  list-style: none;
+}
+
+.list-board__grid {
+  padding: 0;
+}
+
+.list-board__item {
+  position: relative;
+  width: 64px;
+}
+
+.list-board__poster {
+  position: relative;
+  display: block;
+  width: 64px;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+}
+
+.list-board__poster .media-poster,
+.list-board__ranked-poster .media-poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.list-board__place {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  min-width: 20px;
+  padding: 0 4px;
+  border-radius: var(--radius-pill);
+  background: rgb(0 0 0 / 70%);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.list-board__item-title {
+  display: block;
+  margin-top: 2px;
+  overflow: hidden;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.list-board__ranked {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list-board__ranked-row {
+  display: grid;
+  grid-template-columns: 32px 48px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.list-board__rank {
+  font-size: 1.25rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.list-board__ranked-poster {
+  width: 48px;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+}
+
+.list-board__ranked-title {
+  overflow-wrap: anywhere;
+  font-weight: 600;
+}

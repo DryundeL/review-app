@@ -10,6 +10,21 @@ const reviewId = "22222222-2222-4222-8222-222222222222";
 const authorId = "33333333-3333-4333-8333-333333333333";
 const privateId = "44444444-4444-4444-8444-444444444444";
 const draftId = "66666666-6666-4666-8666-666666666666";
+const templateId = "88888888-8888-4888-8888-888888888888";
+const resultId = "99999999-0000-4000-8000-000000000001";
+const draftTemplateId = "99999999-0000-4000-8000-000000000002";
+const listAuthor = { id: authorId, username: "listmaker" };
+const listTemplate = {
+  id: templateId,
+  typeCode: "anime",
+  format: "tiers",
+  title: "Тир-лист SSR",
+  description: "Описание шаблона",
+  author: listAuthor,
+  tiers: [{ id: "a1111111-1111-4111-8111-111111111111", name: "S", color: "#ff7f7f" }],
+  items: [{ id: "b1111111-1111-4111-8111-111111111111", title: "Элемент SSR" }],
+  canCreateResult: true,
+};
 const xssId = "77777777-7777-4777-8777-777777777777";
 const media = {
   id: mediaId,
@@ -81,6 +96,26 @@ before(async () => {
     if (path === `/v1/reviews/${reviewId}`) return json(review);
     if (path === `/v1/reviews/${draftId}`)
       return json({ ...review, id: draftId, status: "draft", title: "DRAFT SECRET" });
+    if (path === `/v1/list-templates/${templateId}`) return json(listTemplate);
+    if (path === `/v1/list-results/${resultId}`)
+      return json({
+        ...listTemplate,
+        id: resultId,
+        title: "Топ SSR",
+        template: { title: listTemplate.title, author: listAuthor },
+        canCreateOwn: false,
+        entries: [
+          {
+            itemId: listTemplate.items[0].id,
+            tierId: listTemplate.tiers[0].id,
+            position: 1,
+          },
+        ],
+      });
+    if (path === `/v1/list-templates/${draftTemplateId}`) {
+      res.statusCode = 404;
+      return json({ error: { code: "NOT_FOUND", message: "Не найдено" } });
+    }
     if (path === "/v1/feed" && rateLimitFeed) {
       res.statusCode = 429;
       return json({ error: { code: "RATE_LIMITED", message: "too many requests" } });
@@ -175,6 +210,26 @@ test("SSR renders guest page data and SEO metadata in the HTML response", async 
   assert.ok(html.includes(`<title>${media.title} · Review Hub</title>`));
   assert.ok(html.includes(`href="https://review-hub.ru/media-objects/${mediaId}"`));
   assert.ok(html.includes('property="og:title" content="Матрица SSR · Review Hub"'));
+});
+
+test("SSR renders public list template and result pages for guests", async () => {
+  const template = await page(`/list-templates/${templateId}`);
+  assert.equal(template.response.status, 200, template.html.slice(0, 500));
+  assert.ok(template.html.includes("Тир-лист SSR"));
+  assert.ok(template.html.includes("Элемент SSR"));
+  assert.ok(template.html.includes(`<title>Тир-лист SSR · Review Hub</title>`));
+  assert.ok(template.html.includes("Войти, чтобы составить свой"));
+  const result = await page(`/list-results/${resultId}`);
+  assert.equal(result.response.status, 200, result.html.slice(0, 500));
+  assert.ok(result.html.includes("Топ SSR"));
+  assert.ok(!result.html.includes("Составить свой</"));
+});
+
+test("guest 404 for hidden list objects returns a real 404", async () => {
+  for (const path of [`/list-templates/${draftTemplateId}`, "/list-templates/invalid"]) {
+    const { response } = await page(path);
+    assert.equal(response.status, 404, path);
+  }
 });
 
 test("guest can read a review and sees login instead of voting controls", async () => {

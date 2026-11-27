@@ -2,17 +2,19 @@ const API_ERROR_CODE_PATTERN = /^[A-Z0-9_]{1,40}$/;
 const SENSITIVE_MESSAGE =
   /bearer\s+\S|tma\s+\S|eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+|[0-9a-f]{32}|token=|login_|initdata/i;
 
+export type ApiErrorDetails = { field?: string; reason?: string; index?: number };
+
 export class ApiError extends Error {
   readonly status: number;
   readonly code: string;
 
-  readonly details?: { field?: string; reason?: string };
+  readonly details?: ApiErrorDetails;
 
   constructor(
     status: number,
     code: string,
     message: string,
-    details?: { field?: string; reason?: string },
+    details?: ApiErrorDetails,
   ) {
     super(message);
     this.name = "ApiError";

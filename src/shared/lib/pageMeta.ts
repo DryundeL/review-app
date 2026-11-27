@@ -88,6 +88,13 @@ export function metaForPath(pathname: string): PageMeta {
       description: "Публичный профиль автора обзоров в Review Hub.",
     };
   }
+  if (pathname === "/lists") {
+    return {
+      path: "/lists",
+      title: "Топы и шаблоны",
+      description: "Тир-листы, топы и подборки по аниме, фильмам, играм и другим темам.",
+    };
+  }
   if (/^\/reviews\/[^/]+$/.test(pathname)) {
     return {
       path: pathname,
@@ -105,6 +112,8 @@ export function metaForPath(pathname: string): PageMeta {
 }
 
 function routeFallbackTitle(pathname: string): string {
+  if (/^\/list-templates\/[^/]+\/edit$/.test(pathname)) return "Редактор шаблона";
+  if (/^\/list-results\/[^/]+\/edit$/.test(pathname)) return "Редактор топа";
   if (pathname === "/create" || pathname.endsWith("/edit")) return "Редактор обзора";
   if (pathname === "/notifications") return "Уведомления";
   if (pathname === "/settings") return "Настройки";
