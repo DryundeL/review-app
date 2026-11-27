@@ -16,13 +16,17 @@ function assertId(id: string): string {
   }
   return id;
 }
+/** Чьё обсуждение: обзора или результата топа. Контракт комментариев у них общий. */
+export type CommentTarget = "reviews" | "list-results";
+
 export function listComments(
   reviewId: string,
   parentId: string | null,
   cursor?: string,
   signal?: AbortSignal,
+  target: CommentTarget = "reviews",
 ) {
-  return apiClient(`/v1/reviews/${assertId(reviewId)}/comments`, {
+  return apiClient(`/v1/${target}/${assertId(reviewId)}/comments`, {
     query: {
       limit: 20,
       parentId: parentId === null ? undefined : assertId(parentId),
@@ -32,8 +36,13 @@ export function listComments(
     parse: parseCommentsText,
   });
 }
-export function createComment(reviewId: string, body: string, parentId: string | null) {
-  return apiClient(`/v1/reviews/${assertId(reviewId)}/comments`, {
+export function createComment(
+  reviewId: string,
+  body: string,
+  parentId: string | null,
+  target: CommentTarget = "reviews",
+) {
+  return apiClient(`/v1/${target}/${assertId(reviewId)}/comments`, {
     method: "POST",
     body: {
       body: normalizeCommentBody(body),

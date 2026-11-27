@@ -6,6 +6,7 @@ import { useAuthSession } from "@/features/auth";
 import { setFeedFilterOwner, useFilterFeedStore } from "@/features/filter-feed";
 import { useContentReveal } from "@/shared/hooks/useContentReveal";
 import { AppImage, Button, Modal } from "@/shared/ui";
+import { FeedListItem } from "./FeedListItem";
 import { FeedReviewItem } from "./FeedReviewItem";
 import "./Feed.css";
 
@@ -277,20 +278,24 @@ export function Feed() {
       {!feedQuery.isLoading && !feedQuery.isError && items.length === 0 ? (
         <p className="feed__empty" role="status">
           {mode === "following"
-            ? "Пока нет обзоров от тех, на кого вы подписаны."
-            : "Нет обзоров по выбранным фильтрам."}
+            ? "Пока нет обзоров и топов от тех, на кого вы подписаны."
+            : "Нет публикаций по выбранным фильтрам."}
         </p>
       ) : null}
 
       {items.length > 0 ? (
         <ul className="feed__list">
-          {items.map((review) => {
-            return (
-              <li key={review.id} data-reveal-id={`review:${review.id}`}>
-                <FeedReviewItem review={review} viewerId={profile?.id ?? null} />
+          {items.map((item) =>
+            item.kind === "review" ? (
+              <li key={`review:${item.review.id}`} data-reveal-id={`review:${item.review.id}`}>
+                <FeedReviewItem review={item.review} viewerId={profile?.id ?? null} />
               </li>
-            );
-          })}
+            ) : (
+              <li key={`list:${item.list.id}`} data-reveal-id={`list:${item.list.id}`}>
+                <FeedListItem list={item.list} viewerId={profile?.id ?? null} />
+              </li>
+            ),
+          )}
         </ul>
       ) : null}
 

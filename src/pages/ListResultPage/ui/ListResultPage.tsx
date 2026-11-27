@@ -1,6 +1,14 @@
-import { useMemo } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { isOwnerView, layoutFromResult, useResultQuery } from "@/entities/list";
+import {
+  isOwnerView,
+  layoutFromResult,
+  useResultQuery,
+  viewResult,
+  voteResult,
+  type Result,
+} from "@/entities/list";
 import { useAuthSession } from "@/features/auth";
 import { CreateResultButton, OwnerActions } from "@/features/manage-list";
 import { ReportListControl } from "@/features/report-list";
@@ -8,9 +16,10 @@ import { ApiError } from "@/shared/api";
 import { usePageMeta } from "@/shared/hooks";
 import { truncateMeta, type PageMeta } from "@/shared/lib/pageMeta";
 import { MEDIA_TYPE_LABELS, isMediaType } from "@/shared/types";
-import { UserAvatar } from "@/shared/ui";
+import { Button, DislikeIcon, LikeIcon, UserAvatar, VoteCounts } from "@/shared/ui";
 import { FORMAT_LABELS } from "@/widgets/ListCard";
 import { ListBoard } from "@/widgets/ListBoard";
+import { ReviewComments } from "@/widgets/ReviewComments/ReviewComments";
 import "./ListResultPage.css";
 
 export function ListResultPage() {
@@ -33,6 +42,22 @@ export function ListResultPage() {
     };
   }, [resultId, result]);
   usePageMeta(pageMeta);
+
+  // Реакции принимает только открытый результат. Не-автор получает лишь открытые,
+  // автору сервер присылает статус и модерацию.
+  const isOpen = Boolean(
+    result &&
+      (!isOwnerView(result) ||
+        (result.status === "published" && result.moderation !== "hidden")),
+  );
+  const isOwn = Boolean(result && profile && result.author.id === profile.id);
+
+  useEffect(() => {
+    if (!profile || !resultId || !isOpen || isOwn) return;
+    void viewResult(resultId).catch(() => {
+      // просмотр не критичен для чтения
+    });
+  }, [profile, resultId, isOpen, isOwn]);
 
   if (query.isLoading) {
     return (
@@ -93,6 +118,15 @@ export function ListResultPage() {
         {result.description ? (
           <p className="result-page__description">{result.description}</p>
         ) : null}
+        {isOpen ? (
+          <p className="result-page__stats">
+            <VoteCounts
+              likes={result.likesCount}
+              dislikes={result.dislikesCount}
+              views={result.viewsCount}
+            />
+          </p>
+        ) : null}
         <p className="result-page__source">
           Шаблон:{" "}
           {canOpenTemplate ? (
@@ -116,6 +150,62 @@ export function ListResultPage() {
       {canOpenTemplate && template.id ? (
         <CreateResultButton templateId={template.id} label="Составить свой" />
       ) : null}
+
+      {isOpen && profile && !isOwn ? <ResultVote result={result} /> : null}
+      {isOpen ? (
+        <ReviewComments key={result.id} reviewId={result.id} target="list-results" />
+      ) : null}
     </article>
+  );
+}
+
+function ResultVote({ result }: { result: Result }) {
+  const queryClient = useQueryClient();
+  /** Optimistic override; источник правды — result.viewerIsLike с бэка. */
+  const [override, setOverride] = useState<boolean | null>(null);
+  const voteMutation = useMutation({
+    mutationFn: (isLike: boolean) => voteResult(result.id, isLike),
+    onMutate: (isLike) => {
+      const previous = override;
+      setOverride(isLike);
+      return { previous };
+    },
+    onError: (_error, _isLike, context) => setOverride(context?.previous ?? null),
+    onSuccess: async () => {
+      setOverride(null);
+      await queryClient.invalidateQueries({ queryKey: ["list-result", result.id] });
+    },
+  });
+
+  const myVote = override ?? result.viewerIsLike ?? null;
+  return (
+    <div className="result-page__vote" role="group" aria-label="Оценка топа">
+      <Button
+        type="button"
+        className="result-page__vote-btn"
+        variant={myVote === true ? "primary" : "secondary"}
+        aria-label="Нравится"
+        aria-pressed={myVote === true}
+        aria-busy={voteMutation.isPending}
+        disabled={voteMutation.isPending}
+        onClick={() => voteMutation.mutate(true)}
+      >
+        <LikeIcon size={20} />
+        <span>{result.likesCount}</span>
+      </Button>
+      <Button
+        type="button"
+        className="result-page__vote-btn result-page__vote-dislike"
+        variant="secondary"
+        aria-label="Не нравится"
+        aria-pressed={myVote === false}
+        aria-busy={voteMutation.isPending}
+        disabled={voteMutation.isPending}
+        onClick={() => voteMutation.mutate(false)}
+      >
+        <DislikeIcon size={20} />
+        <span>{result.dislikesCount}</span>
+      </Button>
+    </div>
   );
 }

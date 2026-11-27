@@ -29,6 +29,8 @@ export {
   saveTemplate,
   setListVisibility,
   unpublishList,
+  viewResult,
+  voteResult,
 } from "./api/listsApi";
 export type { ResultInput, TemplateInput, TemplateItemInput } from "./api/listsApi";
 export {

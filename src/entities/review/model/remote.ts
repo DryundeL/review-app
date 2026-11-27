@@ -69,6 +69,33 @@ export type RemoteReviewList = {
   nextCursor?: string | null;
 };
 
+export type FeedListFormat = "tiers" | "ranked" | "collection";
+
+/** Результат топа в ленте (kind = "list"). */
+export type FeedListSummary = {
+  id: string;
+  authorId: string;
+  author: RemoteReviewAuthor;
+  title: string;
+  typeCode: string;
+  format: FeedListFormat;
+  coverUrl?: string;
+  templateTitle: string;
+  likesCount: number;
+  dislikesCount: number;
+  viewsCount: number;
+  viewerIsLike?: boolean;
+};
+
+export type FeedItem =
+  | { kind: "review"; review: RemoteReviewSummary }
+  | { kind: "list"; list: FeedListSummary };
+
+export type FeedPage = {
+  items: FeedItem[];
+  nextCursor: string | null;
+};
+
 export type FeedSort = "new" | "views" | "likes";
 export type FeedMode = "all" | "following";
 

@@ -74,6 +74,11 @@ export interface Result extends OwnerFields {
   items: Item[];
   /** В каноническом порядке. */
   entries: Entry[];
+  likesCount: number;
+  dislikesCount: number;
+  viewsCount: number;
+  /** true — лайк, false — дизлайк; нет поля — не голосовал или гость. */
+  viewerIsLike?: boolean;
 }
 
 export interface Card

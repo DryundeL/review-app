@@ -4,7 +4,9 @@ import { safeHttpsUrl } from "../../../shared/lib/safeHttpsUrl.ts";
 
 const commentSchema = z.object({
   id: z.string().uuid(),
-  reviewId: z.string().uuid(),
+  // У комментария обзора — reviewId, у комментария топа — resultId.
+  reviewId: z.string().uuid().optional(),
+  resultId: z.string().uuid().optional(),
   parentId: z.string().uuid().nullable(),
   author: z.object({
     id: z.string().uuid(),

@@ -3,12 +3,13 @@ import { useMutation } from "@tanstack/react-query";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
-import { createComment, type RemoteComment } from "@/entities/review";
+import { createComment, type CommentTarget, type RemoteComment } from "@/entities/review";
 import { ApiError } from "@/shared/api";
 import { Button } from "@/shared/ui";
 
 type Props = {
   reviewId: string;
+  target?: CommentTarget;
   parentId: string | null;
   replyTo?: string;
   canSubmit?: boolean;
@@ -18,6 +19,7 @@ type Props = {
 
 export function CommentComposer({
   reviewId,
+  target = "reviews",
   parentId,
   replyTo,
   canSubmit = true,
@@ -129,7 +131,7 @@ export function CommentComposer({
     onUpdate: ({ editor: current }) => setText(current.getText({ blockSeparator: "\n" })),
   });
   const mutation = useMutation({
-    mutationFn: () => createComment(reviewId, text, parentId),
+    mutationFn: () => createComment(reviewId, text, parentId, target),
     onSuccess: (comment) => {
       editor?.commands.clearContent();
       setText("");

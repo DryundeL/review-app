@@ -2,6 +2,7 @@ import { apiClient, ApiError } from "@/shared/api";
 import type {
   CatalogMediaObject,
   CreateReviewInput,
+  FeedPage,
   ListFeedParams,
   ListMediaObjectsParams,
   RemoteReview,
@@ -10,6 +11,7 @@ import type {
   UpdateReviewInput,
 } from "../model/remote";
 import {
+  parseFeedText,
   parseTopReviewsText,
   parseReviewEditorText,
   parseMediaObjectText,
@@ -124,7 +126,7 @@ export function listUserReviews(
 export function listFeed(
   params: ListFeedParams = {},
   signal?: AbortSignal,
-): Promise<RemoteReviewList> {
+): Promise<FeedPage> {
   const sort = params.sort ?? "new";
   const mode = params.mode ?? "all";
   return apiClient("/v1/feed", {
@@ -137,7 +139,7 @@ export function listFeed(
       limit: clampLimit(params.limit),
     },
     signal,
-    parse: parseRemoteReviewListText,
+    parse: parseFeedText,
   });
 }
 

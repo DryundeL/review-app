@@ -263,6 +263,20 @@ export function refreshItemFromCatalog(
   );
 }
 
+/** Лайк или дизлайк результата; снять голос нельзя. */
+export function voteResult(id: string, isLike: boolean, signal?: AbortSignal): Promise<void> {
+  return apiClient(`${objectPath("results", id)}/vote`, {
+    method: "PUT",
+    body: { isLike },
+    signal,
+  });
+}
+
+/** Просмотр засчитывается сервером один раз на пользователя. */
+export function viewResult(id: string, signal?: AbortSignal): Promise<void> {
+  return apiClient(`${objectPath("results", id)}/view`, { method: "PUT", signal });
+}
+
 export function reportList(
   kind: ListKind,
   id: string,

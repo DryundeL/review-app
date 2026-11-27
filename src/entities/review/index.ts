@@ -20,7 +20,11 @@ export type { Review, ReviewBlock, ReviewComment } from "./model/types";
 export type {
   CatalogMediaObject,
   CreateReviewInput,
+  FeedItem,
+  FeedListFormat,
+  FeedListSummary,
   FeedMode,
+  FeedPage,
   FeedSort,
   ListFeedParams,
   ListMediaObjectsParams,
@@ -50,5 +54,6 @@ export {
   voteReview,
 } from "./api/reviewsApi";
 export { listComments, createComment } from "./api/commentsApi";
+export type { CommentTarget } from "./api/commentsApi";
 export { mergeComments } from "./api/parseComments";
 export type { RemoteComment, CommentPage } from "./api/parseComments";

@@ -2,7 +2,12 @@ import { lazy, Suspense, useEffect, useRef, useState, type ComponentProps } from
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import { z } from "zod";
-import { listComments, mergeComments, type RemoteComment } from "@/entities/review";
+import {
+  listComments,
+  mergeComments,
+  type CommentTarget,
+  type RemoteComment,
+} from "@/entities/review";
 import { useAuthSession } from "@/features/auth";
 import { ApiError } from "@/shared/api";
 import { Button, UserAvatar } from "@/shared/ui";
@@ -36,7 +41,13 @@ import "./ReviewComments.css";
 
 type ReplyTarget = { id: string; username: string };
 
-export function ReviewComments({ reviewId }: { reviewId: string }) {
+export function ReviewComments({
+  reviewId,
+  target = "reviews",
+}: {
+  reviewId: string;
+  target?: CommentTarget;
+}) {
   const [params, setParams] = useSearchParams();
   const rawTarget = params.get("commentId");
   const rawParent = params.get("parentCommentId");
@@ -53,6 +64,7 @@ export function ReviewComments({ reviewId }: { reviewId: string }) {
   };
   const branchProps = {
     reviewId,
+    target,
     targetId,
     profileId: profile?.id ?? null,
     reply,
@@ -79,6 +91,7 @@ export function ReviewComments({ reviewId }: { reviewId: string }) {
           ) : null}
           <CommentComposer
             reviewId={reviewId}
+            target={target}
             parentId={null}
             canSubmit={Boolean(profile)}
             onCreated={onCreated}
@@ -118,6 +131,7 @@ export function ReviewComments({ reviewId }: { reviewId: string }) {
 
 type BranchProps = {
   reviewId: string;
+  target: CommentTarget;
   parentId: string | null;
   targetId: string | null;
   profileId: string | null;
@@ -130,11 +144,11 @@ type BranchProps = {
 };
 
 function CommentBranch(props: BranchProps) {
-  const { reviewId, parentId, targetId, profileId, created, depth } = props;
+  const { reviewId, target, parentId, targetId, profileId, created, depth } = props;
   const query = useInfiniteQuery({
-    queryKey: ["review-comments", reviewId, parentId, profileId],
+    queryKey: ["review-comments", target, reviewId, parentId, profileId],
     queryFn: ({ pageParam, signal }) =>
-      listComments(reviewId, parentId, pageParam, signal),
+      listComments(reviewId, parentId, pageParam, signal, target),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (page) => page.nextCursor ?? undefined,
     retry: false,
@@ -269,6 +283,7 @@ function CommentItem(props: BranchProps & { comment: RemoteComment }) {
       {replying ? (
         <CommentComposer
           reviewId={props.reviewId}
+          target={props.target}
           parentId={comment.id}
           canSubmit={Boolean(profileId)}
           replyTo={reply.username}

@@ -1,11 +1,14 @@
 import { cosmeticImageUrls } from "../../../shared/lib/cosmeticImageUrls.ts";
 import { z } from "zod";
 import { unexpectedResponseError } from "../../../shared/api/errors.ts";
+import { displayImageUrl } from "../../../shared/lib/imageUrl.ts";
 import { safeHttpsUrl } from "../../../shared/lib/safeHttpsUrl.ts";
 import { MEDIA_TYPE_LABELS, type MediaType } from "../../../shared/types/media.ts";
 import type {
   MediaObjectSummary,
   CatalogMediaObject,
+  FeedItem,
+  FeedPage,
   RemoteReview,
   ReviewEditorData,
   RemoteReviewAuthor,
@@ -235,6 +238,91 @@ export function parseRemoteReviewListText(text: string): RemoteReviewList {
     items: parsed.data.items.map(mapSummary),
     nextCursor: parsed.data.nextCursor ?? null,
   };
+}
+
+/** Топ в ленте: автор обязателен, у результата нет mediaObject и rating. */
+const feedListItemSchema = z.object({
+  kind: z.literal("list"),
+  id: uuid,
+  authorId: uuid,
+  author: authorSchema,
+  title: z.string().refine((value) => Array.from(value).length <= 256),
+  isFollowing: z.boolean().nullish(),
+  likesCount: z.number().int().nonnegative().optional().default(0),
+  dislikesCount: z.number().int().nonnegative().optional().default(0),
+  viewsCount: z.number().int().nonnegative().optional().default(0),
+  viewerIsLike: z.boolean().nullish(),
+  list: z.object({
+    typeCode: z.string().min(1),
+    format: z.enum(["tiers", "ranked", "collection"]),
+    coverUrl: z.unknown().optional(),
+    templateTitle: z.string().optional().default(""),
+  }),
+});
+
+const feedPageSchema = z.object({
+  items: z.array(z.unknown()),
+  nextCursor: z.string().nullable().optional(),
+});
+
+/**
+ * Элемент ленты по kind. Без kind — обзор (старый бэкенд).
+ * Неизвестный kind пропускаем: новые виды карточек не должны ломать ленту.
+ * Битый элемент известного вида — ошибка ответа, как и раньше.
+ */
+function parseFeedItem(raw: unknown): FeedItem | null {
+  const kind =
+    typeof raw === "object" && raw !== null && "kind" in raw
+      ? (raw as { kind: unknown }).kind
+      : "review";
+  if (kind === "review") {
+    const parsed = reviewListItemSchema.safeParse(raw);
+    if (!parsed.success) throw unexpectedResponseError();
+    return { kind: "review", review: mapSummary(parsed.data) };
+  }
+  if (kind === "list") {
+    const parsed = feedListItemSchema.safeParse(raw);
+    if (!parsed.success) throw unexpectedResponseError();
+    const item = parsed.data;
+    const coverUrl = displayImageUrl(item.list.coverUrl);
+    return {
+      kind: "list",
+      list: {
+        id: item.id,
+        authorId: item.authorId,
+        author: mapAuthor(item.author, item.isFollowing),
+        title: item.title,
+        typeCode: item.list.typeCode,
+        format: item.list.format,
+        ...(coverUrl ? { coverUrl } : {}),
+        templateTitle: item.list.templateTitle,
+        likesCount: item.likesCount,
+        dislikesCount: item.dislikesCount,
+        viewsCount: item.viewsCount,
+        ...(typeof item.viewerIsLike === "boolean"
+          ? { viewerIsLike: item.viewerIsLike }
+          : {}),
+      },
+    };
+  }
+  return null;
+}
+
+export function parseFeedText(text: string): FeedPage {
+  let payload: unknown;
+  try {
+    payload = JSON.parse(text) as unknown;
+  } catch {
+    throw unexpectedResponseError();
+  }
+  const parsed = feedPageSchema.safeParse(payload);
+  if (!parsed.success) throw unexpectedResponseError();
+  const items: FeedItem[] = [];
+  for (const raw of parsed.data.items) {
+    const item = parseFeedItem(raw);
+    if (item) items.push(item);
+  }
+  return { items, nextCursor: parsed.data.nextCursor ?? null };
 }
 
 export function parseMediaObjectText(text: string): CatalogMediaObject {

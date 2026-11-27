@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { parseRemoteReview, parseRemoteReviewListText } from "./parseRemote.ts";
+import { parseFeedText, parseRemoteReview, parseRemoteReviewListText } from "./parseRemote.ts";
 
 const authorId = "11111111-1111-4111-8111-111111111111";
 const reviewId = "22222222-2222-4222-8222-222222222222";
@@ -257,4 +257,89 @@ test("own list retains empty title, null rating and unpublished changes", () => 
   );
   assert.equal(result.items[0].rating, null);
   assert.equal(result.items[0].hasUnpublishedChanges, true);
+});
+
+const listId = "44444444-4444-4444-8444-444444444444";
+
+const feedAuthor = { id: authorId, username: "ann", isFollowing: true };
+
+const feedList = {
+  kind: "list",
+  id: listId,
+  authorId,
+  author: feedAuthor,
+  title: "Мой топ",
+  likesCount: 2,
+  dislikesCount: 1,
+  viewsCount: 5,
+  hasSpoilers: false,
+  viewerIsLike: true,
+  list: {
+    typeCode: "manga",
+    format: "tiers",
+    coverUrl: "https://cdn.example/c.jpg",
+    templateTitle: "Сэйнэн",
+  },
+};
+
+test("parseFeedText mixes reviews and list results by kind", () => {
+  const page = parseFeedText(
+    JSON.stringify({
+      items: [{ ...detailBase, kind: "review", author: feedAuthor }, feedList],
+      nextCursor: "abc",
+    }),
+  );
+  assert.equal(page.nextCursor, "abc");
+  assert.equal(page.items.length, 2);
+  assert.equal(page.items[0].kind, "review");
+  const list = page.items[1];
+  assert.equal(list.kind, "list");
+  if (list.kind !== "list") return;
+  assert.deepEqual(list.list, {
+    id: listId,
+    authorId,
+    author: { id: authorId, username: "ann", isFollowing: true },
+    title: "Мой топ",
+    typeCode: "manga",
+    format: "tiers",
+    coverUrl: "https://cdn.example/c.jpg",
+    templateTitle: "Сэйнэн",
+    likesCount: 2,
+    dislikesCount: 1,
+    viewsCount: 5,
+    viewerIsLike: true,
+  });
+});
+
+test("parseFeedText treats items without kind as reviews", () => {
+  const page = parseFeedText(JSON.stringify({ items: [detailBase], nextCursor: null }));
+  assert.equal(page.items[0].kind, "review");
+  assert.equal(page.nextCursor, null);
+});
+
+test("parseFeedText skips unknown kinds", () => {
+  const page = parseFeedText(
+    JSON.stringify({ items: [{ kind: "poll", id: listId }, feedList] }),
+  );
+  assert.deepEqual(
+    page.items.map((item) => item.kind),
+    ["list"],
+  );
+});
+
+test("parseFeedText drops unsafe cover and rejects broken list items", () => {
+  const page = parseFeedText(
+    JSON.stringify({
+      items: [{ ...feedList, list: { ...feedList.list, coverUrl: "javascript:alert(1)" } }],
+    }),
+  );
+  const item = page.items[0];
+  assert.ok(item.kind === "list" && item.list.coverUrl === undefined);
+
+  assert.throws(() =>
+    parseFeedText(JSON.stringify({ items: [{ ...feedList, list: { format: "tiers" } }] })),
+  );
+  assert.throws(() =>
+    parseFeedText(JSON.stringify({ items: [{ ...feedList, author: undefined }] })),
+  );
 });

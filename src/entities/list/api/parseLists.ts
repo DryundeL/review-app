@@ -94,6 +94,13 @@ const resultSchema = z.object({
   tiers: z.array(tierSchema),
   items: z.array(itemSchema),
   entries: z.array(entrySchema),
+  likesCount: z.number().int().nonnegative().optional().default(0),
+  dislikesCount: z.number().int().nonnegative().optional().default(0),
+  viewsCount: z.number().int().nonnegative().optional().default(0),
+  viewerIsLike: z
+    .boolean()
+    .nullish()
+    .transform((value) => value ?? undefined),
 });
 
 const cardSchema = z.object({

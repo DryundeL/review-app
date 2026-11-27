@@ -14,7 +14,7 @@ function result(over: Partial<Result>): Result {
   return {
     id: "r", typeCode: "movie", format: "tiers", title: "t", description: "",
     author: { id: "u", username: "u" }, template: { title: "tpl" }, canCreateOwn: true,
-    tiers, items, entries: [], ...over,
+    tiers, items, entries: [], likesCount: 0, dislikesCount: 0, viewsCount: 0, ...over,
   };
 }
 
