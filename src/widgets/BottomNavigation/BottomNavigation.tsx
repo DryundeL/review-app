@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 import logoUrl from "@/assets/review-hub-logo.png";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink, useLocation } from "react-router-dom";
@@ -33,6 +33,13 @@ export function BottomNavigation({ hideOnMobile = false }: { hideOnMobile?: bool
   const visibleLinks = profile ? links : links.slice(0, 2);
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
+  const createRef = useRef<HTMLButtonElement>(null);
+  // Переход на другую страницу (в том числе «назад») закрывает меню.
+  const [menuPath, setMenuPath] = useState(location.pathname);
+  if (menuPath !== location.pathname) {
+    setMenuPath(location.pathname);
+    if (createOpen) setCreateOpen(false);
+  }
 
   const unreadQuery = useQuery({
     queryKey: ["notifications-unread"],
@@ -150,8 +157,9 @@ export function BottomNavigation({ hideOnMobile = false }: { hideOnMobile?: bool
       {profile ? (
         <>
           <button
+            ref={createRef}
             type="button"
-            aria-label="Добавить"
+            aria-label={createOpen ? "Закрыть" : "Добавить"}
             aria-haspopup="dialog"
             aria-expanded={createOpen}
             className={[
@@ -162,14 +170,20 @@ export function BottomNavigation({ hideOnMobile = false }: { hideOnMobile?: bool
             ]
               .filter(Boolean)
               .join(" ")}
-            onClick={() => setCreateOpen(true)}
+            onClick={() => setCreateOpen((value) => !value)}
           >
             <span className="bottom-nav__icon-wrap">
               <NavIcon name="plus" />
             </span>
-            <span className="bottom-nav__label bottom-nav__label--create">Добавить</span>
+            <span className="bottom-nav__label bottom-nav__label--create">
+              {createOpen ? "Закрыть" : "Добавить"}
+            </span>
           </button>
-          <CreateMenu open={createOpen} onOpenChange={setCreateOpen} />
+          <CreateMenu
+            open={createOpen}
+            onClose={() => setCreateOpen(false)}
+            anchorRef={createRef}
+          />
         </>
       ) : (
         <NavLink

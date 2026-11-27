@@ -1,84 +1,295 @@
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent,
+  type RefObject,
+} from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
-import { Modal } from "@/shared/ui";
 import "./CreateMenu.css";
 
 type CreateMenuProps = {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onClose: () => void;
+  /** Кнопка «+»: из неё «вытекают» варианты и в неё же возвращается фокус. */
+  anchorRef: RefObject<HTMLElement | null>;
 };
 
+// Порядок — от кнопки: первый вариант ближе всех к «+».
 const OPTIONS = [
   {
     to: "/create",
     icon: "review",
     title: "Обзор",
-    text: "Оценка и рецензия на аниме, мангу, фильм или сериал",
+    text: "Оценка и рецензия",
   },
   {
     to: "/lists?tab=templates",
     icon: "top",
     title: "Топ",
-    text: "Тир-лист, рейтинг или подборка: выберите шаблон и расставьте по-своему",
+    text: "Тир-лист, рейтинг, подборка",
+  },
+  {
+    to: "/my-lists?create=template",
+    icon: "template",
+    title: "Шаблон",
+    text: "Свой набор для топов",
   },
 ] as const;
 
-/** Выбор, что создать: шторка на телефоне, диалог на десктопе. */
-export function CreateMenu({ open, onOpenChange }: CreateMenuProps) {
-  const close = () => onOpenChange(false);
+const GAP = 12;
+const EDGE = 12;
+const MAX_WIDTH = 280;
+/** Длительность «втягивания» обратно; совпадает с CSS. */
+const CLOSE_MS = 380;
 
-  return (
-    <Modal open={open} onOpenChange={onOpenChange} title="Что добавить?" className="create-menu">
-      <ul className="create-menu__options">
-        {OPTIONS.map((option, index) => (
-          <li
-            key={option.to}
-            className="create-menu__item"
-            style={{ ["--create-menu-index" as string]: index }}
-          >
-            <Link className="create-menu__option" to={option.to} onClick={close}>
-              <span className={`create-menu__icon create-menu__icon--${option.icon}`}>
-                <OptionIcon name={option.icon} />
-              </span>
-              <span className="create-menu__text">
-                <span className="create-menu__title">{option.title}</span>
-                <span className="create-menu__hint">{option.text}</span>
-              </span>
-              <span className="create-menu__chevron" aria-hidden="true">
-                ›
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <p
-        className="create-menu__footer"
-        style={{ ["--create-menu-index" as string]: OPTIONS.length }}
+type Placement = {
+  /** Колонка вариантов: якорь снизу (над кнопкой) и по краю кнопки. */
+  menu: CSSProperties;
+  /** Центр кнопки в координатах окна — точка, откуда течёт стекло. */
+  originX: number;
+  originY: number;
+  size: number;
+};
+
+function measure(anchor: HTMLElement): Placement {
+  const rect = anchor.getBoundingClientRect();
+  const vw = window.innerWidth;
+  const alignRight = rect.left + rect.width / 2 > vw / 2;
+  const width = Math.min(MAX_WIDTH, vw - EDGE * 2, Math.max(rect.width, 260));
+  const bottom = window.innerHeight - rect.top + GAP;
+  const menu: CSSProperties = alignRight
+    ? { right: Math.max(EDGE, vw - rect.right), bottom, width }
+    : { left: Math.max(EDGE, rect.left), bottom, width };
+  return {
+    menu,
+    originX: rect.left + rect.width / 2,
+    originY: rect.top + rect.height / 2,
+    size: Math.min(rect.width, rect.height),
+  };
+}
+
+/**
+ * Меню «Что добавить»: варианты вытекают из кнопки «+» каплями жидкого стекла
+ * и втягиваются обратно при закрытии.
+ */
+export function CreateMenu({ open, onClose, anchorRef }: CreateMenuProps) {
+  const [mounted, setMounted] = useState(open);
+  const [closing, setClosing] = useState(false);
+  const [placement, setPlacement] = useState<Placement | null>(null);
+  /** Место каждой капли (центр и высота) и смещение до центра кнопки. */
+  const [offsets, setOffsets] = useState<
+    { cx: number; cy: number; h: number; dx: number; dy: number }[]
+  >([]);
+  const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+
+  // Монтируем при открытии; при закрытии ждём анимацию втягивания.
+  useEffect(() => {
+    if (open) {
+      setMounted(true);
+      setClosing(false);
+      return;
+    }
+    if (!mounted) return;
+    setClosing(true);
+    const timer = window.setTimeout(() => {
+      setMounted(false);
+      setClosing(false);
+      setOffsets([]);
+    }, CLOSE_MS);
+    return () => window.clearTimeout(timer);
+  }, [open, mounted]);
+
+  const place = useCallback(() => {
+    const anchor = anchorRef.current;
+    if (anchor) setPlacement(measure(anchor));
+  }, [anchorRef]);
+
+  useLayoutEffect(() => {
+    if (!mounted) return;
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [mounted, place]);
+
+  // Смещение каждой капли от её места до центра кнопки — старт и финиш анимации.
+  useLayoutEffect(() => {
+    if (!mounted || !placement) return;
+    setOffsets(
+      OPTIONS.map((_, index) => {
+        const rect = itemRefs.current[index]?.getBoundingClientRect();
+        if (!rect) return { cx: 0, cy: 0, h: 0, dx: 0, dy: 0 };
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        return {
+          cx,
+          cy,
+          h: rect.height,
+          dx: placement.originX - cx,
+          dy: placement.originY - cy,
+        };
+      }),
+    );
+  }, [mounted, placement]);
+
+  // Фокус на ближайший вариант после открытия.
+  useEffect(() => {
+    if (open && offsets.length > 0) itemRefs.current[0]?.focus({ preventScroll: true });
+  }, [open, offsets.length]);
+
+  const closeAndReturnFocus = useCallback(() => {
+    onClose();
+    anchorRef.current?.focus({ preventScroll: true });
+  }, [onClose, anchorRef]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeAndReturnFocus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, closeAndReturnFocus]);
+
+  function onMenuKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+    event.preventDefault();
+    const items = itemRefs.current.filter(Boolean) as HTMLAnchorElement[];
+    const current = items.indexOf(document.activeElement as HTMLAnchorElement);
+    // Варианты идут снизу вверх от кнопки: «вверх» — к следующему.
+    const step = event.key === "ArrowUp" ? 1 : -1;
+    const next = (current + step + items.length) % items.length;
+    items[next]?.focus();
+  }
+
+  if (!mounted || typeof document === "undefined") return null;
+
+  const ready = offsets.length === OPTIONS.length && placement !== null;
+  const state = closing ? "closing" : ready ? "open" : "measuring";
+
+  return createPortal(
+    <div className="create-menu" data-state={state}>
+      <div className="create-menu__scrim" aria-hidden="true" onClick={closeAndReturnFocus} />
+
+      {placement ? (
+        <>
+          {/* Жидкость: капли сливаются с кнопкой через SVG-фильтр. */}
+          <svg className="create-menu__defs" aria-hidden="true" focusable="false">
+            <filter id="create-menu-goo">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="9" result="blur" />
+              <feColorMatrix
+                in="blur"
+                mode="matrix"
+                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -9"
+              />
+            </filter>
+          </svg>
+          <div className="create-menu__goo" aria-hidden="true">
+            <span
+              className="create-menu__goo-core"
+              style={{
+                left: placement.originX,
+                top: placement.originY,
+                width: placement.size,
+                height: placement.size,
+              }}
+            />
+            {ready
+              ? offsets.map((drop, index) => (
+                  <span
+                    key={OPTIONS[index]!.to}
+                    className="create-menu__goo-drop"
+                    style={
+                      {
+                        left: drop.cx,
+                        top: drop.cy,
+                        width: Math.min(drop.h, placement.size),
+                        height: Math.min(drop.h, placement.size),
+                        "--dx": `${drop.dx}px`,
+                        "--dy": `${drop.dy}px`,
+                        "--i": index,
+                      } as CSSProperties
+                    }
+                  />
+                ))
+              : null}
+          </div>
+        </>
+      ) : null}
+
+      <div
+        className="create-menu__list"
+        role="menu"
+        aria-label="Что добавить"
+        style={placement?.menu}
+        onKeyDown={onMenuKeyDown}
       >
-        Нет подходящего шаблона?{" "}
-        <Link to="/my-lists?create=template" onClick={close}>
-          Создать свой шаблон
-        </Link>
-      </p>
-    </Modal>
+        {OPTIONS.map((option, index) => (
+          <Link
+            key={option.to}
+            ref={(node) => {
+              itemRefs.current[index] = node;
+            }}
+            role="menuitem"
+            to={option.to}
+            className={`create-menu__drop create-menu__drop--${option.icon}`}
+            tabIndex={closing ? -1 : 0}
+            style={
+              {
+                "--dx": `${offsets[index]?.dx ?? 0}px`,
+                "--dy": `${offsets[index]?.dy ?? 0}px`,
+                "--i": index,
+              } as CSSProperties
+            }
+            onClick={onClose}
+          >
+            <span className="create-menu__icon">
+              <OptionIcon name={option.icon} />
+            </span>
+            <span className="create-menu__text">
+              <span className="create-menu__title">{option.title}</span>
+              <span className="create-menu__hint">{option.text}</span>
+            </span>
+          </Link>
+        ))}
+      </div>
+    </div>,
+    document.body,
   );
 }
 
 function OptionIcon({ name }: { name: (typeof OPTIONS)[number]["icon"] }) {
   return (
-    <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
       {name === "review" ? (
         <>
           <path d="M5 4h10l4 4v12H5z" />
           <path d="M15 4v4h4M8.5 12h7M8.5 16h5" />
         </>
-      ) : (
+      ) : null}
+      {name === "top" ? (
         <>
           <rect x="3.5" y="4" width="4" height="4" rx="1" />
           <rect x="3.5" y="10" width="4" height="4" rx="1" />
           <rect x="3.5" y="16" width="4" height="4" rx="1" />
           <path d="M10.5 6h10M10.5 12h7M10.5 18h4" />
         </>
-      )}
+      ) : null}
+      {name === "template" ? (
+        <>
+          <rect x="4" y="4" width="7" height="7" rx="1.5" />
+          <rect x="13" y="4" width="7" height="7" rx="1.5" />
+          <rect x="4" y="13" width="7" height="7" rx="1.5" />
+          <path d="M16.5 13.5v6M13.5 16.5h6" />
+        </>
+      ) : null}
     </svg>
   );
 }
