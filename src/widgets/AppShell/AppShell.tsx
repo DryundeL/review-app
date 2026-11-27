@@ -18,6 +18,18 @@ import { AppImage } from "@/shared/ui";
 import { BottomNavigation } from "@/widgets/BottomNavigation";
 import "./AppShell.css";
 
+/** Страница шаблона или топа (не редактор). */
+function isListViewPath(pathname: string): boolean {
+  return /^\/list-(?:templates|results)\/[^/]+$/.test(pathname);
+}
+
+/** Куда вести «Назад», если в истории некуда (страницу открыли по ссылке). */
+function backFallback(pathname: string): string {
+  if (pathname === "/settings" || pathname === "/shop") return "/profile";
+  if (pathname === "/my-lists" || isListViewPath(pathname)) return "/lists";
+  return "/";
+}
+
 function showBackButton(pathname: string): boolean {
   return (
     pathname === "/settings" ||
@@ -25,7 +37,10 @@ function showBackButton(pathname: string): boolean {
     pathname === "/create" ||
     pathname === "/achievements" ||
     pathname.startsWith("/media-objects/") ||
-    pathname.startsWith("/reviews/")
+    pathname.startsWith("/reviews/") ||
+    pathname === "/my-lists" ||
+    isListViewPath(pathname)
+    // Редакторы шаблона и топа — без кнопки: у них свой выход через guard несохранённых правок.
     // /profiles/:id — «Назад» в topbar профиля (как «Магазин» на своём).
   );
 }
@@ -122,9 +137,7 @@ export function AppShell() {
       navigate(-1);
       return;
     }
-    navigate(pathname === "/settings" || pathname === "/shop" ? "/profile" : "/", {
-      replace: true,
-    });
+    navigate(backFallback(pathname), { replace: true });
   }
 
   return (
