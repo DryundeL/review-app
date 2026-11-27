@@ -1,7 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { createTemplate, type Format } from "@/entities/list";
+import {
+  MIXED_TYPE_CODE,
+  MIXED_TYPE_LABEL,
+  createTemplate,
+  type Format,
+} from "@/entities/list";
 import { fetchReviewTypes } from "@/entities/settings";
 import { ApiError } from "@/shared/api";
 import { Button, Input, Modal } from "@/shared/ui";
@@ -88,6 +93,7 @@ export function CreateTemplateModal({
                 {item.label}
               </option>
             ))}
+            <option value={MIXED_TYPE_CODE}>{MIXED_TYPE_LABEL} — любые типы вперемешку</option>
           </select>
         </label>
 

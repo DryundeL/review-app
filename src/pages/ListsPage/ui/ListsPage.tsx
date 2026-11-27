@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useAuthSession } from "@/features/auth";
-import type { Format, ListFilters, ListScope } from "@/entities/list";
+import { MIXED_TYPE_CODE, type Format, type ListFilters, type ListScope } from "@/entities/list";
 import { fetchReviewTypes } from "@/entities/settings";
 import { useDebouncedValue, usePageMeta } from "@/shared/hooks";
 import { metaForPath } from "@/shared/lib/pageMeta";
@@ -157,6 +157,7 @@ export function ListsPage() {
               {item.label}
             </option>
           ))}
+          <option value={MIXED_TYPE_CODE}>Смешанные</option>
         </select>
         <select
           className="lists-page__select"

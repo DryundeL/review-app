@@ -1,13 +1,17 @@
 import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
-import { isOwnerView, useTemplateQuery } from "@/entities/list";
+import {
+  isMixedType,
+  isOwnerView,
+  listTypeLabel,
+  useTemplateQuery,
+} from "@/entities/list";
 import { useAuthSession } from "@/features/auth";
 import { CreateResultButton, OwnerActions } from "@/features/manage-list";
 import { ReportListControl } from "@/features/report-list";
 import { ApiError } from "@/shared/api";
 import { usePageMeta } from "@/shared/hooks";
 import { truncateMeta, type PageMeta } from "@/shared/lib/pageMeta";
-import { MEDIA_TYPE_LABELS, isMediaType } from "@/shared/types";
 import { UserAvatar } from "@/shared/ui";
 import { FORMAT_LABELS } from "@/widgets/ListCard";
 import { ListBoard } from "@/widgets/ListBoard";
@@ -63,9 +67,7 @@ export function ListTemplatePage() {
   }
 
   const owner = isOwnerView(template);
-  const typeLabel = isMediaType(template.typeCode)
-    ? MEDIA_TYPE_LABELS[template.typeCode]
-    : null;
+  const typeLabel = listTypeLabel(template.typeCode);
 
   return (
     <article className="list-page screen">
@@ -122,7 +124,12 @@ export function ListTemplatePage() {
       ) : null}
 
       {template.canCreateResult && profile ? null : (
-        <ListBoard format={template.format} tiers={template.tiers} items={template.items} />
+        <ListBoard
+          format={template.format}
+          tiers={template.tiers}
+          items={template.items}
+          showItemTypes={isMixedType(template.typeCode)}
+        />
       )}
     </article>
   );

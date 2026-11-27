@@ -1,5 +1,12 @@
 import { useMemo } from "react";
-import { tierLabel, type Format, type Item, type Layout, type Tier } from "@/entities/list";
+import {
+  itemTypeLabel,
+  tierLabel,
+  type Format,
+  type Item,
+  type Layout,
+  type Tier,
+} from "@/entities/list";
 import { readableTextColor } from "@/shared/lib/readableTextColor";
 import { MediaPoster } from "@/shared/ui";
 import "./ListBoard.css";
@@ -10,31 +17,59 @@ type ListBoardProps = {
   items: Item[];
   /** Раскладка результата. Без неё (шаблон) — тиры и сетка всех элементов. */
   layout?: Layout;
+  /** Смешанный топ: подписать тип у каждого произведения. */
+  showItemTypes?: boolean;
 };
 
-function ItemTile({ item, place }: { item: Item; place?: number }) {
+/** Бейдж типа произведения на постере (смешанные топы). */
+export function ItemTypeTag({ item }: { item: Item }) {
+  const label = itemTypeLabel(item.mediaType);
+  return label ? <span className="list-board__type">{label}</span> : null;
+}
+
+function ItemTile({ item, place, showType }: { item: Item; place?: number; showType?: boolean }) {
   return (
     <li className="list-board__item" title={item.title}>
       <span className="list-board__poster">
         <MediaPoster title={item.title} posterUrl={item.imageUrl} />
         {place !== undefined ? <span className="list-board__place">{place}</span> : null}
+        {showType ? <ItemTypeTag item={item} /> : null}
       </span>
       <span className="list-board__item-title">{item.title}</span>
     </li>
   );
 }
 
-function ItemGrid({ items, numbered }: { items: Item[]; numbered?: boolean }) {
+function ItemGrid({
+  items,
+  numbered,
+  showType,
+}: {
+  items: Item[];
+  numbered?: boolean;
+  showType?: boolean;
+}) {
   return (
     <ul className="list-board__grid">
       {items.map((item, index) => (
-        <ItemTile key={item.id} item={item} place={numbered ? index + 1 : undefined} />
+        <ItemTile
+          key={item.id}
+          item={item}
+          place={numbered ? index + 1 : undefined}
+          showType={showType}
+        />
       ))}
     </ul>
   );
 }
 
-export function ListBoard({ format, tiers, items, layout }: ListBoardProps) {
+export function ListBoard({
+  format,
+  tiers,
+  items,
+  layout,
+  showItemTypes = false,
+}: ListBoardProps) {
   const byId = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
   const pick = (ids: string[]): Item[] =>
     ids.flatMap((id) => {
@@ -58,14 +93,14 @@ export function ListBoard({ format, tiers, items, layout }: ListBoardProps) {
                 </h2>
                 <ul className="list-board__tier-items">
                   {placed.map((item) => (
-                    <ItemTile key={item.id} item={item} />
+                    <ItemTile key={item.id} item={item} showType={showItemTypes} />
                   ))}
                 </ul>
               </section>
             );
           })}
         </div>
-        {layout ? null : <ItemGrid items={items} />}
+        {layout ? null : <ItemGrid items={items} showType={showItemTypes} />}
       </div>
     );
   }
@@ -80,7 +115,14 @@ export function ListBoard({ format, tiers, items, layout }: ListBoardProps) {
             <span className="list-board__ranked-poster">
               <MediaPoster title={item.title} posterUrl={item.imageUrl} />
             </span>
-            <span className="list-board__ranked-title">{item.title}</span>
+            <span className="list-board__ranked-title">
+              {item.title}
+              {showItemTypes && itemTypeLabel(item.mediaType) ? (
+                <span className="list-board__ranked-type">
+                  {itemTypeLabel(item.mediaType)}
+                </span>
+              ) : null}
+            </span>
           </li>
         ))}
       </ol>
@@ -88,7 +130,7 @@ export function ListBoard({ format, tiers, items, layout }: ListBoardProps) {
   }
   return (
     <div className="list-board">
-      <ItemGrid items={shown} numbered={format === "ranked"} />
+      <ItemGrid items={shown} numbered={format === "ranked"} showType={showItemTypes} />
     </div>
   );
 }

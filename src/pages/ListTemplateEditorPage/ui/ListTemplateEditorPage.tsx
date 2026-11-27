@@ -2,6 +2,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
+  MIXED_TYPE_CODE,
+  MIXED_TYPE_LABEL,
+  isMixedType,
   fetchTemplate,
   publishList,
   refreshItemFromCatalog,
@@ -207,6 +210,7 @@ function TemplateEditor({ template }: { template: Template }) {
         {
           key: crypto.randomUUID(),
           mediaObjectId: hit.id,
+          mediaType: hit.type,
           title: hit.title,
           catalogTitle: hit.title,
           ...(imageUrl ? { imageUrl } : {}),
@@ -412,7 +416,8 @@ function TemplateEditor({ template }: { template: Template }) {
             disabled={locked}
             onChange={(event) => update(() => ({ typeCode: event.target.value }))}
           >
-            {types.some((type) => type.code === draft.typeCode) ? null : (
+            {isMixedType(draft.typeCode) ||
+            types.some((type) => type.code === draft.typeCode) ? null : (
               <option value={draft.typeCode}>{draft.typeCode}</option>
             )}
             {types.map((type) => (
@@ -420,8 +425,15 @@ function TemplateEditor({ template }: { template: Template }) {
                 {type.label}
               </option>
             ))}
+            <option value={MIXED_TYPE_CODE}>{MIXED_TYPE_LABEL} — любые типы вперемешку</option>
           </select>
           <FieldError text={typeError} />
+          {!locked && isMixedType(draft.typeCode) ? (
+            <span className="template-editor__hint">
+              Можно добавлять произведения любых типов и свои картинки. Тип нельзя
+              сменить после публикации.
+            </span>
+          ) : null}
         </label>
 
         <fieldset

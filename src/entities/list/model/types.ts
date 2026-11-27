@@ -20,6 +20,8 @@ export interface Item {
   title: string;
   /** Элемент из каталога. */
   mediaObjectId?: string;
+  /** Тип произведения каталога; нет у своих и удалённых из каталога. */
+  mediaType?: string;
   imageUrl?: string;
   /** Только автору шаблона и только для его загрузки. */
   imageId?: string;

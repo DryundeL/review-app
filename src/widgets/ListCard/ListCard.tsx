@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
-import type { Card } from "@/entities/list";
+import { listTypeLabel, type Card } from "@/entities/list";
 import { FORMAT_LABELS } from "./formatLabels";
-import { MEDIA_TYPE_LABELS, isMediaType } from "@/shared/types";
 import { MediaPoster, UserAvatar } from "@/shared/ui";
 import "./ListCard.css";
 
@@ -13,7 +12,7 @@ type ListCardProps = {
 };
 
 export function ListCard({ card, href, kind }: ListCardProps) {
-  const typeLabel = isMediaType(card.typeCode) ? MEDIA_TYPE_LABELS[card.typeCode] : null;
+  const typeLabel = listTypeLabel(card.typeCode);
   return (
     <article className="list-card">
       <Link className="list-card__main" to={href} aria-label={`${kind === "templates" ? "Шаблон" : "Топ"}: ${card.title}`}>

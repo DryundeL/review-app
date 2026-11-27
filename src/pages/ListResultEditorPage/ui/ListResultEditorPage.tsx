@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
+  isMixedType,
   entriesFromLayout,
   fetchResult,
   publishList,
@@ -326,6 +327,7 @@ function ResultEditor({ result }: { result: Result }) {
           onSelect={setSelectedId}
           onChange={changeLayout}
           disabled={disabled}
+          showItemTypes={isMixedType(saved.typeCode)}
         />
       </fieldset>
 

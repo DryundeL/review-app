@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
+  isMixedType,
   carryLayout,
   createResult,
   entriesFromLayout,
@@ -86,6 +87,7 @@ export function TemplateArrange({ template }: TemplateArrangeProps) {
         onSelect={setSelectedId}
         onChange={setLayout}
         disabled={save.isPending}
+        showItemTypes={isMixedType(template.typeCode)}
       />
       <div className="list-page__cta">
         <p className="list-page__cta-text">

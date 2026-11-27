@@ -2,8 +2,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
+  isMixedType,
   isOwnerView,
   layoutFromResult,
+  listTypeLabel,
   useResultQuery,
   viewResult,
   voteResult,
@@ -15,7 +17,6 @@ import { ReportListControl } from "@/features/report-list";
 import { ApiError } from "@/shared/api";
 import { usePageMeta } from "@/shared/hooks";
 import { truncateMeta, type PageMeta } from "@/shared/lib/pageMeta";
-import { MEDIA_TYPE_LABELS, isMediaType } from "@/shared/types";
 import { Button, DislikeIcon, LikeIcon, UserAvatar, VoteCounts } from "@/shared/ui";
 import { FORMAT_LABELS } from "@/widgets/ListCard";
 import { ListBoard } from "@/widgets/ListBoard";
@@ -80,7 +81,7 @@ export function ListResultPage() {
   }
 
   const owner = isOwnerView(result);
-  const typeLabel = isMediaType(result.typeCode) ? MEDIA_TYPE_LABELS[result.typeCode] : null;
+  const typeLabel = listTypeLabel(result.typeCode);
   const template = result.template;
   const templateAuthor = template.author?.username;
   const canOpenTemplate = result.canCreateOwn && Boolean(template.id);
@@ -146,6 +147,7 @@ export function ListResultPage() {
         tiers={result.tiers}
         items={result.items}
         layout={layout}
+        showItemTypes={isMixedType(result.typeCode)}
       />
 
       {canOpenTemplate && template.id ? (

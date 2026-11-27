@@ -13,6 +13,8 @@ export type DraftItem = {
   key: string;
   id?: string;
   mediaObjectId?: string;
+  /** Тип произведения каталога — только для подписи, на сервер не уходит. */
+  mediaType?: string;
   title: string;
   /** Название из каталога у нового элемента: свой `title` уходит, только если отличается. */
   catalogTitle?: string;
@@ -46,6 +48,7 @@ export function draftFromTemplate(t: Template): TemplateDraft {
       key: item.id,
       id: item.id,
       ...(item.mediaObjectId ? { mediaObjectId: item.mediaObjectId } : {}),
+      ...(item.mediaType ? { mediaType: item.mediaType } : {}),
       title: item.title,
       ...(item.imageUrl ? { imageUrl: item.imageUrl } : {}),
     })),

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
+import { listTypeLabel } from "@/entities/list";
 import type { FeedListSummary } from "@/entities/review";
 import { ReportListControl } from "@/features/report-list";
-import { MEDIA_TYPE_LABELS, isMediaType } from "@/shared/types";
 import { MediaPoster, VoteCounts } from "@/shared/ui";
 import { FORMAT_LABELS } from "@/widgets/ListCard";
 import { backdropStyle } from "./backdropStyle";
@@ -16,7 +16,7 @@ type FeedListItemProps = {
 
 export function FeedListItem({ list, viewerId }: FeedListItemProps) {
   const backdrop = list.author.backdrop;
-  const typeLabel = isMediaType(list.typeCode) ? MEDIA_TYPE_LABELS[list.typeCode] : null;
+  const typeLabel = listTypeLabel(list.typeCode);
   const formatLabel = FORMAT_LABELS[list.format];
   const title = list.title.trim() || formatLabel;
   const canReport = viewerId !== null && viewerId !== list.authorId;

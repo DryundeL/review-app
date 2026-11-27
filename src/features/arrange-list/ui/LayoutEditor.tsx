@@ -22,6 +22,7 @@ import {
   useLayoutDrag,
   type DragState,
 } from "../model/useLayoutDrag";
+import { ItemTypeTag } from "@/widgets/ListBoard";
 import "@/widgets/ListBoard/ListBoard.css";
 import "./LayoutEditor.css";
 
@@ -34,6 +35,8 @@ type LayoutEditorProps = {
   onSelect: (id: string | null) => void;
   onChange: (layout: Layout) => void;
   disabled?: boolean;
+  /** Смешанный топ: подписать тип у каждого произведения. */
+  showItemTypes?: boolean;
 };
 
 type DropMark = "before" | "after" | undefined;
@@ -47,6 +50,7 @@ type TileProps = {
   onPress: () => void;
   onPointerDown: (event: PointerEvent<HTMLElement>) => void;
   place?: number;
+  showType?: boolean;
   controls?: {
     canUp: boolean;
     canDown: boolean;
@@ -65,6 +69,7 @@ function Tile({
   onPress,
   onPointerDown,
   place,
+  showType,
   controls,
 }: TileProps) {
   return (
@@ -94,6 +99,7 @@ function Tile({
           {place !== undefined ? (
             <span className="list-board__place">{place}</span>
           ) : null}
+          {showType ? <ItemTypeTag item={item} /> : null}
         </span>
         <span className="list-board__item-title">{item.title}</span>
       </button>
@@ -175,6 +181,7 @@ export function LayoutEditor({
   onSelect,
   onChange,
   disabled = false,
+  showItemTypes = false,
 }: LayoutEditorProps) {
   const byId = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -216,6 +223,7 @@ export function LayoutEditor({
       <Tile
         key={item.id}
         item={item}
+        showType={showItemTypes}
         selected={selected}
         disabled={disabled}
         dragging={drag?.itemId === item.id}
@@ -325,6 +333,7 @@ export function LayoutEditor({
               <Tile
                 key={item.id}
                 item={item}
+                showType={showItemTypes}
                 selected={selectedId === item.id}
                 disabled={disabled}
                 dragging={drag?.itemId === item.id}

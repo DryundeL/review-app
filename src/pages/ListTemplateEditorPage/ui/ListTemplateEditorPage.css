@@ -214,3 +214,16 @@
   min-width: 0;
   overflow-wrap: anywhere;
 }
+
+.template-editor__hint {
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.template-editor__hit-type {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}

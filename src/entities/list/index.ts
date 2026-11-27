@@ -45,4 +45,11 @@ export type { GroupKey, Layout, LayoutSource } from "./model/layout";
 export { resultPublishIssues, templatePublishIssues } from "./model/readiness";
 export type { PublishIssue, ReadinessInput } from "./model/readiness";
 export { tierLabel } from "./model/tierLabel";
+export {
+  MIXED_TYPE_CODE,
+  MIXED_TYPE_LABEL,
+  isMixedType,
+  itemTypeLabel,
+  listTypeLabel,
+} from "./model/typeLabel";
 export { useOwnerSnapshot, useResultQuery, useTemplateQuery } from "./model/useListObject";

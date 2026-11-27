@@ -44,6 +44,7 @@ const itemSchema = z.object({
   id: idSchema,
   title: z.string(),
   mediaObjectId: idSchema.optional(),
+  mediaType: z.string().min(1).optional(),
   imageUrl: imageUrlSchema,
   imageId: idSchema.optional(),
 });

@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { isMixedType } from "@/entities/list";
 import { fetchSearch, sanitizeSearchQuery, type SearchMediaHit } from "@/entities/search";
+import { MEDIA_TYPE_LABELS } from "@/shared/types";
 import { ApiError } from "@/shared/api";
 import { useDebouncedValue } from "@/shared/hooks";
 import { Button, Input, MediaPoster, Modal } from "@/shared/ui";
@@ -35,7 +37,11 @@ export function CatalogItemPicker({
     enabled: open && q !== null,
     staleTime: 60 * 1000,
   });
-  const hits = (query.data?.mediaObjects ?? []).filter((hit) => hit.type === typeCode);
+  const mixed = isMixedType(typeCode);
+  // Смешанный шаблон принимает произведения любых типов.
+  const hits = (query.data?.mediaObjects ?? []).filter(
+    (hit) => mixed || hit.type === typeCode,
+  );
 
   return (
     <Modal open={open} onOpenChange={onOpenChange} title="Добавить из каталога">
@@ -74,7 +80,14 @@ export function CatalogItemPicker({
                     title={hit.title}
                     posterUrl={hit.posterUrl}
                   />
-                  <span className="template-editor__hit-title">{hit.title}</span>
+                  <span className="template-editor__hit-title">
+                    {hit.title}
+                    {mixed ? (
+                      <span className="template-editor__hit-type">
+                        {MEDIA_TYPE_LABELS[hit.type]}
+                      </span>
+                    ) : null}
+                  </span>
                   <Button
                     variant="secondary"
                     disabled={added || full}

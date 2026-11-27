@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { itemTypeLabel } from "@/entities/list";
 import { uploadImage, validateImageFile } from "@/features/upload-media";
 import { ApiError, isAbortError } from "@/shared/api";
 import { Button, Input, MediaPoster } from "@/shared/ui";
@@ -164,7 +165,14 @@ export function ItemsEditor({
                     value={item.title}
                     onChange={(event) => patch(item.key, { title: event.target.value })}
                   />
-                  {item.mediaObjectId ? <span className="muted">Из каталога</span> : null}
+                  {item.mediaObjectId ? (
+                    <span className="muted">
+                      Из каталога
+                      {itemTypeLabel(item.mediaType)
+                        ? ` · ${itemTypeLabel(item.mediaType)}`
+                        : null}
+                    </span>
+                  ) : null}
                 </div>
               </div>
               <div className="template-editor__row-actions">

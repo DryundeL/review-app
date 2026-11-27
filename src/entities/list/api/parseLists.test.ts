@@ -187,3 +187,19 @@ test("длинное описание с emoji парсится", () => {
   const t = parseTemplateText(JSON.stringify({ ...baseTemplate, description }));
   assert.equal(t.description, description);
 });
+
+test("смешанный шаблон: typeCode mixed и mediaType у произведений каталога", () => {
+  const t = parseTemplateText(
+    JSON.stringify({
+      ...baseTemplate,
+      typeCode: "mixed",
+      items: [
+        { id: "i1", title: "Матрица", mediaObjectId: ID, mediaType: "movie" },
+        { id: "i2", title: "Своя картинка" },
+      ],
+    }),
+  );
+  assert.equal(t.typeCode, "mixed");
+  assert.equal(t.items[0].mediaType, "movie");
+  assert.equal(t.items[1].mediaType, undefined);
+});
