@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import logoUrl from "@/assets/review-hub-logo.png";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink, useLocation } from "react-router-dom";
@@ -6,6 +6,7 @@ import { fetchUnreadNotificationsCount } from "@/entities/settings";
 import { useAuthSession, refreshSessionProfile } from "@/features/auth";
 import { refreshQueriesForPath } from "@/shared/lib/refreshHome";
 import { AppImage } from "@/shared/ui";
+import { CreateMenu } from "./CreateMenu";
 import "./BottomNavigation.css";
 
 const links = [
@@ -31,6 +32,7 @@ export function BottomNavigation({ hideOnMobile = false }: { hideOnMobile?: bool
   const { profile } = useAuthSession();
   const visibleLinks = profile ? links : links.slice(0, 2);
   const queryClient = useQueryClient();
+  const [createOpen, setCreateOpen] = useState(false);
 
   const unreadQuery = useQuery({
     queryKey: ["notifications-unread"],
@@ -145,28 +147,45 @@ export function BottomNavigation({ hideOnMobile = false }: { hideOnMobile?: bool
           </div>
         ) : null}
       </div>
-      <NavLink
-        to={profile ? "/create" : "/profile"}
-        end
-        aria-label={profile ? "Добавить обзор" : "Войти"}
-        className={({ isActive }) =>
-          `bottom-nav__link bottom-nav__create${isActive ? " bottom-nav__link--active" : ""}`
-        }
-      >
-        <span className="bottom-nav__icon-wrap">
-          <NavIcon name={profile ? "plus" : "user"} />
-        </span>
-        <span className="bottom-nav__label bottom-nav__label--create">
-          {profile ? (
-            <>
-              <span className="bottom-nav__create-short">Обзор</span>
-              <span className="bottom-nav__create-full">Добавить обзор</span>
-            </>
-          ) : (
-            "Войти"
-          )}
-        </span>
-      </NavLink>
+      {profile ? (
+        <>
+          <button
+            type="button"
+            aria-label="Добавить"
+            aria-haspopup="dialog"
+            aria-expanded={createOpen}
+            className={[
+              "bottom-nav__link",
+              "bottom-nav__create",
+              location.pathname === "/create" ? "bottom-nav__link--active" : "",
+              createOpen ? "bottom-nav__create--open" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            onClick={() => setCreateOpen(true)}
+          >
+            <span className="bottom-nav__icon-wrap">
+              <NavIcon name="plus" />
+            </span>
+            <span className="bottom-nav__label bottom-nav__label--create">Добавить</span>
+          </button>
+          <CreateMenu open={createOpen} onOpenChange={setCreateOpen} />
+        </>
+      ) : (
+        <NavLink
+          to="/profile"
+          end
+          aria-label="Войти"
+          className={({ isActive }) =>
+            `bottom-nav__link bottom-nav__create${isActive ? " bottom-nav__link--active" : ""}`
+          }
+        >
+          <span className="bottom-nav__icon-wrap">
+            <NavIcon name="user" />
+          </span>
+          <span className="bottom-nav__label bottom-nav__label--create">Войти</span>
+        </NavLink>
+      )}
     </nav>
   );
 }

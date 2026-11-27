@@ -203,7 +203,6 @@
 
 .bottom-nav__brand,
 .bottom-nav__secondary,
-.bottom-nav__create-full,
 .bottom-nav--desktop-only {
   display: none;
 }
@@ -341,14 +340,6 @@
     font-size: 13px;
   }
 
-  .bottom-nav__create-short {
-    display: none;
-  }
-
-  .bottom-nav__create-full {
-    display: inline;
-  }
-
   .bottom-nav__create {
     justify-content: center;
   }
@@ -358,5 +349,26 @@
   .bottom-nav__link:active,
   .bottom-nav__link:hover .bottom-nav__icon-wrap {
     transform: none;
+  }
+}
+
+/* «+» как кнопка: сброс стилей button и поворот в «×», пока открыт выбор. */
+button.bottom-nav__create {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.bottom-nav__create .bottom-nav__icon {
+  transition: transform var(--motion-duration-normal) var(--motion-ease);
+}
+
+.bottom-nav__create--open .bottom-nav__icon {
+  transform: rotate(45deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bottom-nav__create .bottom-nav__icon {
+    transition: none;
   }
 }

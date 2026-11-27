@@ -77,7 +77,7 @@ test("navigation shows only public links and login to guests and restores accoun
       "Достижения",
       "Магазин",
       "Настройки",
-      "Добавить обзор",
+      "Добавить",
     ])
       assert.ok(signedIn.querySelector(`[aria-label='${label}']`));
     auth.setProfile(null);
