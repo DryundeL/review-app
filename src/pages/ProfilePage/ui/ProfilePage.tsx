@@ -32,11 +32,17 @@ import { Button, Modal, UserAvatar, useImagePhase } from "@/shared/ui";
 import { AchievementsStrip } from "@/widgets/AchievementsStrip";
 import { RemoteReviewCard } from "@/widgets/RemoteReviewCard";
 import { UserHeader } from "@/widgets/UserHeader";
+import {
+  parseProfileTab,
+  writeProfileTab,
+  type ProfileTabAccess,
+  type ProfileTabState,
+  type ReviewsSub,
+} from "../model/profileTabs";
 import { ProfileLists } from "./ProfileLists";
 import "./ProfilePage.css";
 
-type ReviewTab = "published" | "drafts";
-type ProfileTab = ReviewTab | "requests" | "lists";
+type ReviewTab = ReviewsSub;
 type FollowListKind = "followers" | "following";
 
 const FOLLOW_PAGE_SIZE = 20;
@@ -57,28 +63,8 @@ export function ProfilePage() {
 function OwnProfileView({ profile }: { profile: SessionProfile }) {
   const queryClient = useQueryClient();
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const requestedTab = searchParams.get("tab");
   const showRequests = profile.isProfilePrivate === true;
-  const tab: ProfileTab =
-    requestedTab === "drafts"
-      ? "drafts"
-      : requestedTab === "lists"
-        ? "lists"
-        : requestedTab === "requests" && showRequests
-          ? "requests"
-          : "published";
-  function setTab(next: ProfileTab) {
-    setSearchParams(
-      (previous) => {
-        const params = new URLSearchParams(previous);
-        if (next === "published") params.delete("tab");
-        else params.set("tab", next);
-        return params;
-      },
-      { replace: true },
-    );
-  }
+  const [tab, setTab] = useProfileTab({ own: true, showRequests });
   const [followList, setFollowList] = useState<FollowListKind | null>(null);
 
   const reviewsQuery = useQuery({
@@ -100,7 +86,7 @@ function OwnProfileView({ profile }: { profile: SessionProfile }) {
   const reviews = reviewsQuery.data?.items ?? [];
   const { published, drafts, visible } = splitReviews(
     reviews,
-    tab === "requests" || tab === "lists" ? "published" : tab,
+    tab.section === "reviews" ? tab.sub : "published",
   );
 
   const background = profile.background;
@@ -139,18 +125,19 @@ function OwnProfileView({ profile }: { profile: SessionProfile }) {
 
       <AchievementsStrip profileId={profile.id} />
 
-      <ReviewTabs
+      <ProfileTabs
         tab={tab}
         onChange={setTab}
         publishedCount={published.length}
         draftsCount={drafts.length}
         showRequests={showRequests}
+        own
       />
 
-      {tab === "requests" ? (
+      {tab.section === "requests" ? (
         <FollowRequests />
-      ) : tab === "lists" ? (
-        <ProfileLists userId={profile.id} isOwn />
+      ) : tab.section === "lists" ? (
+        <ProfileLists userId={profile.id} isOwn sub={tab.sub} />
       ) : (
         <ReviewsBlock
           reviewsQuery={reviewsQuery}
@@ -164,7 +151,7 @@ function OwnProfileView({ profile }: { profile: SessionProfile }) {
           }
           onDelete={(id) => deleteMutation.mutateAsync(id)}
           emptyOwn
-          emptyTab={tab === "drafts" ? "drafts" : "published"}
+          emptyTab={tab.sub}
           backdrop={profile.backdrop}
         />
       )}
@@ -189,22 +176,6 @@ function PublicProfileView({
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [tab, setTab] = useState<ReviewTab>("published");
-  const showLists = searchParams.get("tab") === "lists";
-  function selectTab(next: ProfileTab) {
-    if (next === "requests") return;
-    if (next !== "lists") setTab(next);
-    setSearchParams(
-      (previous) => {
-        const params = new URLSearchParams(previous);
-        if (next === "lists") params.set("tab", "lists");
-        else params.delete("tab");
-        return params;
-      },
-      { replace: true },
-    );
-  }
   const [followList, setFollowList] = useState<FollowListKind | null>(null);
   const profileKey = ["profile", userId] as const;
 
@@ -216,6 +187,7 @@ function PublicProfileView({
   const profile = profileQuery.data;
   const isMe =
     profile?.isMe === true || (sessionProfile !== null && sessionProfile.id === userId);
+  const [tab, setTab] = useProfileTab({ own: isMe, showRequests: false });
 
   const pageMeta = useMemo((): PageMeta => {
     const path = `/profiles/${userId}`;
@@ -288,7 +260,8 @@ function PublicProfileView({
   }
 
   const reviews = reviewsQuery.data?.items ?? [];
-  const { published, drafts, visible } = splitReviews(reviews, isMe ? tab : "published");
+  const reviewsSub = tab.section === "reviews" ? tab.sub : "published";
+  const { published, drafts, visible } = splitReviews(reviews, reviewsSub);
   const list = isMe ? visible : published;
 
   const background = profile.background;
@@ -335,16 +308,16 @@ function PublicProfileView({
 
       <AchievementsStrip profileId={profile.id} />
 
-      <ReviewTabs
-        tab={showLists ? "lists" : tab}
-        onChange={selectTab}
+      <ProfileTabs
+        tab={tab}
+        onChange={setTab}
         publishedCount={published.length}
         draftsCount={drafts.length}
-        showDrafts={isMe}
+        own={isMe}
       />
 
-      {showLists ? (
-        <ProfileLists userId={profile.id} isOwn={isMe} />
+      {tab.section === "lists" ? (
+        <ProfileLists userId={profile.id} isOwn={isMe} sub={tab.sub} />
       ) : (
         <ReviewsBlock
           reviewsQuery={reviewsQuery}
@@ -358,7 +331,7 @@ function PublicProfileView({
           }
           onDelete={(id) => deleteMutation.mutateAsync(id)}
           emptyOwn={isMe}
-          emptyTab={isMe ? tab : "published"}
+          emptyTab={isMe ? reviewsSub : "published"}
           backdrop={profile.backdrop}
         />
       )}
@@ -504,90 +477,162 @@ function FollowConnectionRow({
   );
 }
 
-function ReviewTabs({
+function useProfileTab(
+  access: ProfileTabAccess,
+): [ProfileTabState, (next: ProfileTabState) => void] {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = parseProfileTab(searchParams, access);
+  function setTab(next: ProfileTabState) {
+    setSearchParams((previous) => writeProfileTab(previous, next), { replace: true });
+  }
+  return [tab, setTab];
+}
+
+const REVIEWS_DEFAULT: ProfileTabState = { section: "reviews", sub: "published" };
+const LISTS_DEFAULT: ProfileTabState = { section: "lists", sub: "results" };
+
+function ProfileTabs({
   tab,
   onChange,
   publishedCount,
   draftsCount,
   showRequests = false,
-  showDrafts = true,
+  own,
 }: {
-  tab: ProfileTab;
-  onChange: (tab: ProfileTab) => void;
-  showRequests?: boolean;
-  showDrafts?: boolean;
+  tab: ProfileTabState;
+  onChange: (tab: ProfileTabState) => void;
   publishedCount: number;
   draftsCount: number;
+  showRequests?: boolean;
+  own: boolean;
 }) {
   return (
-    <div
+    <>
+      <div className="profile-page__tabs" role="tablist" aria-label="Разделы профиля">
+        <TabButton
+          active={tab.section === "reviews"}
+          onClick={() => onChange(REVIEWS_DEFAULT)}
+        >
+          Обзоры
+        </TabButton>
+        <TabButton
+          active={tab.section === "lists"}
+          onClick={() => onChange(LISTS_DEFAULT)}
+        >
+          Топы
+        </TabButton>
+        {showRequests ? (
+          <TabButton
+            active={tab.section === "requests"}
+            onClick={() => onChange({ section: "requests" })}
+          >
+            Запросы
+          </TabButton>
+        ) : null}
+      </div>
+
+      {tab.section === "reviews" && own ? (
+        <SubTabs label="Обзоры">
+          <SubTabButton
+            active={tab.sub === "published"}
+            onClick={() => onChange(REVIEWS_DEFAULT)}
+          >
+            Опубликовано
+            <span className="profile-page__tab-count">{publishedCount}</span>
+          </SubTabButton>
+          <SubTabButton
+            active={tab.sub === "drafts"}
+            onClick={() => onChange({ section: "reviews", sub: "drafts" })}
+          >
+            Черновики
+            <span className="profile-page__tab-count">{draftsCount}</span>
+          </SubTabButton>
+        </SubTabs>
+      ) : null}
+
+      {tab.section === "lists" ? (
+        <SubTabs label="Топы">
+          <SubTabButton
+            active={tab.sub === "results"}
+            onClick={() => onChange(LISTS_DEFAULT)}
+          >
+            Топы
+          </SubTabButton>
+          <SubTabButton
+            active={tab.sub === "templates"}
+            onClick={() => onChange({ section: "lists", sub: "templates" })}
+          >
+            Шаблоны
+          </SubTabButton>
+          {own ? (
+            <SubTabButton
+              active={tab.sub === "drafts"}
+              onClick={() => onChange({ section: "lists", sub: "drafts" })}
+            >
+              Черновики
+            </SubTabButton>
+          ) : null}
+        </SubTabs>
+      ) : null}
+    </>
+  );
+}
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
       className={
-        showRequests
-          ? "profile-page__tabs profile-page__tabs--with-requests"
-          : "profile-page__tabs"
+        active ? "profile-page__tab profile-page__tab--active" : "profile-page__tab"
       }
-      role="tablist"
-      aria-label="Разделы профиля"
+      onClick={onClick}
     >
-      <button
-        type="button"
-        role="tab"
-        aria-selected={tab === "published"}
-        className={
-          tab === "published"
-            ? "profile-page__tab profile-page__tab--active"
-            : "profile-page__tab"
-        }
-        onClick={() => onChange("published")}
-      >
-        Опубликовано
-        <span className="profile-page__tab-count">{publishedCount}</span>
-      </button>
-      {showDrafts ? (
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === "drafts"}
-          className={
-            tab === "drafts"
-              ? "profile-page__tab profile-page__tab--active"
-              : "profile-page__tab"
-          }
-          onClick={() => onChange("drafts")}
-        >
-          Черновики
-          <span className="profile-page__tab-count">{draftsCount}</span>
-        </button>
-      ) : null}
-      <button
-        type="button"
-        role="tab"
-        aria-selected={tab === "lists"}
-        className={
-          tab === "lists"
-            ? "profile-page__tab profile-page__tab--active"
-            : "profile-page__tab"
-        }
-        onClick={() => onChange("lists")}
-      >
-        Топы
-      </button>
-      {showRequests ? (
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === "requests"}
-          className={
-            tab === "requests"
-              ? "profile-page__tab profile-page__tab--active"
-              : "profile-page__tab"
-          }
-          onClick={() => onChange("requests")}
-        >
-          Запросы
-        </button>
-      ) : null}
+      {children}
+    </button>
+  );
+}
+
+function SubTabs({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="profile-page__subtabs" role="tablist" aria-label={label}>
+      {children}
     </div>
+  );
+}
+
+function SubTabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      className={
+        active
+          ? "profile-page__subtab profile-page__subtab--active"
+          : "profile-page__subtab"
+      }
+      onClick={onClick}
+    >
+      {children}
+    </button>
   );
 }
 
