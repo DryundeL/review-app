@@ -20,8 +20,17 @@ const SORT_OPTIONS: { value: FeedSort; label: string }[] = [
 
 export function Feed() {
   const { profile } = useAuthSession();
-  const { sort, mode, type, setSort, setMode, toggleType, clearType } =
-    useFilterFeedStore();
+  const {
+    sort,
+    mode: storedMode,
+    type,
+    setSort,
+    setMode,
+    toggleType,
+    clearType,
+  } = useFilterFeedStore();
+  // У гостя нет подписок и персональной ленты — только общая лента с фильтрами.
+  const mode = profile ? storedMode : "all";
   const [filtersOpen, setFiltersOpen] = useState(false);
   const filtersRef = useRef<HTMLDivElement | null>(null);
   const typesQuery = useQuery({
@@ -110,27 +119,28 @@ export function Feed() {
 
   return (
     <section className="feed" ref={contentRef}>
-      <div className="feed__tabs" role="tablist" aria-label="Режим ленты">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={mode === "all"}
-          className={mode === "all" ? "feed__tab feed__tab--active" : "feed__tab"}
-          onClick={() => setMode("all")}
-        >
-          Для тебя
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={mode === "following"}
-          className={mode === "following" ? "feed__tab feed__tab--active" : "feed__tab"}
-          disabled={!profile}
-          onClick={() => setMode("following")}
-        >
-          Подписки
-        </button>
-      </div>
+      {profile ? (
+        <div className="feed__tabs" role="tablist" aria-label="Режим ленты">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === "all"}
+            className={mode === "all" ? "feed__tab feed__tab--active" : "feed__tab"}
+            onClick={() => setMode("all")}
+          >
+            Для тебя
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === "following"}
+            className={mode === "following" ? "feed__tab feed__tab--active" : "feed__tab"}
+            onClick={() => setMode("following")}
+          >
+            Подписки
+          </button>
+        </div>
+      ) : null}
 
       <div className="feed__controls">
         <label className="feed__sort-control">
@@ -287,7 +297,10 @@ export function Feed() {
         <ul className="feed__list">
           {items.map((item) =>
             item.kind === "review" ? (
-              <li key={`review:${item.review.id}`} data-reveal-id={`review:${item.review.id}`}>
+              <li
+                key={`review:${item.review.id}`}
+                data-reveal-id={`review:${item.review.id}`}
+              >
                 <FeedReviewItem review={item.review} viewerId={profile?.id ?? null} />
               </li>
             ) : (
