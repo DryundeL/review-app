@@ -100,17 +100,17 @@ body:has(> .create-menu) :is(.bottom-nav__bar, .bottom-nav__create, .bottom-nav_
   stroke-linejoin: round;
 }
 
-.create-menu__drop--review .create-menu__icon {
+.create-menu__drop--accent .create-menu__icon {
   background: color-mix(in srgb, var(--color-accent) 30%, transparent);
   color: var(--color-accent);
 }
 
-.create-menu__drop--top .create-menu__icon {
+.create-menu__drop--gold .create-menu__icon {
   background: color-mix(in srgb, var(--color-gold) 30%, transparent);
   color: var(--color-gold);
 }
 
-.create-menu__drop--template .create-menu__icon {
+.create-menu__drop--plain .create-menu__icon {
   background: rgb(255 255 255 / 14%);
   color: #fff;
 }

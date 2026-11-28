@@ -87,7 +87,9 @@ export function BottomNavigation({ hideOnMobile = false }: { hideOnMobile?: bool
             className="bottom-nav__indicator"
             data-visible={activeIndex >= 0}
             // На ПК вкладки «Профиль» нет в столбце — её заменяет AccountMenu.
-            data-desktop-visible={activeIndex >= 0 && visibleLinks[activeIndex]?.to !== "/profile"}
+            data-desktop-visible={
+              activeIndex >= 0 && visibleLinks[activeIndex]?.to !== "/profile"
+            }
             aria-hidden="true"
           />
           {visibleLinks.map((link) => {
