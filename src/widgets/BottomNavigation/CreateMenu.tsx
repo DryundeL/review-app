@@ -93,11 +93,6 @@ export function CreateMenu({ open, onClose, anchorRef }: CreateMenuProps) {
   const [placement, setPlacement] = useState<Placement | null>(null);
   /** Смещение каждой капли от её места до центра кнопки. */
   const [offsets, setOffsets] = useState<{ dx: number; dy: number }[]>([]);
-  /**
-   * Капли встали на место. Только тогда включаем размытие стекла:
-   * backdrop-filter на движущемся слое пересчитывается каждый кадр и даёт лаги.
-   */
-  const [settled, setSettled] = useState(false);
   const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
 
   // Монтируем при открытии; при закрытии ждём анимацию втягивания.
@@ -109,7 +104,6 @@ export function CreateMenu({ open, onClose, anchorRef }: CreateMenuProps) {
     }
     if (!mounted) return;
     setClosing(true);
-    setSettled(false);
     const timer = window.setTimeout(() => {
       setMounted(false);
       setClosing(false);
@@ -152,14 +146,6 @@ export function CreateMenu({ open, onClose, anchorRef }: CreateMenuProps) {
 
   const ready = offsets.length === OPTIONS.length && placement !== null;
   const state = closing ? "closing" : ready ? "open" : "measuring";
-  // Последней встаёт самая дальняя капля.
-  const lastIndex = OPTIONS.length - 1;
-
-  // Без анимаций (reduced motion) animationend не придёт — стекло «встало» сразу.
-  useEffect(() => {
-    if (state === "open" && prefersReducedMotion()) setSettled(true);
-  }, [state]);
-
   const closeAndReturnFocus = useCallback(() => {
     onClose();
     anchorRef.current?.focus({ preventScroll: true });
@@ -191,7 +177,7 @@ export function CreateMenu({ open, onClose, anchorRef }: CreateMenuProps) {
   if (!mounted || typeof document === "undefined") return null;
 
   return createPortal(
-    <div className="create-menu" data-state={state} data-settled={settled || undefined}>
+    <div className="create-menu" data-state={state}>
       <div className="create-menu__scrim" aria-hidden="true" onClick={closeAndReturnFocus} />
 
       <div
@@ -200,9 +186,6 @@ export function CreateMenu({ open, onClose, anchorRef }: CreateMenuProps) {
         aria-label="Что добавить"
         style={placement?.menu}
         onKeyDown={onMenuKeyDown}
-        onAnimationEnd={(event) => {
-          if (state === "open" && event.target === itemRefs.current[lastIndex]) setSettled(true);
-        }}
       >
         {OPTIONS.map((option, index) => (
           <Link
@@ -236,10 +219,6 @@ export function CreateMenu({ open, onClose, anchorRef }: CreateMenuProps) {
     </div>,
     document.body,
   );
-}
-
-function prefersReducedMotion(): boolean {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 function OptionIcon({ name }: { name: (typeof OPTIONS)[number]["icon"] }) {
