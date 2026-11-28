@@ -9,11 +9,17 @@ import "./RightRail.css";
 
 const VISIBLE = 5;
 
-/** Тот же ключ и limit, что у страницы поиска, — кэш общий. */
-function useTrends<T extends SearchTrendsTab>(tab: T) {
+/** Максимум API трендов. */
+const AUTHORS_POOL = 20;
+
+/**
+ * limit 10 — тот же ключ, что у страницы поиска, кэш общий.
+ * Другой limit — отдельный ключ, иначе страница поиска получит чужой размер выборки.
+ */
+function useTrends<T extends SearchTrendsTab>(tab: T, limit = 10) {
   return useQuery({
-    queryKey: ["search-trends", tab],
-    queryFn: ({ signal }) => fetchSearchTrends({ tab, limit: 10 }, signal),
+    queryKey: limit === 10 ? ["search-trends", tab] : ["search-trends", tab, limit],
+    queryFn: ({ signal }) => fetchSearchTrends({ tab, limit }, signal),
     staleTime: 5 * 60_000,
   });
 }
@@ -71,7 +77,8 @@ function PopularMedia() {
 
 function SuggestedAuthors() {
   const { profile } = useAuthSession();
-  const query = useTrends("authors");
+  // Берём с запасом: вершину трендов часто занимают сам пользователь и его подписки.
+  const query = useTrends("authors", AUTHORS_POOL);
   const items =
     query.data?.tab === "authors"
       ? query.data.items
