@@ -25,12 +25,10 @@ function fixture(handler, options = {}) {
 
 test("sitemap traverses all cursors and builds canonical URLs from IDs without credentials or invented lastmod", async () => {
   const { service, calls } = fixture((url) => {
-    if (url.pathname.endsWith("/media-objects"))
-      return url.searchParams.has("cursor")
-        ? json({ items: [{ id: id(2) }], nextCursor: "" })
-        : json({ items: [{ id: id(1) }], nextCursor: id(1) });
     if (url.pathname.endsWith("/reviews"))
-      return json({ items: [{ id: id(3) }], nextCursor: "" });
+      return url.searchParams.has("cursor")
+        ? json({ items: [{ id: id(3) }], nextCursor: "" })
+        : json({ items: [{ id: id(2) }], nextCursor: id(2) });
     if (url.pathname.endsWith("/authors"))
       return json({ items: [{ id: id(4) }], nextCursor: "" });
     throw new Error("unexpected endpoint");
@@ -39,14 +37,16 @@ test("sitemap traverses all cursors and builds canonical URLs from IDs without c
   assert.ok(index.includes("<sitemapindex"));
   assert.ok(index.includes("https://review-hub.ru/sitemap-authors-1.xml"));
   assert.ok((await service.get("/sitemap-pages.xml")).includes(`<loc>${siteUrl}</loc>`));
-  const works = await service.get("/sitemap-media-objects-1.xml");
-  assert.ok(works.includes(`/media-objects/${id(1)}`));
-  assert.ok(works.includes(`/media-objects/${id(2)}`));
-  assert.ok((await service.get("/sitemap-reviews-1.xml")).includes(`/reviews/${id(3)}`));
+  const reviews = await service.get("/sitemap-reviews-1.xml");
+  assert.ok(reviews.includes(`/reviews/${id(2)}`));
+  assert.ok(reviews.includes(`/reviews/${id(3)}`));
+  assert.ok(!index.includes("media-objects"));
+  assert.equal(await service.get("/sitemap-media-objects-1.xml"), null);
   assert.ok((await service.get("/sitemap-authors-1.xml")).includes(`/profiles/${id(4)}`));
   assert.ok(!index.includes("<lastmod>"));
-  assert.ok(!works.includes("<lastmod>"));
-  assert.equal(calls.length, 4);
+  assert.ok(!reviews.includes("<lastmod>"));
+  assert.equal(calls.length, 3);
+  assert.ok(calls.every(({ url }) => !url.pathname.endsWith("/media-objects")));
   assert.ok(
     calls.every(
       ({ init, url }) =>
@@ -94,13 +94,13 @@ test("cache refresh removes old URLs and concurrent requests share one generatio
     { now: () => now },
   );
   await Promise.all([service.get("/sitemap.xml"), service.get("/sitemap-authors-1.xml")]);
-  assert.equal(calls.length, 3);
+  assert.equal(calls.length, 2);
   current = id(2);
   now = 300001;
   const authors = await service.get("/sitemap-authors-1.xml");
   assert.ok(authors.includes(id(2)));
   assert.ok(!authors.includes(id(1)));
-  assert.equal(calls.length, 6);
+  assert.equal(calls.length, 4);
 });
 
 test("failed refresh never serves a stale or partial sitemap and retries after cooldown", async () => {
@@ -150,7 +150,7 @@ test("429 uses bounded retry and unknown sitemap names never call the API", asyn
   assert.equal(await service.get("/sitemap-settings-1.xml"), null);
   assert.equal(calls.length, 0);
   assert.ok((await service.get("/sitemap.xml")).includes("sitemap-pages.xml"));
-  assert.equal(calls.length, 4);
+  assert.equal(calls.length, 3);
   assert.equal(await service.get("/sitemap-authors-1.xml"), null);
 });
 
@@ -171,5 +171,5 @@ test("cancelling one HTTP request does not cancel the shared build", async () =>
   assert.ok(calls.every(({ init }) => !init.signal.aborted));
   release();
   assert.ok((await other).includes("<sitemapindex"));
-  assert.equal(calls.length, 3);
+  assert.equal(calls.length, 2);
 });

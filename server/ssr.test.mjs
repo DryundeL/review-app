@@ -73,14 +73,12 @@ before(async () => {
     if (path.startsWith("/v1/sitemap/")) {
       const entity = path.split("/").pop();
       const cursor = new URL(req.url, "http://test").searchParams.get("cursor");
-      if (entity === "media-objects")
+      if (entity === "reviews")
         return json(
           cursor
-            ? { items: [{ id: xssId }], nextCursor: "" }
+            ? { items: [{ id: reviewId }], nextCursor: "" }
             : { items: [{ id: mediaId }], nextCursor: mediaId },
         );
-      if (entity === "reviews")
-        return json({ items: [{ id: reviewId }], nextCursor: "" });
       if (entity === "authors")
         return json({ items: [{ id: authorId }], nextCursor: "" });
     }
@@ -210,6 +208,14 @@ test("SSR renders guest page data and SEO metadata in the HTML response", async 
   assert.ok(html.includes(`<title>${media.title} · Review Hub</title>`));
   assert.ok(html.includes(`href="https://review-hub.ru/media-objects/${mediaId}"`));
   assert.ok(html.includes('property="og:title" content="Матрица SSR · Review Hub"'));
+});
+
+test("media object pages are rendered for guests but excluded from indexing", async () => {
+  const { response, html } = await page(`/media-objects/${mediaId}`);
+  assert.equal(response.status, 200);
+  assert.ok(html.includes(media.title));
+  assert.equal(response.headers.get("x-robots-tag"), "noindex, nofollow");
+  assert.ok(html.includes('name="robots" content="noindex, nofollow"'));
 });
 
 test("SSR renders public list template and result pages for guests", async () => {
@@ -439,7 +445,6 @@ test("dynamic sitemap index and chunks are served ahead of static files with gue
   assert.ok(!index.includes("<lastmod>"));
   for (const path of [
     "/sitemap-pages.xml",
-    "/sitemap-media-objects-1.xml",
     "/sitemap-reviews-1.xml",
     "/sitemap-authors-1.xml",
   ]) {
@@ -450,12 +455,15 @@ test("dynamic sitemap index and chunks are served ahead of static files with gue
     assert.ok(!chunk.html.includes(`/profiles/${privateId}`));
     assert.ok(!chunk.html.includes("/search"));
   }
-  const works = await page("/sitemap-media-objects-1.xml");
-  assert.ok(works.html.includes(`/media-objects/${xssId}`));
+  assert.ok(!index.includes("media-objects"));
+  const reviews = await page("/sitemap-reviews-1.xml");
+  assert.ok(reviews.html.includes(`/reviews/${reviewId}`));
+  assert.ok(!reviews.html.includes("/media-objects/"));
+  assert.equal((await page("/sitemap-media-objects-1.xml")).response.status, 404);
   const sitemapCalls = calls
     .slice(start)
     .filter((call) => call.url.startsWith("/v1/sitemap/"));
-  assert.equal(sitemapCalls.length, 4);
+  assert.equal(sitemapCalls.length, 3);
   assert.ok(sitemapCalls.every((call) => !call.authorization && !call.cookie));
   assert.equal((await page("/sitemap-authors-2.xml")).response.status, 404);
   assert.equal((await page("/sitemap-unknown-1.xml")).response.status, 404);

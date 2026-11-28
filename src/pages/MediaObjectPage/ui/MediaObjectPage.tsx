@@ -37,7 +37,8 @@ export function MediaObjectPage() {
     title: media?.title ?? "Произведение",
     description: media ? `Информация и популярные обзоры: ${media.title}` : undefined,
     image: media?.posterUrl,
-    noindex: mediaQuery.isError,
+    // Страницы произведений — каталог без авторского контента, в индекс не идут.
+    noindex: true,
   });
   return (
     <section className="media-page screen" aria-busy={mediaQuery.isLoading}>

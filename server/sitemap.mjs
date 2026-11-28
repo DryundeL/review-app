@@ -3,7 +3,6 @@ import { setTimeout as delay } from "node:timers/promises";
 import { escapeHtml } from "./html.mjs";
 
 const ROUTES = {
-  "media-objects": "media-objects",
   reviews: "reviews",
   authors: "profiles",
 };
@@ -23,7 +22,7 @@ export function isSitemapPath(path) {
   return (
     path === "/sitemap.xml" ||
     path === "/sitemap-pages.xml" ||
-    /^\/sitemap-(media-objects|reviews|authors)-[1-9][0-9]*\.xml$/.test(path)
+    /^\/sitemap-(reviews|authors)-[1-9][0-9]*\.xml$/.test(path)
   );
 }
 
