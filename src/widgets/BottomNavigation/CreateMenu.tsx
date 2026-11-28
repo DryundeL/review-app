@@ -10,6 +10,13 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
+import {
+  EASE_IN,
+  EASE_OUT,
+  dropInKeyframes,
+  dropOutKeyframes,
+  menuMotion,
+} from "./createMenuMotion";
 import "./CreateMenu.css";
 
 type CreateMenuProps = {
@@ -46,8 +53,6 @@ const EDGE = 12;
 const MAX_WIDTH = 280;
 /** Совпадает с брейкпоинтом в CreateMenu.css. */
 const DESKTOP_QUERY = "(min-width: 768px)";
-/** Длительность «втягивания» обратно: не меньше самой долгой CSS-анимации закрытия (ПК). */
-const CLOSE_MS = 420;
 
 type Placement = {
   /** Колонка вариантов: на телефоне — над кнопкой, на ПК — справа от неё. */
@@ -94,22 +99,16 @@ export function CreateMenu({ open, onClose, anchorRef }: CreateMenuProps) {
   /** Смещение каждой капли от её места до центра кнопки. */
   const [offsets, setOffsets] = useState<{ dx: number; dy: number }[]>([]);
   const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+  const scrimRef = useRef<HTMLDivElement>(null);
 
-  // Монтируем при открытии; при закрытии ждём анимацию втягивания.
+  // Монтируем при открытии; при закрытии — фаза «closing» до конца втягивания.
   useEffect(() => {
     if (open) {
       setMounted(true);
       setClosing(false);
-      return;
+    } else if (mounted) {
+      setClosing(true);
     }
-    if (!mounted) return;
-    setClosing(true);
-    const timer = window.setTimeout(() => {
-      setMounted(false);
-      setClosing(false);
-      setOffsets([]);
-    }, CLOSE_MS);
-    return () => window.clearTimeout(timer);
   }, [open, mounted]);
 
   const place = useCallback(() => {
@@ -146,6 +145,67 @@ export function CreateMenu({ open, onClose, anchorRef }: CreateMenuProps) {
 
   const ready = offsets.length === OPTIONS.length && placement !== null;
   const state = closing ? "closing" : ready ? "open" : "measuring";
+
+  // Анимации — через Web Animations с готовыми числами: так их ведёт композитор.
+  // Запускаем до отрисовки, чтобы капли не мелькнули на своих местах.
+  useLayoutEffect(() => {
+    if (state === "measuring") return;
+    const animated = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const desktop = window.matchMedia(DESKTOP_QUERY).matches;
+    const motion = menuMotion(desktop);
+    const animations: Animation[] = [];
+    const opening = state === "open";
+
+    if (animated) {
+      const scrim = scrimRef.current;
+      if (scrim) {
+        animations.push(
+          scrim.animate([{ opacity: opening ? 0 : 1 }, { opacity: opening ? 1 : 0 }], {
+            duration: opening ? motion.scrimInMs : motion.outMs,
+            easing: opening ? EASE_IN : EASE_OUT,
+            fill: "both",
+          }),
+        );
+      }
+      offsets.forEach(({ dx, dy }, index) => {
+        const drop = itemRefs.current[index];
+        if (!drop) return;
+        animations.push(
+          opening
+            ? drop.animate(dropInKeyframes(dx, dy, desktop), {
+                duration: motion.inMs,
+                delay: index * motion.stepMs,
+                easing: EASE_IN,
+                fill: "both",
+              })
+            : drop.animate(dropOutKeyframes(dx, dy, desktop), {
+                duration: motion.outMs,
+                delay: (offsets.length - 1 - index) * motion.outStepMs,
+                easing: EASE_OUT,
+                fill: "both",
+              }),
+        );
+      });
+    }
+
+    let alive = true;
+    if (!opening) {
+      // Размонтируем, когда всё втянулось (или сразу, если анимаций нет).
+      Promise.all(animations.map((animation) => animation.finished)).then(
+        () => {
+          if (!alive) return;
+          setMounted(false);
+          setClosing(false);
+          setOffsets([]);
+        },
+        () => {}, // отменено повторным открытием
+      );
+    }
+    return () => {
+      alive = false;
+      animations.forEach((animation) => animation.cancel());
+    };
+  }, [state, offsets]);
   const closeAndReturnFocus = useCallback(() => {
     onClose();
     anchorRef.current?.focus({ preventScroll: true });
@@ -178,7 +238,12 @@ export function CreateMenu({ open, onClose, anchorRef }: CreateMenuProps) {
 
   return createPortal(
     <div className="create-menu" data-state={state}>
-      <div className="create-menu__scrim" aria-hidden="true" onClick={closeAndReturnFocus} />
+      <div
+        ref={scrimRef}
+        className="create-menu__scrim"
+        aria-hidden="true"
+        onClick={closeAndReturnFocus}
+      />
 
       <div
         className="create-menu__list"
@@ -197,13 +262,6 @@ export function CreateMenu({ open, onClose, anchorRef }: CreateMenuProps) {
             to={option.to}
             className={`create-menu__drop create-menu__drop--${option.icon}`}
             tabIndex={closing ? -1 : 0}
-            style={
-              {
-                "--dx": `${offsets[index]?.dx ?? 0}px`,
-                "--dy": `${offsets[index]?.dy ?? 0}px`,
-                "--i": index,
-              } as CSSProperties
-            }
             onClick={onClose}
           >
             <span className="create-menu__icon">

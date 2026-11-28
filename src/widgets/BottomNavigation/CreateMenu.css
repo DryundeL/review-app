@@ -1,31 +1,23 @@
 /*
  * Меню «Что добавить» у кнопки «+»: варианты вытекают из кнопки каплями стекла.
- * Телефон — коротко: капля вылетает, вытягивается и встаёт на место.
- * ПК — дольше и мягче: капли текут вправо от кнопки.
- * Производительность: анимируются только transform и opacity трёх капель —
- * это делает видеокарта, без перерисовки. backdrop-filter на каплях нет
- * намеренно: на движущемся слое он пересчитывается каждый кадр, а его первое
- * включение компилирует шейдеры — это и давало рывки. Стекло — градиентом.
- * Смещения --dx/--dy — от места варианта до центра кнопки (считает JS).
+ * Движение задаёт JS (createMenuMotion.ts) через Web Animations с готовыми
+ * числами — только transform и opacity, их ведёт композитор.
+ * Производительность:
+ * - на каплях нет backdrop-filter: на движущемся слое он пересчитывается
+ *   каждый кадр; стекло — градиентом;
+ * - пока меню открыто, у навигации выключено размытие: иначе затемнение,
+ *   появляющееся под ней, заставляет пересчитывать его каждый кадр.
  */
-
-.create-menu {
-  --create-menu-in: 420ms;
-  --create-menu-out: 240ms;
-  --create-menu-step: 45ms;
-  --create-menu-ease: cubic-bezier(0.22, 1, 0.36, 1);
-}
 
 .create-menu__scrim {
   position: fixed;
   inset: 0;
   z-index: 19; /* под навигацией (20): «+» остаётся видна и закрывает меню */
   background: rgb(0 0 0 / 48%);
-  animation: create-menu-fade var(--motion-duration-normal) var(--motion-ease) both;
+  will-change: opacity;
 }
 
 .create-menu[data-state="closing"] .create-menu__scrim {
-  animation: create-menu-fade var(--create-menu-out) var(--motion-ease-exit) reverse both;
   pointer-events: none;
 }
 
@@ -39,6 +31,13 @@
 
 .create-menu[data-state="measuring"] .create-menu__list {
   visibility: hidden;
+}
+
+/* Навигация под меню — без размытия, пока меню на экране. */
+body:has(> .create-menu) :is(.bottom-nav__bar, .bottom-nav__create, .bottom-nav__panel) {
+  background: var(--glass-bg), rgb(22 22 28 / 94%);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 /* ---------- стеклянная капля ---------- */
@@ -64,19 +63,12 @@
   text-decoration: none;
   text-shadow: 0 1px 4px rgb(0 0 0 / 55%);
   transform-origin: 50% 50%;
-  /* Отдельный слой на всё время жизни меню: без пересборки слоёв в конце анимации. */
+  /* Отдельный слой на всё время жизни меню: без пересборки слоёв. */
   will-change: transform, opacity;
   transition: border-color var(--motion-duration-fast) var(--motion-ease);
 }
 
-.create-menu[data-state="open"] .create-menu__drop {
-  animation: create-menu-drop-in var(--create-menu-in) var(--create-menu-ease) both;
-  animation-delay: calc(var(--i) * var(--create-menu-step));
-}
-
 .create-menu[data-state="closing"] .create-menu__drop {
-  animation: create-menu-drop-out var(--create-menu-out) var(--motion-ease-exit) both;
-  animation-delay: calc((2 - var(--i)) * 25ms);
   pointer-events: none;
 }
 
@@ -144,114 +136,13 @@
   white-space: nowrap;
 }
 
-/* ---------- ключевые кадры (телефон) ---------- */
-
-@keyframes create-menu-fade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Капля вылетает из кнопки узкой, вытягивается и мягко встаёт на место. */
-@keyframes create-menu-drop-in {
-  0% {
-    opacity: 0;
-    transform: translate(var(--dx), var(--dy)) scale(0.25, 0.6);
-  }
-  25% {
-    opacity: 1;
-  }
-  60% {
-    transform: translate(calc(var(--dx) * 0.08), calc(var(--dy) * 0.08)) scale(0.94, 1.05);
-  }
-  100% {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@keyframes create-menu-drop-out {
-  0% {
-    opacity: 1;
-    transform: none;
-  }
-  100% {
-    opacity: 0;
-    transform: translate(var(--dx), var(--dy)) scale(0.25, 0.6);
-  }
-}
-
-/* ---------- ПК: плавнее, варианты справа от кнопки ---------- */
-
 @media (min-width: 768px) {
-  .create-menu {
-    --create-menu-in: 720ms;
-    --create-menu-out: 340ms;
-    --create-menu-step: 70ms;
-  }
-
   .create-menu__scrim {
     background: rgb(0 0 0 / 40%);
   }
-
-  .create-menu[data-state="open"] .create-menu__drop {
-    animation-name: create-menu-drop-in-smooth;
-  }
-
-  .create-menu[data-state="closing"] .create-menu__drop {
-    animation-name: create-menu-drop-out-smooth;
-  }
 }
 
-/* Течёт вправо: вытягивается по горизонтали, без резких отскоков. */
-@keyframes create-menu-drop-in-smooth {
-  0% {
-    opacity: 0;
-    transform: translate(var(--dx), var(--dy)) scale(0.18, 0.7);
-  }
-  20% {
-    opacity: 1;
-  }
-  55% {
-    transform: translate(calc(var(--dx) * 0.18), calc(var(--dy) * 0.18)) scale(1.04, 0.92);
-  }
-  80% {
-    transform: translate(0, 0) scale(0.99, 1.015);
-  }
-  100% {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@keyframes create-menu-drop-out-smooth {
-  0% {
-    opacity: 1;
-    transform: none;
-  }
-  45% {
-    transform: translate(calc(var(--dx) * 0.25), calc(var(--dy) * 0.25)) scale(0.85, 0.94);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(var(--dx), var(--dy)) scale(0.18, 0.7);
-  }
-}
-
-/* Без анимаций: варианты просто появляются. */
 @media (prefers-reduced-motion: reduce) {
-  .create-menu[data-state="open"] .create-menu__drop,
-  .create-menu[data-state="closing"] .create-menu__drop {
-    animation: none;
-  }
-
-  .create-menu[data-state="closing"] .create-menu__list {
-    opacity: 0;
-  }
-
   .create-menu__drop {
     transition: none;
   }
