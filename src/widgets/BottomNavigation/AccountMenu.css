@@ -1,0 +1,142 @@
+/* Аккаунт есть только в боковом меню ПК; на телефоне профиль — вкладка внизу. */
+.account-menu {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .account-menu {
+    display: block;
+    flex-shrink: 0;
+    width: 100%;
+  }
+
+  .account-menu__trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 56px;
+    padding: 8px;
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    background: var(--glass-bg);
+    box-shadow: var(--glass-shadow);
+    color: var(--color-text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color var(--motion-duration-fast) var(--motion-ease);
+  }
+
+  .account-menu__trigger:hover {
+    border-color: rgb(255 255 255 / 35%);
+  }
+
+  .account-menu__trigger--active,
+  .account-menu__trigger[aria-expanded="true"] {
+    border-color: var(--color-accent);
+  }
+
+  .account-menu__trigger:focus-visible {
+    outline: 2px solid var(--color-text);
+    outline-offset: 2px;
+  }
+
+  .account-menu__avatar,
+  .account-menu__avatar.user-avatar,
+  .account-menu__avatar .user-avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Узкая колонка (768–1023): только аватар. */
+  .account-menu__text,
+  .account-menu__chevron {
+    display: none;
+  }
+
+  .account-menu__list {
+    position: fixed;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px;
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    background: color-mix(in srgb, var(--color-surface) 96%, transparent);
+    box-shadow:
+      var(--glass-shadow),
+      0 16px 40px rgb(0 0 0 / 45%);
+  }
+
+  .account-menu__item {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: 14px;
+    color: var(--color-text);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .account-menu__item:hover,
+  .account-menu__item:focus-visible {
+    background: rgb(255 255 255 / 7%);
+    outline: none;
+  }
+
+  .account-menu__item:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--color-accent);
+  }
+
+  .account-menu__item--active {
+    color: var(--color-accent);
+  }
+}
+
+@media (min-width: 1024px) {
+  .account-menu__trigger {
+    justify-content: flex-start;
+    padding: 8px 12px 8px 8px;
+  }
+
+  .account-menu__text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .account-menu__name,
+  .account-menu__handle {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .account-menu__name {
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+
+  .account-menu__handle {
+    color: var(--color-muted);
+    font-size: 0.75rem;
+  }
+
+  .account-menu__chevron {
+    display: block;
+    flex: 0 0 18px;
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: var(--color-muted);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}

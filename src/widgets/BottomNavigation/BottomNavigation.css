@@ -297,6 +297,15 @@
     transform: translateY(calc(var(--active-tab) * 56px));
   }
 
+  /* Профиль на ПК — в AccountMenu внизу колонки. */
+  .bottom-nav__link--user {
+    display: none;
+  }
+
+  .bottom-nav__indicator[data-desktop-visible="false"] {
+    opacity: 0;
+  }
+
   .bottom-nav__secondary {
     display: grid;
     gap: 4px;

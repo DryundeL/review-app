@@ -66,7 +66,7 @@ test("navigation shows only public links and login to guests and restores accoun
       guest.querySelector(".bottom-nav__items").style.getPropertyValue("--tab-count"),
       "2",
     );
-    auth.setProfile({ id: "account" });
+    auth.setProfile({ id: "account", firstName: "Тест", username: "tester" });
     const signedIn = render();
     assert.equal(signedIn.querySelector("[aria-label='Войти']"), null);
     for (const label of [
@@ -74,14 +74,15 @@ test("navigation shows only public links and login to guests and restores accoun
       "Поиск",
       "Уведомления",
       "Профиль",
-      "Достижения",
-      "Магазин",
-      "Настройки",
+      "Топы",
       "Добавить",
     ])
       assert.ok(signedIn.querySelector(`[aria-label='${label}']`));
+    // Редкие разделы — в выпадающем меню аккаунта, оно закрыто до клика.
+    assert.ok(signedIn.querySelector("[aria-haspopup='menu'][aria-label^='Аккаунт']"));
+    assert.equal(signedIn.querySelector("[aria-label='Настройки']"), null);
     auth.setProfile(null);
-    assert.equal(render().querySelector("[aria-label='Настройки']"), null);
+    assert.equal(render().querySelector("[aria-label^='Аккаунт']"), null);
   } finally {
     client.clear();
     await vite.close();

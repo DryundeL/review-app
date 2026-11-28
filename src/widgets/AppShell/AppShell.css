@@ -145,5 +145,31 @@
     grid-template-columns: 224px minmax(0, 1fr);
     column-gap: 16px;
     --desktop-gutter: 32px;
+    /* меню + лента по центру экрана, без пустоты справа */
+    width: min(100%, calc(224px + 16px + 848px + 2 * var(--desktop-gutter)));
+  }
+}
+
+.app-shell__rail {
+  display: none;
+}
+
+/* Широкий ПК на главной и в уведомлениях: третья колонка с рекомендациями. */
+@media (min-width: 1280px) {
+  .app-shell--rail {
+    grid-template-columns: 224px minmax(0, 1fr) 320px;
+    column-gap: 24px;
+    width: min(100%, calc(224px + 680px + 320px + 2 * 24px + 2 * var(--desktop-gutter)));
+  }
+
+  .app-shell__rail {
+    position: sticky;
+    top: calc(var(--desktop-gutter) + var(--safe-top));
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    display: block;
+    max-height: calc(100dvh - 2 * var(--desktop-gutter) - var(--safe-top));
+    overflow-y: auto;
+    scrollbar-width: none;
   }
 }

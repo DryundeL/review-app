@@ -6,6 +6,7 @@ import { fetchUnreadNotificationsCount } from "@/entities/settings";
 import { useAuthSession, refreshSessionProfile } from "@/features/auth";
 import { refreshQueriesForPath } from "@/shared/lib/refreshHome";
 import { AppImage } from "@/shared/ui";
+import { AccountMenu } from "./AccountMenu";
 import { CreateMenu } from "./CreateMenu";
 import "./BottomNavigation.css";
 
@@ -16,12 +17,8 @@ const links = [
   { to: "/profile", label: "Профиль", end: true, icon: "user" },
 ] as const;
 
-const secondaryLinks = [
-  { to: "/lists", label: "Топы", icon: "list" },
-  { to: "/achievements", label: "Достижения", icon: "award" },
-  { to: "/shop", label: "Магазин", icon: "shop" },
-  { to: "/settings", label: "Настройки", icon: "settings" },
-] as const;
+// Только на ПК. Профиль, достижения, магазин и настройки — в AccountMenu.
+const secondaryLinks = [{ to: "/lists", label: "Топы", icon: "list" }] as const;
 
 function isExactTab(pathname: string, to: string): boolean {
   return pathname === to;
@@ -89,6 +86,8 @@ export function BottomNavigation({ hideOnMobile = false }: { hideOnMobile?: bool
           <span
             className="bottom-nav__indicator"
             data-visible={activeIndex >= 0}
+            // На ПК вкладки «Профиль» нет в столбце — её заменяет AccountMenu.
+            data-desktop-visible={activeIndex >= 0 && visibleLinks[activeIndex]?.to !== "/profile"}
             aria-hidden="true"
           />
           {visibleLinks.map((link) => {
@@ -184,6 +183,7 @@ export function BottomNavigation({ hideOnMobile = false }: { hideOnMobile?: bool
             onClose={() => setCreateOpen(false)}
             anchorRef={createRef}
           />
+          <AccountMenu profile={profile} />
         </>
       ) : (
         <NavLink
@@ -211,28 +211,10 @@ function NavIcon({
 }) {
   return (
     <svg className="bottom-nav__icon" viewBox="0 0 24 24" aria-hidden="true">
-      {name === "award" ? (
-        <>
-          <circle cx="12" cy="8" r="5" />
-          <path d="m8 12-2 9 6-3 6 3-2-9" />
-        </>
-      ) : null}
       {name === "list" ? (
         <>
           <path d="M9 6h11M9 12h11M9 18h11" />
           <path d="M4 6h.01M4 12h.01M4 18h.01" />
-        </>
-      ) : null}
-      {name === "shop" ? (
-        <>
-          <path d="M4 8h16l-1 13H5L4 8Z" />
-          <path d="M8 8V6a4 4 0 0 1 8 0v2" />
-        </>
-      ) : null}
-      {name === "settings" ? (
-        <>
-          <path d="M4 6h16M4 12h16M4 18h16" />
-          <path d="M8 3v6M16 9v6M10 15v6" />
         </>
       ) : null}
       {name === "home" ? (

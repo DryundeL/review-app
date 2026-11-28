@@ -10,12 +10,13 @@ import {
 import { ContentPreferencesOnboarding } from "@/features/content-preferences/ContentPreferences";
 import logoUrl from "@/assets/review-hub-logo.png";
 import { refreshSessionProfile } from "@/features/auth";
-import { usePageMeta } from "@/shared/hooks";
+import { useMediaQuery, usePageMeta } from "@/shared/hooks";
 import { metaForPath } from "@/shared/lib/pageMeta";
 import { refreshHomeFeed } from "@/shared/lib/refreshHome";
 import { createRouteScrollRestoration } from "@/shared/lib/routeScroll";
 import { AppImage } from "@/shared/ui";
 import { BottomNavigation } from "@/widgets/BottomNavigation";
+import { RightRail } from "@/widgets/RightRail";
 import "./AppShell.css";
 
 /** Страница шаблона или топа (не редактор). */
@@ -44,6 +45,14 @@ function showBackButton(pathname: string): boolean {
     // /profiles/:id — «Назад» в topbar профиля (как «Магазин» на своём).
   );
 }
+
+/** Страницы-ленты, рядом с которыми на широком ПК есть место для рекомендаций. */
+function showRightRail(pathname: string): boolean {
+  return pathname === "/" || pathname === "/notifications";
+}
+
+/** Совпадает с брейкпоинтом .app-shell--rail в AppShell.css. */
+const RAIL_QUERY = "(min-width: 1280px)";
 
 /** React Router кладёт idx в history.state — надёжнее, чем history.length. */
 function canNavigateBack(): boolean {
@@ -77,6 +86,9 @@ export function AppShell() {
     pathname.startsWith("/media-objects/") ||
     pathname.startsWith("/reviews/");
   const showBack = showBackButton(pathname);
+  const withRail = showRightRail(pathname);
+  // Монтируем колонку только там, где она видна: на телефоне и в Telegram — без лишних запросов.
+  const railVisible = useMediaQuery(RAIL_QUERY) && withRail;
 
   useLayoutEffect(() => {
     const restoration = createRouteScrollRestoration();
@@ -141,7 +153,7 @@ export function AppShell() {
   }
 
   return (
-    <div className="app-shell">
+    <div className={withRail ? "app-shell app-shell--rail" : "app-shell"}>
       <header className="app-shell__header">
         <div className="app-shell__header-row">
           <NavLink
@@ -184,6 +196,11 @@ export function AppShell() {
         <Outlet />
       </main>
       <BottomNavigation hideOnMobile={hideNav} />
+      {railVisible ? (
+        <div className="app-shell__rail">
+          <RightRail />
+        </div>
+      ) : null}
       <ContentPreferencesOnboarding />
     </div>
   );
